@@ -22,7 +22,23 @@
 - [ ] `charm/templates/mcp-server.service` — systemd unit file
 - [ ] End-to-end: principal sets relation data, MCP server starts and serves tools
 
-## Phase 2: Security
+## Phase 2: Charm library (`charmlibs-mcp`)
+
+- [ ] Create `charmlibs-mcp` Python package (published to PyPI)
+- [ ] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
+- [ ] Requirer class — used internally by the mcp-server charm to read relation data
+- [ ] Typed data models for tools, prompts, resources, and handlers
+- [ ] Documentation and examples for charm authors
+
+This library lets any charm add MCP support with minimal code:
+```python
+from charmlibs.mcp import McpProvider
+
+mcp = McpProvider(self, "mcp")
+mcp.set_tools([...])
+```
+
+## Phase 3: Security
 
 - [ ] Input validation — validate tool call arguments against declared `input_schema` before handler execution
 - [ ] No `shell=True` — enforce subprocess list args only (done by design)
@@ -30,20 +46,20 @@
 - [ ] Rate limiting on the MCP server endpoint
 - [ ] Auth token support (shared secret via config or relation)
 
-## Phase 3: Ingress
+## Phase 4: Ingress
 
 - [ ] Traefik integration for external access
 - [ ] TLS termination via Traefik
 - [ ] Configurable path prefix per principal
 
-## Phase 4: Testing
+## Phase 5: Testing
 
 - [ ] Unit tests for `charm.py`
 - [ ] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [ ] Integration test with a dummy principal charm
 - [ ] CI with GitHub Actions + tox
 
-## Phase 5: Polish + packaging
+## Phase 6: Polish + packaging
 
 - [ ] Publish to Charmhub
 - [ ] Example principal charm (e.g. a simple app exposing a few tools)
