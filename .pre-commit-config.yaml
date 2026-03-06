@@ -35,9 +35,9 @@ repos:
         pass_filenames: false
       - id: test-charm
         name: unit tests (charm)
-        entry: bash -c 'cd charm && PYTHONPATH=src:lib uv run --group unit pytest tests/unit -q'
+        entry: bash -c 'cp workload/src/server.py charm/src/workload_server.py && cp workload/src/token_verifier.py charm/src/token_verifier.py && cd charm && PYTHONPATH=src:lib uv run --group unit pytest tests/unit -q'
         language: system
-        files: ^charm/
+        files: ^(charm|workload)/
         types: [python]
         pass_filenames: false
       - id: test-workload

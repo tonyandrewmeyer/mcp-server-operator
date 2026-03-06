@@ -1,4 +1,4 @@
-.PHONY: format lint typecheck check test test-charm test-workload test-charmlib clean
+.PHONY: format lint typecheck check test test-charm test-workload test-charmlib sync-workload pack clean
 
 ## Format code in charm, workload, and charmlib
 format:
@@ -31,7 +31,7 @@ check: lint typecheck
 test: test-charm test-workload test-charmlib
 
 ## Run charm unit tests
-test-charm:
+test-charm: sync-workload
 	cd charm && tox run -e unit
 
 ## Run workload tests
@@ -41,6 +41,15 @@ test-workload:
 ## Run charmlib tests
 test-charmlib:
 	cd charmlib && uv run pytest tests/ -v
+
+## Copy workload source into charm/src/ for packaging
+sync-workload:
+	cp workload/src/server.py charm/src/workload_server.py
+	cp workload/src/token_verifier.py charm/src/token_verifier.py
+
+## Pack the charm (copies workload source first)
+pack: sync-workload
+	cd charm && charmcraft pack
 
 ## Clean build artifacts
 clean:

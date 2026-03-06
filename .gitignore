@@ -33,6 +33,10 @@ htmlcov/
 *.charm
 *.snap
 
+# Workload source copied into charm at build time (see `make sync-workload`)
+charm/src/workload_server.py
+charm/src/token_verifier.py
+
 # Ruff
 .ruff_cache/
 

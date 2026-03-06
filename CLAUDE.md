@@ -35,8 +35,9 @@ make test-workload  # Workload tests only
 
 ## Charm specifics
 - charmcraft.yaml is in `charm/`
-- Pack with `cd charm && charmcraft pack`
-- The charm bundles `workload/src/server.py` as `charm/src/workload_server.py`
+- Pack with `make pack` (copies workload source, then runs `charmcraft pack`)
+- Workload source (`server.py`, `token_verifier.py`) lives in `workload/src/` and is copied into `charm/src/` at build time via `make sync-workload`. The copies are `.gitignore`d — never edit them directly.
+- Fetched charm libraries live in `charm/lib/` and are excluded from linting (vendored upstream code).
 
 ## GitHub
 - Org: tonyandrewmeyer
