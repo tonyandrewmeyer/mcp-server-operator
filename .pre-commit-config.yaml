@@ -12,7 +12,7 @@ repos:
     hooks:
       - id: ty-charm
         name: ty (charm)
-        entry: uv run --directory charm ty check src/charm.py src/mcp_server.py
+        entry: uv run --directory charm --group lint ty check src/charm.py src/mcp_server.py
         language: system
         files: ^charm/src/(charm|mcp_server)\.py$
         types: [python]

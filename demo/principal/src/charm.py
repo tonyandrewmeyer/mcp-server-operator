@@ -4,29 +4,33 @@
 
 """Demo principal charm that provides MCP tools for testing."""
 
-import json
 import logging
 
 import ops
 
+from charmlibs.mcp import (
+    ExecHandler,
+    McpDefinitions,
+    McpProvider,
+    Prompt,
+    PromptArgument,
+    Resource,
+    Tool,
+)
+
 logger = logging.getLogger(__name__)
 
-MCP_DEFINITIONS = {
-    "tools": [
-        {
-            "name": "system-info",
-            "description": "Get basic system information (hostname, OS, uptime)",
-            "input_schema": {"type": "object", "properties": {}, "required": []},
-            "handler": {
-                "type": "exec",
-                "command": ["uname", "-a"],
-                "timeout": 10,
-            },
-        },
-        {
-            "name": "disk-usage",
-            "description": "Show disk usage for a given path",
-            "input_schema": {
+MCP_DEFINITIONS = McpDefinitions(
+    tools=[
+        Tool(
+            name="system-info",
+            description="Get basic system information (hostname, OS, uptime)",
+            handler=ExecHandler(command=["uname", "-a"], timeout=10),
+        ),
+        Tool(
+            name="disk-usage",
+            description="Show disk usage for a given path",
+            input_schema={
                 "type": "object",
                 "properties": {
                     "path": {
@@ -36,16 +40,12 @@ MCP_DEFINITIONS = {
                 },
                 "required": ["path"],
             },
-            "handler": {
-                "type": "exec",
-                "command": ["df", "-h", "{{path}}"],
-                "timeout": 10,
-            },
-        },
-        {
-            "name": "list-files",
-            "description": "List files in a directory",
-            "input_schema": {
+            handler=ExecHandler(command=["df", "-h", "{{path}}"], timeout=10),
+        ),
+        Tool(
+            name="list-files",
+            description="List files in a directory",
+            input_schema={
                 "type": "object",
                 "properties": {
                     "directory": {
@@ -55,45 +55,37 @@ MCP_DEFINITIONS = {
                 },
                 "required": ["directory"],
             },
-            "handler": {
-                "type": "exec",
-                "command": ["ls", "-la", "{{directory}}"],
-                "timeout": 10,
-            },
-        },
+            handler=ExecHandler(command=["ls", "-la", "{{directory}}"], timeout=10),
+        ),
     ],
-    "prompts": [
-        {
-            "name": "diagnose-system",
-            "description": "Diagnose system health and suggest improvements",
-            "arguments": [
-                {
-                    "name": "focus",
-                    "description": "Area to focus on (disk, memory, network, general)",
-                    "required": False,
-                },
-            ],
-            "template": (
+    prompts=[
+        Prompt(
+            name="diagnose-system",
+            description="Diagnose system health and suggest improvements",
+            template=(
                 "Please diagnose the system health"
                 "{% if focus %}, focusing on {{focus}}{% endif %}. "
                 "Use the available tools to gather information, then provide "
                 "a summary of findings and recommendations."
             ),
-        },
+            arguments=[
+                PromptArgument(
+                    name="focus",
+                    description="Area to focus on (disk, memory, network, general)",
+                    required=False,
+                ),
+            ],
+        ),
     ],
-    "resources": [
-        {
-            "uri": "config://os-release",
-            "name": "OS Release Info",
-            "description": "Contents of /etc/os-release",
-            "mime_type": "text/plain",
-            "handler": {
-                "type": "exec",
-                "command": ["cat", "/etc/os-release"],
-            },
-        },
+    resources=[
+        Resource(
+            uri="config://os-release",
+            name="OS Release Info",
+            description="Contents of /etc/os-release",
+            handler=ExecHandler(command=["cat", "/etc/os-release"]),
+        ),
     ],
-}
+)
 
 
 class DemoPrincipalCharm(ops.CharmBase):
@@ -101,6 +93,7 @@ class DemoPrincipalCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
+        self.mcp = McpProvider(self, "mcp")
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.mcp_relation_joined, self._on_mcp_relation_joined)
 
@@ -109,8 +102,7 @@ class DemoPrincipalCharm(ops.CharmBase):
 
     def _on_mcp_relation_joined(self, event: ops.RelationJoinedEvent) -> None:
         """Publish MCP definitions when the relation is established."""
-        event.relation.data[self.app]["mcp_definitions"] = json.dumps(MCP_DEFINITIONS)
-        logger.info("Published MCP definitions on relation %d", event.relation.id)
+        self.mcp.set_definitions(MCP_DEFINITIONS)
 
 
 if __name__ == "__main__":  # pragma: nocover

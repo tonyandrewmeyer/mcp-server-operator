@@ -1,10 +1,54 @@
 # MCP Integration Schema Reference
 
-This document defines the data schema that a principal charm must provide on the `mcp` relation's app data bag.
+This document defines the data schema for the `mcp` relation interface.
 
-## Top-level structure
+## Using the charm library
 
-The principal charm sets a JSON string on the relation app data bag under the key `"mcp_definitions"`. The JSON has this structure:
+The easiest way to work with the `mcp` interface is via the `charmlibs-mcp` package:
+
+```bash
+pip install charmlibs-mcp
+```
+
+### Provider (principal charm)
+
+```python
+from charmlibs.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+
+class MyCharm(ops.CharmBase):
+    def __init__(self, framework):
+        super().__init__(framework)
+        self.mcp = McpProvider(self, "mcp")
+        framework.observe(self.on.mcp_relation_joined, self._publish_mcp)
+
+    def _publish_mcp(self, event):
+        self.mcp.set_definitions(McpDefinitions(tools=[
+            Tool(
+                name="list-databases",
+                description="List all PostgreSQL databases",
+                handler=ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
+            ),
+        ]))
+```
+
+### Requirer (mcp-server charm)
+
+```python
+from charmlibs.mcp import McpRequirer
+
+class McpServerCharm(ops.CharmBase):
+    def __init__(self, framework):
+        super().__init__(framework)
+        self.mcp = McpRequirer(self, "mcp")
+
+    def _on_relation_changed(self, event):
+        definitions = self.mcp.collect_definitions()
+        # {"tools": [...], "prompts": [...], "resources": [...]}
+```
+
+## Raw relation data schema
+
+Under the hood, the principal charm sets a JSON string on the relation app data bag under the key `"mcp_definitions"`. The JSON has this structure:
 
 ```json
 {
@@ -176,12 +220,12 @@ Here is a full example of what a PostgreSQL charm might set on the relation:
   ],
   "prompts": [
     {
-      "name": "analyze-database",
-      "description": "Analyze database health and performance",
+      "name": "analyse-database",
+      "description": "Analyse database health and performance",
       "arguments": [
-        {"name": "database", "description": "Database to analyze", "required": true}
+        {"name": "database", "description": "Database to analyse", "required": true}
       ],
-      "template": "Please analyze the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues."
+      "template": "Please analyse the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues."
     }
   ],
   "resources": [
@@ -197,4 +241,68 @@ Here is a full example of what a PostgreSQL charm might set on the relation:
     }
   ]
 }
+```
+
+### Using the charm library
+
+The same example using `charmlibs-mcp`:
+
+```python
+from charmlibs.mcp import (
+    ExecHandler,
+    McpDefinitions,
+    McpProvider,
+    Prompt,
+    PromptArgument,
+    Resource,
+    Tool,
+)
+
+mcp = McpProvider(self, "mcp")
+mcp.set_definitions(McpDefinitions(
+    tools=[
+        Tool(
+            name="list-databases",
+            description="List all PostgreSQL databases",
+            handler=ExecHandler(
+                command=["sudo", "-u", "postgres", "psql", "-l", "--csv"],
+                timeout=10,
+            ),
+        ),
+        Tool(
+            name="run-query",
+            description="Run a read-only SQL query against a database",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "SQL SELECT query to run"},
+                    "database": {"type": "string", "description": "Target database name"},
+                },
+                "required": ["query", "database"],
+            },
+            handler=ExecHandler(
+                command=["sudo", "-u", "postgres", "psql", "-d", "{{database}}", "-c", "{{query}}", "--csv"],
+                timeout=30,
+            ),
+        ),
+    ],
+    prompts=[
+        Prompt(
+            name="analyse-database",
+            description="Analyse database health and performance",
+            template="Please analyse the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.",
+            arguments=[
+                PromptArgument(name="database", description="Database to analyse"),
+            ],
+        ),
+    ],
+    resources=[
+        Resource(
+            uri="config://postgresql/main",
+            name="PostgreSQL Configuration",
+            description="Current postgresql.conf contents",
+            handler=ExecHandler(command=["cat", "/etc/postgresql/14/main/postgresql.conf"]),
+        ),
+    ],
+))
 ```
