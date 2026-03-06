@@ -6,11 +6,19 @@ import pathlib
 import tempfile
 
 import pytest
+import starlette.applications
+import starlette.responses
+import starlette.routing
+import starlette.testclient
 
 from server import (
+    BearerAuthMiddleware,
+    RateLimitMiddleware,
     create_server,
     execute_exec_handler,
     load_config,
+    register_prompt,
+    register_resource,
     substitute_command,
     substitute_template,
     validate_arguments,
@@ -187,4 +195,108 @@ class TestCreateServer:
             json.dump(config, f)
             f.flush()
             server = create_server(pathlib.Path(f.name))
+        assert server is not None
+
+
+def _make_starlette_app():
+    """Build a minimal Starlette app for middleware testing."""
+
+    async def homepage(request):
+        return starlette.responses.PlainTextResponse("ok")
+
+    return starlette.applications.Starlette(
+        routes=[starlette.routing.Route("/", homepage)],
+    )
+
+
+class TestBearerAuthMiddleware:
+    def test_rejects_missing_auth(self):
+        app = _make_starlette_app()
+        app.add_middleware(BearerAuthMiddleware, token="secret-token")
+        client = starlette.testclient.TestClient(app, raise_server_exceptions=False)
+        response = client.get("/")
+        assert response.status_code == 401
+
+    def test_rejects_wrong_token(self):
+        app = _make_starlette_app()
+        app.add_middleware(BearerAuthMiddleware, token="secret-token")
+        client = starlette.testclient.TestClient(app, raise_server_exceptions=False)
+        response = client.get("/", headers={"Authorization": "Bearer wrong-token"})
+        assert response.status_code == 401
+
+    def test_accepts_valid_token(self):
+        app = _make_starlette_app()
+        app.add_middleware(BearerAuthMiddleware, token="secret-token")
+        client = starlette.testclient.TestClient(app, raise_server_exceptions=False)
+        response = client.get("/", headers={"Authorization": "Bearer secret-token"})
+        assert response.status_code == 200
+        assert response.text == "ok"
+
+
+class TestRateLimitMiddleware:
+    def test_allows_under_limit(self):
+        app = _make_starlette_app()
+        app.add_middleware(RateLimitMiddleware, max_requests=5)
+        client = starlette.testclient.TestClient(app, raise_server_exceptions=False)
+        for _ in range(5):
+            response = client.get("/")
+            assert response.status_code == 200
+
+    def test_rejects_over_limit(self):
+        app = _make_starlette_app()
+        app.add_middleware(RateLimitMiddleware, max_requests=2)
+        client = starlette.testclient.TestClient(app, raise_server_exceptions=False)
+        assert client.get("/").status_code == 200
+        assert client.get("/").status_code == 200
+        response = client.get("/")
+        assert response.status_code == 429
+
+
+class TestRegisterPrompt:
+    def test_register_prompt(self):
+        from mcp.server.fastmcp import FastMCP
+
+        server = FastMCP("test")
+        prompt_def = {
+            "name": "greeting",
+            "description": "A greeting prompt",
+            "template": "Hello, {{name}}!",
+        }
+        register_prompt(server, prompt_def)
+        prompts = server._prompt_manager.list_prompts()
+        assert len(prompts) == 1
+        assert prompts[0].name == "greeting"
+        assert prompts[0].description == "A greeting prompt"
+
+
+class TestRegisterResource:
+    def test_register_resource(self):
+        from mcp.server.fastmcp import FastMCP
+
+        server = FastMCP("test")
+        resource_def = {
+            "uri": "resource://test/status",
+            "name": "status",
+            "description": "System status",
+            "handler": {"type": "exec", "command": ["echo", "running"]},
+        }
+        register_resource(server, resource_def)
+        resources = server._resource_manager.list_resources()
+        assert len(resources) == 1
+        assert resources[0].name == "status"
+        assert resources[0].description == "System status"
+
+
+class TestCreateServerWithOAuth:
+    def test_creates_server_with_oauth_jwt(self):
+        config = {"tools": [], "prompts": [], "resources": []}
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(config, f)
+            f.flush()
+            server = create_server(
+                pathlib.Path(f.name),
+                oauth_issuer_url="https://idp.example.com",
+                oauth_resource_server_url="https://mcp.example.com",
+                oauth_jwks_uri="https://idp.example.com/.well-known/jwks.json",
+            )
         assert server is not None
