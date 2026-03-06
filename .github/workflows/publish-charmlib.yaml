@@ -51,4 +51,4 @@ jobs:
         with:
           name: dist
           path: dist/
-      - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b54a0f1e9bd5b508bd71c939 # v1.12.4
+      - uses: pypa/gh-action-pypi-publish@release/v1

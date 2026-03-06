@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "charmlibs-interfaces-mcp"
-version = "0.1.1"
+version = "0.1.2"
 requires-python = ">=3.10"
 description = "Charm library for the MCP (Model Context Protocol) Juju interface"
 readme = "README.md"
