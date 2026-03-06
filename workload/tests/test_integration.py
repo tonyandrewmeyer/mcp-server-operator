@@ -18,7 +18,7 @@ from typing import Any, AsyncIterator
 import httpx
 import pytest
 
-from server import BearerAuthMiddleware, RateLimitMiddleware, create_server
+from server import BearerAuthMiddleware, RateLimitMiddleware, build_app, create_server
 
 # The server uses stateless_http=True, so every request is independent and
 # there is no session ID to track between requests.
@@ -93,6 +93,8 @@ INITIALIZE_PARAMS = {
 async def _make_client(
     tmp_path: pathlib.Path,
     middleware: list[tuple[type, dict[str, Any]]] | None = None,
+    path_prefix: str = "",
+    use_build_app: bool = False,
 ) -> AsyncIterator[httpx.AsyncClient]:
     """Create a server, start its session manager, and yield an HTTP client.
 
@@ -101,16 +103,21 @@ async def _make_client(
     """
     config_path = _test_config(tmp_path)
     server = create_server(config_path)
-    app = server.streamable_http_app()
+    mcp_app = server.streamable_http_app()
+
+    if path_prefix or use_build_app:
+        app = build_app(server, path_prefix=path_prefix)
+    else:
+        app = mcp_app
 
     if middleware:
         for mw_class, mw_kwargs in middleware:
             app.add_middleware(mw_class, **mw_kwargs)
 
-    # The Starlette app has a lifespan that starts the session manager's task
-    # group. httpx.ASGITransport does not invoke the lifespan, so we enter it
-    # manually before making requests.
-    async with app.router.lifespan_context(app):
+    # The MCP Starlette app has a lifespan that starts the session manager's
+    # task group. We always need to enter it, even when the MCP app is mounted
+    # as a sub-application inside a parent Starlette app.
+    async with mcp_app.router.lifespan_context(mcp_app):
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             yield client
@@ -292,3 +299,40 @@ class TestSecurityBoundaries:
                 results = _parse_sse_response(response.text)
                 assert len(results) >= 1
                 assert "error" in results[0]
+
+
+@pytest.mark.anyio
+class TestHealthEndpoint:
+    async def test_health_returns_ok(self, tmp_path: pathlib.Path):
+        async with _make_client(tmp_path, use_build_app=True) as client:
+            response = await client.get("/health")
+            assert response.status_code == 200
+            assert response.json() == {"status": "ok"}
+
+    async def test_health_with_path_prefix(self, tmp_path: pathlib.Path):
+        async with _make_client(tmp_path, path_prefix="/myapp") as client:
+            response = await client.get("/myapp/health")
+            assert response.status_code == 200
+            assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.anyio
+class TestPathPrefix:
+    async def test_mcp_under_prefix(self, tmp_path: pathlib.Path):
+        """MCP endpoint should be reachable under the configured prefix."""
+        async with _make_client(tmp_path, path_prefix="/pg") as client:
+            msg = _make_jsonrpc("tools/list", {})
+            response = await client.post("/pg/mcp", json=msg, headers=MCP_HEADERS)
+            assert response.status_code == 200
+            results = _parse_sse_response(response.text)
+            assert len(results) >= 1
+            tools = results[0]["result"]["tools"]
+            assert any(t["name"] == "echo-test" for t in tools)
+
+    async def test_root_mcp_not_available_with_prefix(self, tmp_path: pathlib.Path):
+        """The root /mcp should not serve the MCP endpoint when a prefix is set."""
+        async with _make_client(tmp_path, path_prefix="/pg") as client:
+            msg = _make_jsonrpc("initialize", INITIALIZE_PARAMS)
+            response = await client.post("/mcp", json=msg, headers=MCP_HEADERS)
+            # Should get 404 or similar since /mcp is not mounted at root.
+            assert response.status_code in (404, 405)

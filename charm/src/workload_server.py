@@ -25,9 +25,11 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts import Prompt
 from mcp.server.fastmcp.resources import FunctionResource
 from mcp.types import TextContent
+from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
+from starlette.routing import Route
 
 logger = logging.getLogger(__name__)
 
@@ -384,6 +386,55 @@ def create_server(
     return mcp
 
 
+async def _health_handler(request: Request) -> JSONResponse:
+    """Lightweight health check endpoint."""
+    return JSONResponse({"status": "ok"})
+
+
+def build_app(
+    mcp: FastMCP,
+    *,
+    path_prefix: str = "",
+    auth_token: str | None = None,
+    rate_limit: int | None = None,
+) -> Starlette:
+    """Build the ASGI application with optional middleware and path prefix.
+
+    When a path prefix is set, the MCP app is mounted under that prefix and a
+    health endpoint is available at ``<prefix>/health``.  Without a prefix the
+    MCP app is served at the root with ``/health`` alongside it.
+    """
+    mcp_app = mcp.streamable_http_app()
+
+    prefix = path_prefix.strip("/")
+    health_path = f"/{prefix}/health" if prefix else "/health"
+
+    if prefix:
+        # Mount the MCP Starlette app under the prefix and add the health route
+        # to a parent application.
+        parent = Starlette(routes=[Route(health_path, _health_handler)])
+        parent.mount(f"/{prefix}", mcp_app)
+        app = parent
+    else:
+        mcp_app.routes.append(Route("/health", _health_handler))
+        app = mcp_app
+
+    if rate_limit:
+        app.add_middleware(
+            RateLimitMiddleware,  # ty: ignore[invalid-argument-type]
+            max_requests=rate_limit,
+        )
+        logger.info("Rate limiting enabled: %d requests/minute", rate_limit)
+    if auth_token:
+        app.add_middleware(
+            BearerAuthMiddleware,  # ty: ignore[invalid-argument-type]
+            token=auth_token,
+        )
+        logger.info("Bearer token authentication enabled")
+
+    return app
+
+
 def main() -> None:
     """Entry point for the MCP server."""
     parser = argparse.ArgumentParser(description="MCP Server for Juju charms")
@@ -426,6 +477,22 @@ def main() -> None:
         nargs="*",
         default=None,
         help="Allowed executable names for exec handlers (all allowed if not set)",
+    )
+
+    parser.add_argument(
+        "--path-prefix",
+        default="",
+        help="URL path prefix for the MCP endpoint (e.g. /postgresql)",
+    )
+    parser.add_argument(
+        "--tls-cert",
+        default=None,
+        help="Path to TLS certificate file for HTTPS",
+    )
+    parser.add_argument(
+        "--tls-key",
+        default=None,
+        help="Path to TLS private key file for HTTPS",
     )
 
     # OAuth 2.1 resource server options.
@@ -485,26 +552,25 @@ def main() -> None:
         oauth_required_scopes=args.oauth_required_scopes,
     )
 
-    needs_middleware = args.auth_token or args.rate_limit
-    if needs_middleware:
+    needs_uvicorn = args.auth_token or args.rate_limit or args.path_prefix or args.tls_cert
+    if needs_uvicorn:
         import uvicorn  # noqa: I001
 
-        app = mcp.streamable_http_app()
-        if args.rate_limit:
-            app.add_middleware(
-                RateLimitMiddleware,  # ty: ignore[invalid-argument-type]
-                max_requests=args.rate_limit,
-            )
-            logger.info("Rate limiting enabled: %d requests/minute", args.rate_limit)
-        if args.auth_token:
-            app.add_middleware(
-                BearerAuthMiddleware,  # ty: ignore[invalid-argument-type]
-                token=args.auth_token,
-            )
-            logger.info("Bearer token authentication enabled")
+        app = build_app(
+            mcp,
+            path_prefix=args.path_prefix,
+            auth_token=args.auth_token,
+            rate_limit=args.rate_limit,
+        )
+
+        ssl_kwargs: dict[str, Any] = {}
+        if args.tls_cert and args.tls_key:
+            ssl_kwargs["ssl_certfile"] = args.tls_cert
+            ssl_kwargs["ssl_keyfile"] = args.tls_key
+            logger.info("TLS enabled with cert=%s", args.tls_cert)
 
         logger.info("Starting MCP server on %s:%d", args.host, args.port)
-        uvicorn.run(app, host=args.host, port=args.port)
+        uvicorn.run(app, host=args.host, port=args.port, **ssl_kwargs)
     else:
         logger.info("Starting MCP server on %s:%d", args.host, args.port)
         mcp.run(transport="streamable-http")

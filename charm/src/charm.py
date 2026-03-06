@@ -31,6 +31,8 @@ class CharmConfig:
     auth_token: str = ""
     rate_limit: int = 0
     command_allowlist: str = ""
+    path_prefix: str = ""
+    external_hostname: str = ""
 
 
 class McpServerCharm(ops.CharmBase):
@@ -47,6 +49,15 @@ class McpServerCharm(ops.CharmBase):
         framework.observe(self.on.mcp_relation_broken, self._on_mcp_relation_broken)
         framework.observe(self.on.oauth_relation_changed, self._on_oauth_relation_changed)
         framework.observe(self.on.oauth_relation_broken, self._on_oauth_relation_broken)
+        framework.observe(
+            self.on.reverse_proxy_relation_joined, self._on_reverse_proxy_relation_joined
+        )
+        framework.observe(
+            self.on.certificates_relation_changed, self._on_certificates_relation_changed
+        )
+        framework.observe(
+            self.on.certificates_relation_broken, self._on_certificates_relation_broken
+        )
 
     def _get_config(self) -> CharmConfig:
         """Load and return the typed charm configuration."""
@@ -83,6 +94,10 @@ class McpServerCharm(ops.CharmBase):
             oauth_config["jwt_access_token"] = json.loads(data["jwt_access_token"])
         return oauth_config
 
+    def _has_tls(self) -> bool:
+        """Check whether TLS certificate files have been written."""
+        return mcp_server.TLS_CERT_PATH.exists() and mcp_server.TLS_KEY_PATH.exists()
+
     def _write_systemd_unit(self) -> None:
         """Write the systemd unit with current config and OAuth settings."""
         config = self._get_config()
@@ -93,6 +108,8 @@ class McpServerCharm(ops.CharmBase):
             rate_limit=config.rate_limit,
             command_allowlist=config.command_allowlist,
             oauth_config=self._get_oauth_config(),
+            path_prefix=config.path_prefix,
+            tls=self._has_tls(),
         )
 
     def _on_install(self, event: ops.InstallEvent) -> None:
@@ -154,6 +171,58 @@ class McpServerCharm(ops.CharmBase):
 
     def _on_oauth_relation_broken(self, event: ops.RelationBrokenEvent) -> None:
         """Handle OAuth relation removal — fall back to simple auth or no auth."""
+        self._write_systemd_unit()
+        if mcp_server.is_running():
+            mcp_server.restart()
+
+    def _on_reverse_proxy_relation_joined(self, event: ops.RelationJoinedEvent) -> None:
+        """Provide backend details to the reverse proxy."""
+        config = self._get_config()
+        binding = self.model.get_binding(event.relation)
+        address = str(binding.network.bind_address) if binding else "127.0.0.1"
+        event.relation.data[self.unit]["port"] = str(config.port)
+        event.relation.data[self.unit]["address"] = address
+        scheme = "https" if self._has_tls() else "http"
+        event.relation.data[self.unit]["scheme"] = scheme
+        if config.path_prefix:
+            event.relation.data[self.unit]["path-prefix"] = config.path_prefix
+
+    def _on_certificates_relation_changed(self, event: ops.RelationChangedEvent) -> None:
+        """Handle TLS certificate data arriving or changing."""
+        if not event.relation.app:
+            return
+        data = event.relation.data[event.relation.app]
+        cert = data.get("certificate")
+        ca_chain = data.get("ca", "")
+        if not cert:
+            return
+
+        # The private key is managed via Juju secrets by the TLS library, but
+        # for direct integration we check the unit data bag as well.
+        key = ""
+        unit_data = event.relation.data.get(self.unit, {})
+        secret_id = unit_data.get("private-key-secret-id")
+        if secret_id:
+            secret = self.model.get_secret(id=secret_id)
+            key = secret.get_content().get("private-key", "")
+        if not key:
+            key = unit_data.get("private-key", "")
+
+        if not key:
+            logger.info("Certificate available but private key not yet accessible")
+            return
+
+        mcp_server.write_tls_files(cert=cert, key=key, ca_chain=ca_chain)
+        self._write_systemd_unit()
+        if mcp_server.is_running():
+            mcp_server.restart()
+
+    def _on_certificates_relation_broken(self, event: ops.RelationBrokenEvent) -> None:
+        """Handle TLS certificates relation removal — disable TLS."""
+        # Remove TLS files so the server falls back to plain HTTP.
+        for path in (mcp_server.TLS_CERT_PATH, mcp_server.TLS_KEY_PATH, mcp_server.TLS_CA_PATH):
+            if path.exists():
+                path.unlink()
         self._write_systemd_unit()
         if mcp_server.is_running():
             mcp_server.restart()

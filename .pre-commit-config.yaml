@@ -5,8 +5,10 @@ repos:
       - id: ruff
         args: [--fix]
         files: ^(charm|workload|charmlib)/
+        exclude: ^charm/lib/
       - id: ruff-format
         files: ^(charm|workload|charmlib)/
+        exclude: ^charm/lib/
 
   - repo: local
     hooks:
@@ -57,6 +59,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
+        exclude: ^charm/lib/
         additional_dependencies:
           - tomli
 

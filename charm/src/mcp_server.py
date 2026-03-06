@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 
 CONFIG_DIR = pathlib.Path("/etc/mcp-server")
 CONFIG_PATH = CONFIG_DIR / "config.json"
+TLS_DIR = CONFIG_DIR / "tls"
+TLS_CERT_PATH = TLS_DIR / "cert.pem"
+TLS_KEY_PATH = TLS_DIR / "key.pem"
+TLS_CA_PATH = TLS_DIR / "ca.pem"
 INSTALL_DIR = pathlib.Path("/opt/mcp-server")
 VENV_DIR = INSTALL_DIR / "venv"
 SERVICE_NAME = "mcp-server"
@@ -115,6 +119,18 @@ def _oauth_extra_args(oauth_config: dict[str, Any]) -> str:
     return args
 
 
+def write_tls_files(cert: str, key: str, ca_chain: str = "") -> None:
+    """Write TLS certificate and key files to disk."""
+    TLS_DIR.mkdir(parents=True, exist_ok=True)
+    TLS_CERT_PATH.write_text(cert)
+    TLS_KEY_PATH.write_text(key)
+    # Restrict key file permissions.
+    TLS_KEY_PATH.chmod(0o600)
+    if ca_chain:
+        TLS_CA_PATH.write_text(ca_chain)
+    logger.info("Wrote TLS files to %s", TLS_DIR)
+
+
 def write_systemd_unit(
     port: int = 8081,
     log_level: str = "info",
@@ -122,6 +138,8 @@ def write_systemd_unit(
     rate_limit: int = 0,
     command_allowlist: str = "",
     oauth_config: dict[str, Any] | None = None,
+    path_prefix: str = "",
+    tls: bool = False,
 ) -> None:
     """Write the systemd unit file for the MCP server."""
     extra_args = ""
@@ -132,6 +150,11 @@ def write_systemd_unit(
     if command_allowlist.strip():
         commands = command_allowlist.strip().split()
         extra_args += " \\\n    --command-allowlist " + " ".join(commands)
+    if path_prefix:
+        extra_args += f" \\\n    --path-prefix {path_prefix}"
+    if tls:
+        extra_args += f" \\\n    --tls-cert {TLS_CERT_PATH}"
+        extra_args += f" \\\n    --tls-key {TLS_KEY_PATH}"
     if oauth_config:
         extra_args += _oauth_extra_args(oauth_config)
 

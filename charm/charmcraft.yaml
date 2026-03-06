@@ -38,6 +38,12 @@ requires:
   oauth:
     interface: oauth
     limit: 1
+  reverse-proxy:
+    interface: haproxy-route
+    limit: 1
+  certificates:
+    interface: tls-certificates
+    limit: 1
 
 config:
   options:
@@ -69,5 +75,20 @@ config:
       description: |
         Space-separated list of executable names that exec handlers are
         allowed to run. When empty, all commands are permitted.
+      default: ""
+      type: string
+    path-prefix:
+      description: |
+        URL path prefix for the MCP server endpoint. Used when routing
+        through a reverse proxy. For example, "/postgresql" would make
+        the MCP endpoint available at "/postgresql/mcp".
+        Leave empty for no prefix (root path).
+      default: ""
+      type: string
+    external-hostname:
+      description: |
+        Hostname to use when requesting TLS certificates. This should
+        be the FQDN that clients use to reach the MCP server. Required
+        when using the certificates relation.
       default: ""
       type: string

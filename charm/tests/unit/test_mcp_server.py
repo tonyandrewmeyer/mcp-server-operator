@@ -93,6 +93,67 @@ class TestWriteSystemdUnit:
         assert "--oauth-issuer-url https://idp.example.com" in content
         assert "--oauth-resource-server-url http://localhost:8081" in content
 
+    @pytest.mark.usefixtures("_patch_subprocess")
+    def test_write_systemd_unit_with_path_prefix(self, monkeypatch, tmp_path):
+        unit_path = tmp_path / "mcp-server.service"
+        monkeypatch.setattr(mcp_server, "SYSTEMD_UNIT_PATH", unit_path)
+
+        mcp_server.write_systemd_unit(path_prefix="/myapp")
+
+        content = unit_path.read_text()
+        assert "--path-prefix /myapp" in content
+
+    @pytest.mark.usefixtures("_patch_subprocess")
+    def test_write_systemd_unit_with_tls(self, monkeypatch, tmp_path):
+        unit_path = tmp_path / "mcp-server.service"
+        monkeypatch.setattr(mcp_server, "SYSTEMD_UNIT_PATH", unit_path)
+
+        mcp_server.write_systemd_unit(tls=True)
+
+        content = unit_path.read_text()
+        assert "--tls-cert" in content
+        assert "--tls-key" in content
+
+
+class TestWriteTlsFiles:
+    def test_write_tls_files(self, monkeypatch, tmp_path):
+        tls_dir = tmp_path / "tls"
+        cert_path = tls_dir / "cert.pem"
+        key_path = tls_dir / "key.pem"
+        ca_path = tls_dir / "ca.pem"
+        monkeypatch.setattr(mcp_server, "TLS_DIR", tls_dir)
+        monkeypatch.setattr(mcp_server, "TLS_CERT_PATH", cert_path)
+        monkeypatch.setattr(mcp_server, "TLS_KEY_PATH", key_path)
+        monkeypatch.setattr(mcp_server, "TLS_CA_PATH", ca_path)
+
+        mcp_server.write_tls_files(
+            cert="-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----",
+            key="-----BEGIN PRIVATE KEY-----\nsecret\n-----END PRIVATE KEY-----",
+            ca_chain="-----BEGIN CERTIFICATE-----\nca\n-----END CERTIFICATE-----",
+        )
+
+        assert cert_path.read_text().startswith("-----BEGIN CERTIFICATE-----")
+        assert key_path.read_text().startswith("-----BEGIN PRIVATE KEY-----")
+        assert ca_path.read_text().startswith("-----BEGIN CERTIFICATE-----")
+        # Key file should have restricted permissions.
+        assert key_path.stat().st_mode & 0o777 == 0o600
+
+    def test_write_tls_files_no_ca(self, monkeypatch, tmp_path):
+        tls_dir = tmp_path / "tls"
+        cert_path = tls_dir / "cert.pem"
+        key_path = tls_dir / "key.pem"
+        ca_path = tls_dir / "ca.pem"
+        monkeypatch.setattr(mcp_server, "TLS_DIR", tls_dir)
+        monkeypatch.setattr(mcp_server, "TLS_CERT_PATH", cert_path)
+        monkeypatch.setattr(mcp_server, "TLS_KEY_PATH", key_path)
+        monkeypatch.setattr(mcp_server, "TLS_CA_PATH", ca_path)
+
+        mcp_server.write_tls_files(cert="cert-data", key="key-data")
+
+        assert cert_path.exists()
+        assert key_path.exists()
+        assert not ca_path.exists()
+
 
 class TestWriteConfig:
     def test_write_config(self, monkeypatch, tmp_path):

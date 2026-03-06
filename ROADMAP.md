@@ -61,10 +61,11 @@ mcp.set_tools([...])
 
 ## Phase 5: Ingress + TLS
 
-- [ ] Traefik integration for external access
-- [ ] TLS termination via Traefik
-- [ ] Direct TLS support (certificate relation or config)
-- [ ] Configurable path prefix per principal
+- [x] HAProxy integration for external access (reverse-proxy relation with haproxy-route interface)
+- [x] TLS termination via reverse proxy (HAProxy handles TLS; charm provides backend details)
+- [x] Direct TLS support (certificates relation with tls-certificates interface)
+- [x] Configurable path prefix per principal (`path-prefix` config option)
+- [x] Health check endpoint (`/health` or `/<prefix>/health`)
 
 ## Phase 6: Observability (COS integration)
 

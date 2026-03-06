@@ -10,6 +10,14 @@ from ops import testing
 
 from charm import McpServerCharm
 
+
+class _NonExistentPath:
+    """A stand-in for a pathlib.Path that always reports as non-existent."""
+
+    def exists(self):
+        return False
+
+
 MCP_DEFINITIONS = {
     "tools": [
         {
@@ -387,3 +395,107 @@ def test_mcp_relation_changed_starts_if_not_running(monkeypatch):
     assert state_out.unit_status == testing.ActiveStatus()
     assert "start" in start_calls
     assert restart_calls == []
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_certificates_relation_broken_restarts_if_running(monkeypatch, tmp_path):
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+
+    # Create fake TLS files that should be removed on relation-broken.
+    tls_dir = tmp_path / "tls"
+    tls_dir.mkdir()
+    cert = tls_dir / "cert.pem"
+    key = tls_dir / "key.pem"
+    ca = tls_dir / "ca.pem"
+    cert.write_text("cert")
+    key.write_text("key")
+    ca.write_text("ca")
+    monkeypatch.setattr("charm.mcp_server.TLS_CERT_PATH", cert)
+    monkeypatch.setattr("charm.mcp_server.TLS_KEY_PATH", key)
+    monkeypatch.setattr("charm.mcp_server.TLS_CA_PATH", ca)
+
+    ctx = testing.Context(McpServerCharm)
+    certs_relation = testing.Relation(endpoint="certificates")
+    ctx.run(
+        ctx.on.relation_broken(certs_relation),
+        testing.State(relations=[certs_relation]),
+    )
+    assert "restart" in restart_calls
+    assert not cert.exists()
+    assert not key.exists()
+    assert not ca.exists()
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_certificates_relation_broken_no_restart_if_not_running(monkeypatch):
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_not_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+
+    ctx = testing.Context(McpServerCharm)
+    certs_relation = testing.Relation(endpoint="certificates")
+    ctx.run(
+        ctx.on.relation_broken(certs_relation),
+        testing.State(relations=[certs_relation]),
+    )
+    assert restart_calls == []
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_config_passes_path_prefix(monkeypatch):
+    """path-prefix config is passed through to write_systemd_unit."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    monkeypatch.setattr("charm.mcp_server.TLS_CERT_PATH", _NonExistentPath())
+    monkeypatch.setattr("charm.mcp_server.TLS_KEY_PATH", _NonExistentPath())
+    ctx = testing.Context(McpServerCharm)
+    ctx.run(
+        ctx.on.config_changed(),
+        testing.State(config={"path-prefix": "/myapp"}),
+    )
+    assert systemd_calls[0]["path_prefix"] == "/myapp"
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_tls_flag_set_when_files_exist(monkeypatch, tmp_path):
+    """TLS flag is True when cert and key files exist."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+
+    cert = tmp_path / "cert.pem"
+    key = tmp_path / "key.pem"
+    cert.write_text("cert")
+    key.write_text("key")
+    monkeypatch.setattr("charm.mcp_server.TLS_CERT_PATH", cert)
+    monkeypatch.setattr("charm.mcp_server.TLS_KEY_PATH", key)
+
+    ctx = testing.Context(McpServerCharm)
+    ctx.run(ctx.on.config_changed(), testing.State())
+    assert systemd_calls[0]["tls"] is True
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_tls_flag_false_when_no_files(monkeypatch):
+    """TLS flag is False when cert and key files do not exist."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    monkeypatch.setattr("charm.mcp_server.TLS_CERT_PATH", _NonExistentPath())
+    monkeypatch.setattr("charm.mcp_server.TLS_KEY_PATH", _NonExistentPath())
+
+    ctx = testing.Context(McpServerCharm)
+    ctx.run(ctx.on.config_changed(), testing.State())
+    assert systemd_calls[0]["tls"] is False
