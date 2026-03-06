@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
-from pathlib import Path
+import pathlib
 
 import ops
 
@@ -16,8 +17,26 @@ import mcp_server
 
 logger = logging.getLogger(__name__)
 
-# The workload server source is bundled alongside the charm code in src/.
-WORKLOAD_SERVER_SRC = Path(__file__).parent / "workload_server.py"
+WORKLOAD_SERVER_SRC = pathlib.Path(__file__).parent / "workload_server.py"
+
+
+@dataclasses.dataclass
+class CharmConfig:
+    """Typed charm configuration."""
+
+    port: int = 8081
+    log_level: str = "info"
+
+
+@dataclasses.dataclass
+class McpRelationData:
+    """Data provided by the principal charm on the mcp relation.
+
+    The mcp_definitions field is automatically deserialised from JSON by
+    ``relation.load()``, so it arrives as a dict rather than a raw string.
+    """
+
+    mcp_definitions: dict | str = dataclasses.field(default_factory=dict)
 
 
 class McpServerCharm(ops.CharmBase):
@@ -32,13 +51,16 @@ class McpServerCharm(ops.CharmBase):
         framework.observe(self.on.mcp_relation_changed, self._on_mcp_relation_changed)
         framework.observe(self.on.mcp_relation_broken, self._on_mcp_relation_broken)
 
+    def _get_config(self) -> CharmConfig:
+        """Load and return the typed charm configuration."""
+        return self.load_config(CharmConfig, errors="blocked")
+
     def _on_install(self, event: ops.InstallEvent) -> None:
         """Install the MCP server workload."""
         self.unit.status = ops.MaintenanceStatus("installing MCP server")
         mcp_server.install(WORKLOAD_SERVER_SRC)
-        port = int(self.config.get("port", 8081))
-        log_level = str(self.config.get("log-level", "info"))
-        mcp_server.write_systemd_unit(port=port, log_level=log_level)
+        config = self._get_config()
+        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
 
     def _on_start(self, event: ops.StartEvent) -> None:
         """Start the MCP server."""
@@ -58,9 +80,8 @@ class McpServerCharm(ops.CharmBase):
 
     def _on_config_changed(self, event: ops.ConfigChangedEvent) -> None:
         """Handle config changes (port, log-level)."""
-        port = int(self.config.get("port", 8081))
-        log_level = str(self.config.get("log-level", "info"))
-        mcp_server.write_systemd_unit(port=port, log_level=log_level)
+        config = self._get_config()
+        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
         if mcp_server.is_running():
             mcp_server.restart()
 
@@ -70,9 +91,8 @@ class McpServerCharm(ops.CharmBase):
         definitions = self._collect_mcp_definitions()
         mcp_server.write_config(definitions)
 
-        port = int(self.config.get("port", 8081))
-        log_level = str(self.config.get("log-level", "info"))
-        mcp_server.write_systemd_unit(port=port, log_level=log_level)
+        config = self._get_config()
+        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
 
         if mcp_server.is_running():
             mcp_server.restart()
@@ -86,7 +106,6 @@ class McpServerCharm(ops.CharmBase):
 
     def _on_mcp_relation_broken(self, event: ops.RelationBrokenEvent) -> None:
         """Handle the mcp relation being removed."""
-        # Write empty config and stop the server.
         mcp_server.write_config({"tools": [], "prompts": [], "resources": []})
         mcp_server.stop()
         self.unit.status = ops.BlockedStatus("no mcp relation")
@@ -95,7 +114,10 @@ class McpServerCharm(ops.CharmBase):
         """Check if any mcp relation has provided definitions."""
         for relation in self.model.relations.get("mcp", []):
             remote_app = relation.app
-            if remote_app and relation.data.get(remote_app, {}).get("mcp_definitions"):
+            if not remote_app:
+                continue
+            data = relation.load(McpRelationData, remote_app)
+            if data.mcp_definitions:
                 return True
         return False
 
@@ -109,18 +131,24 @@ class McpServerCharm(ops.CharmBase):
             remote_app = relation.app
             if not remote_app:
                 continue
-            raw = relation.data.get(remote_app, {}).get("mcp_definitions", "")
-            if not raw:
+            data = relation.load(McpRelationData, remote_app)
+            if not data.mcp_definitions:
                 continue
-            try:
-                definitions = json.loads(raw)
-            except json.JSONDecodeError:
-                logger.warning(
-                    "Invalid JSON in mcp_definitions from %s (relation %d)",
-                    remote_app.name,
-                    relation.id,
-                )
-                continue
+            # relation.load() deserialises JSON values automatically, so
+            # mcp_definitions is normally a dict.  Handle a raw string as
+            # a fallback for forward-compatibility.
+            if isinstance(data.mcp_definitions, str):
+                try:
+                    definitions = json.loads(data.mcp_definitions)
+                except json.JSONDecodeError:
+                    logger.warning(
+                        "Invalid JSON in mcp_definitions from %s (relation %d)",
+                        remote_app.name,
+                        relation.id,
+                    )
+                    continue
+            else:
+                definitions = data.mcp_definitions
 
             all_tools.extend(definitions.get("tools", []))
             all_prompts.extend(definitions.get("prompts", []))

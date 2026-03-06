@@ -12,18 +12,18 @@ from __future__ import annotations
 
 import json
 import logging
+import pathlib
 import subprocess
-from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-CONFIG_DIR = Path("/etc/mcp-server")
+CONFIG_DIR = pathlib.Path("/etc/mcp-server")
 CONFIG_PATH = CONFIG_DIR / "config.json"
-INSTALL_DIR = Path("/opt/mcp-server")
+INSTALL_DIR = pathlib.Path("/opt/mcp-server")
 VENV_DIR = INSTALL_DIR / "venv"
 SERVICE_NAME = "mcp-server"
-SYSTEMD_UNIT_PATH = Path(f"/etc/systemd/system/{SERVICE_NAME}.service")
+SYSTEMD_UNIT_PATH = pathlib.Path(f"/etc/systemd/system/{SERVICE_NAME}.service")
 
 SYSTEMD_UNIT_TEMPLATE = """\
 [Unit]
@@ -47,39 +47,33 @@ WantedBy=multi-user.target
 """
 
 
-def install(server_src: Path) -> None:
+def install(server_src: pathlib.Path) -> None:
     """Install the MCP server workload.
 
     Creates a virtualenv, installs dependencies, and copies the server source.
-
-    Args:
-        server_src: Path to the server.py source file to install.
     """
     logger.info("Installing MCP server workload")
 
     INSTALL_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Ensure python3-venv is available.
+    # The base Ubuntu image does not include python3-venv.
     subprocess.run(
         ["/usr/bin/apt-get", "install", "-y", "python3-venv"],
         check=True,
     )
 
-    # Create virtualenv.
     subprocess.run(
         ["/usr/bin/python3", "-m", "venv", str(VENV_DIR)],
         check=True,
     )
 
-    # Install dependencies into the venv.
     pip = str(VENV_DIR / "bin" / "pip")
     subprocess.run(
         [pip, "install", "mcp[cli]", "httpx"],
         check=True,
     )
 
-    # Copy server source.
     src_dest = INSTALL_DIR / "src"
     src_dest.mkdir(parents=True, exist_ok=True)
     if server_src.exists():

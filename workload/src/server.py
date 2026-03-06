@@ -14,9 +14,9 @@ import argparse
 import inspect
 import json
 import logging
+import pathlib
 import re
 import subprocess
-from pathlib import Path
 from typing import Any
 
 import httpx
@@ -100,7 +100,7 @@ async def execute_http_handler(handler: dict[str, Any], arguments: dict[str, Any
         return response.text
 
 
-def load_config(config_path: Path) -> dict[str, Any]:
+def load_config(config_path: pathlib.Path) -> dict[str, Any]:
     """Load and return the MCP definitions config file."""
     if not config_path.exists():
         logger.warning("Config file %s does not exist, using empty config", config_path)
@@ -222,7 +222,7 @@ def register_resource(mcp: FastMCP, resource_def: dict[str, Any]) -> None:
 
 
 def create_server(
-    config_path: Path,
+    config_path: pathlib.Path,
     host: str = "0.0.0.0",  # noqa: S104
     port: int = 8081,
 ) -> FastMCP:
@@ -258,8 +258,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="MCP Server for Juju charms")
     parser.add_argument(
         "--config",
-        type=Path,
-        default=Path("/etc/mcp-server/config.json"),
+        type=pathlib.Path,
+        default=pathlib.Path("/etc/mcp-server/config.json"),
         help="Path to the MCP definitions config file",
     )
     parser.add_argument(

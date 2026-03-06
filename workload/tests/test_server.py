@@ -2,9 +2,8 @@
 # See LICENSE file for licensing details.
 
 import json
+import pathlib
 import tempfile
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -78,19 +77,19 @@ class TestLoadConfig:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config, f)
             f.flush()
-            result = load_config(Path(f.name))
+            result = load_config(pathlib.Path(f.name))
         assert len(result["tools"]) == 1
         assert result["tools"][0]["name"] == "test"
 
     def test_load_missing_file(self):
-        result = load_config(Path("/nonexistent/config.json"))
+        result = load_config(pathlib.Path("/nonexistent/config.json"))
         assert result == {"tools": [], "prompts": [], "resources": []}
 
     def test_defaults_missing_keys(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"tools": []}, f)
             f.flush()
-            result = load_config(Path(f.name))
+            result = load_config(pathlib.Path(f.name))
         assert result["prompts"] == []
         assert result["resources"] == []
 
@@ -100,7 +99,7 @@ class TestCreateServer:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"tools": [], "prompts": [], "resources": []}, f)
             f.flush()
-            server = create_server(Path(f.name))
+            server = create_server(pathlib.Path(f.name))
         assert server is not None
 
     def test_creates_server_with_tools(self):
@@ -119,5 +118,5 @@ class TestCreateServer:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config, f)
             f.flush()
-            server = create_server(Path(f.name))
+            server = create_server(pathlib.Path(f.name))
         assert server is not None

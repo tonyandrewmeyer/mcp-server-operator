@@ -28,6 +28,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CLAUDE.md project guide with code style conventions
 - This changelog
 
+### Changed
+- Charm uses `self.load_config(CharmConfig)` and `relation.load(McpRelationData)` instead of raw relation data access
+- Import style: `import pathlib` (modules) rather than `from pathlib import Path` (objects)
+- UK English throughout all text
+- Comments follow full-sentence style, used sparingly to explain why
+
 ### Fixed
 - Workload server bundled as `charm/src/workload_server.py` (included in packed charm)
 - Install hook installs `python3-venv` before creating virtualenv

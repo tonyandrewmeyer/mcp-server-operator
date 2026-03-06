@@ -27,10 +27,10 @@
 
 ## Phase 2: Code quality
 
-- [ ] Use `self.load_config` and `relation.save`/`relation.load` instead of raw relation data values
-- [ ] Fix import style: `import pathlib` not `from pathlib import Path` (modules, not objects)
-- [ ] UK English throughout
-- [ ] Comments: full sentences, sparingly, explain why not what
+- [x] Use `self.load_config` and `relation.save`/`relation.load` instead of raw relation data values
+- [x] Fix import style: `import pathlib` not `from pathlib import Path` (modules, not objects)
+- [x] UK English throughout
+- [x] Comments: full sentences, sparingly, explain why not what
 
 ## Phase 3: Charm library (`charmlibs-mcp`)
 
