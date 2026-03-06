@@ -31,6 +31,10 @@ parts:
     build-snaps:
       - astral-uv
 
+provides:
+  cos-agent:
+    interface: cos_agent
+
 requires:
   mcp:
     interface: mcp

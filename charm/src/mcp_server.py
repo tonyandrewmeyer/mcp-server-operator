@@ -27,6 +27,7 @@ TLS_CA_PATH = TLS_DIR / "ca.pem"
 INSTALL_DIR = pathlib.Path("/opt/mcp-server")
 VENV_DIR = INSTALL_DIR / "venv"
 SERVICE_NAME = "mcp-server"
+METRICS_PORT = 8081
 SYSTEMD_UNIT_PATH = pathlib.Path(f"/etc/systemd/system/{SERVICE_NAME}.service")
 
 SYSTEMD_UNIT_TEMPLATE = """\
@@ -74,7 +75,7 @@ def install(server_src: pathlib.Path) -> None:
 
     pip = str(VENV_DIR / "bin" / "pip")
     subprocess.run(
-        [pip, "install", "mcp[cli]", "httpx", "PyJWT[crypto]"],
+        [pip, "install", "mcp[cli]", "httpx", "PyJWT[crypto]", "prometheus-client"],
         check=True,
     )
 

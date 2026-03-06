@@ -1,0 +1,31 @@
+groups:
+  - name: mcp-server
+    rules:
+      - alert: McpServerDown
+        expr: up{juju_charm="mcp-server"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: MCP server {{ $labels.juju_unit }} is down
+      - alert: McpServerHighErrorRate
+        expr: >
+          sum(rate(mcp_requests_total{juju_charm="mcp-server",status=~"5.."}[5m]))
+          /
+          sum(rate(mcp_requests_total{juju_charm="mcp-server"}[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP server error rate above 5%
+      - alert: McpServerHighLatency
+        expr: >
+          histogram_quantile(0.95,
+            rate(mcp_request_duration_seconds_bucket{juju_charm="mcp-server"}[5m])
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP server p95 latency above 5 seconds

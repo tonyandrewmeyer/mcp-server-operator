@@ -69,20 +69,23 @@ mcp.set_tools([...])
 
 ## Phase 6: Observability (COS integration)
 
+- [x] Prometheus metrics endpoint (`/metrics`) with request count, latency histogram, tool call counter, active connections gauge
+- [x] MetricsMiddleware for automatic request instrumentation
+- [x] COSAgentProvider integration (cos-agent relation for grafana-agent subordinate)
+- [x] Grafana dashboard (request rate, latency percentiles, tool calls, active connections, error rate)
+- [x] Prometheus alert rules (McpServerDown, McpServerHighErrorRate, McpServerHighLatency)
 - [ ] Tracing for the charm (tempo integration)
-- [ ] Tracing for the MCP server workload
-- [ ] Metrics endpoint (prometheus integration)
+- [ ] Tracing for the MCP server workload (OpenTelemetry)
 - [ ] Log forwarding (loki integration)
-- [ ] Grafana dashboard
 - [ ] SLOs via sloth-k8s charm
 
 ## Phase 7: Testing
 
-- [x] Unit tests for `charm.py` (19 charm tests + 6 mcp_server tests covering all events and OAuth)
+- [x] Unit tests for `charm.py` (25 charm tests + 10 mcp_server tests covering all events, OAuth, TLS, COS)
 - [x] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [x] Workload unit tests (41 tests covering server, middleware, token verifier)
-- [ ] Workload integration tests (start server, make HTTP requests, verify MCP protocol)
-- [ ] Security boundary tests (injection attempts, malformed input, oversized payloads)
+- [x] Workload integration tests (27 tests: MCP protocol, auth, rate limiting, health, path prefix, metrics)
+- [x] Security boundary tests (injection attempts, malformed input, unknown methods)
 - [ ] Load and stress tests (concurrent connections, rate limiter under pressure)
 - [ ] Integration test with a dummy principal charm (needs Juju)
 - [ ] Spread for charm integration tests

@@ -10,6 +10,7 @@ description = "MCP server workload for the mcp-server Juju charm"
 dependencies = [
     "mcp[cli]",
     "PyJWT[crypto]",
+    "prometheus-client",
 ]
 
 [dependency-groups]

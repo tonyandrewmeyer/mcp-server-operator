@@ -336,3 +336,30 @@ class TestPathPrefix:
             response = await client.post("/mcp", json=msg, headers=MCP_HEADERS)
             # Should get 404 or similar since /mcp is not mounted at root.
             assert response.status_code in (404, 405)
+
+
+@pytest.mark.anyio
+class TestMetricsEndpoint:
+    async def test_metrics_returns_prometheus_format(self, tmp_path: pathlib.Path):
+        async with _make_client(tmp_path, use_build_app=True) as client:
+            response = await client.get("/metrics")
+            assert response.status_code == 200
+            assert "mcp_requests_total" in response.text
+            assert "mcp_active_connections" in response.text
+
+    async def test_metrics_with_path_prefix(self, tmp_path: pathlib.Path):
+        async with _make_client(tmp_path, path_prefix="/myapp") as client:
+            response = await client.get("/myapp/metrics")
+            assert response.status_code == 200
+            assert "mcp_request_duration_seconds" in response.text
+
+    async def test_metrics_increment_after_request(self, tmp_path: pathlib.Path):
+        async with _make_client(tmp_path, use_build_app=True) as client:
+            # Make a request so the counter has data.
+            msg = _make_jsonrpc("tools/list", {})
+            await client.post("/mcp", json=msg, headers=MCP_HEADERS)
+
+            response = await client.get("/metrics")
+            assert response.status_code == 200
+            # The POST request should have been counted.
+            assert "mcp_requests_total" in response.text

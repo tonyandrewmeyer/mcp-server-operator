@@ -14,6 +14,7 @@ from typing import Any
 
 import ops
 from charmlibs.interfaces.mcp import McpRequirer
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 
 import mcp_server
 
@@ -41,6 +42,15 @@ class McpServerCharm(ops.CharmBase):
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
         self.mcp = McpRequirer(self, "mcp")
+        self._cos_agent = COSAgentProvider(
+            self,
+            relation_name="cos-agent",
+            metrics_endpoints=[
+                {"path": "/metrics", "port": mcp_server.METRICS_PORT},
+            ],
+            dashboard_dirs=["./src/grafana_dashboards"],
+            metrics_rules_dir="./src/prometheus_alert_rules",
+        )
         framework.observe(self.on.install, self._on_install)
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.stop, self._on_stop)

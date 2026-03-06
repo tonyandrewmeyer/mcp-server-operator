@@ -21,6 +21,7 @@ import time
 from typing import Any
 
 import httpx
+import prometheus_client
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts import Prompt
 from mcp.server.fastmcp.resources import FunctionResource
@@ -35,6 +36,27 @@ logger = logging.getLogger(__name__)
 
 # Pattern for {{placeholder}} template substitution.
 TEMPLATE_PATTERN = re.compile(r"\{\{(\w+)\}\}")
+
+# Prometheus metrics.
+REQUEST_COUNT = prometheus_client.Counter(
+    "mcp_requests_total",
+    "Total MCP requests",
+    ["method", "status"],
+)
+REQUEST_LATENCY = prometheus_client.Histogram(
+    "mcp_request_duration_seconds",
+    "MCP request latency in seconds",
+    ["method"],
+)
+TOOL_CALLS = prometheus_client.Counter(
+    "mcp_tool_calls_total",
+    "Total MCP tool invocations",
+    ["tool_name", "status"],
+)
+ACTIVE_CONNECTIONS = prometheus_client.Gauge(
+    "mcp_active_connections",
+    "Currently active MCP connections",
+)
 
 
 def validate_arguments(arguments: dict[str, Any], input_schema: dict[str, Any]) -> list[str]:
@@ -87,6 +109,26 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
         if not auth.startswith("Bearer ") or auth[7:] != self.token:
             return Response("Unauthorised", status_code=401)
         return await call_next(request)
+
+
+class MetricsMiddleware(BaseHTTPMiddleware):
+    """Middleware that records Prometheus metrics for each request."""
+
+    async def dispatch(self, request: Request, call_next: Any) -> Response:
+        """Record request count, latency, and active connections."""
+        method = request.method
+        ACTIVE_CONNECTIONS.inc()
+        start = time.monotonic()
+        try:
+            response = await call_next(request)
+            REQUEST_COUNT.labels(method=method, status=response.status_code).inc()
+            return response
+        except Exception:
+            REQUEST_COUNT.labels(method=method, status=500).inc()
+            raise
+        finally:
+            REQUEST_LATENCY.labels(method=method).observe(time.monotonic() - start)
+            ACTIVE_CONNECTIONS.dec()
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -199,6 +241,7 @@ def _build_tool_handler(
     properties: dict[str, Any],
     required: set[str],
     command_allowlist: list[str] | None = None,
+    tool_name: str = "",
 ) -> Any:
     """Build a tool handler function with an explicit signature matching the input schema.
 
@@ -210,6 +253,7 @@ def _build_tool_handler(
         # Validate arguments against declared schema before execution.
         errors = validate_arguments(kwargs, input_schema)
         if errors:
+            TOOL_CALLS.labels(tool_name=tool_name, status="error").inc()
             return [TextContent(type="text", text=f"Validation error: {'; '.join(errors)}")]
 
         handler_type = handler["type"]
@@ -218,6 +262,7 @@ def _build_tool_handler(
             if command_allowlist is not None:
                 executable = handler["command"][0]
                 if executable not in command_allowlist:
+                    TOOL_CALLS.labels(tool_name=tool_name, status="error").inc()
                     return [
                         TextContent(
                             type="text",
@@ -229,6 +274,7 @@ def _build_tool_handler(
             output = await execute_http_handler(handler, kwargs)
         else:
             output = f"Unknown handler type: {handler_type}"
+        TOOL_CALLS.labels(tool_name=tool_name, status="success").inc()
         return [TextContent(type="text", text=output)]
 
     # Build a proper signature so FastMCP sees named parameters.
@@ -263,7 +309,7 @@ def register_tool(
     required = set(input_schema.get("required", []))
 
     tool_handler = _build_tool_handler(
-        handler, input_schema, properties, required, command_allowlist
+        handler, input_schema, properties, required, command_allowlist, tool_name=name
     )
 
     mcp.add_tool(
@@ -391,6 +437,12 @@ async def _health_handler(request: Request) -> JSONResponse:
     return JSONResponse({"status": "ok"})
 
 
+async def _metrics_handler(request: Request) -> Response:
+    """Prometheus metrics endpoint."""
+    body = prometheus_client.generate_latest()
+    return Response(content=body, media_type=prometheus_client.CONTENT_TYPE_LATEST)
+
+
 def build_app(
     mcp: FastMCP,
     *,
@@ -408,17 +460,23 @@ def build_app(
 
     prefix = path_prefix.strip("/")
     health_path = f"/{prefix}/health" if prefix else "/health"
+    metrics_path = f"/{prefix}/metrics" if prefix else "/metrics"
 
     if prefix:
-        # Mount the MCP Starlette app under the prefix and add the health route
+        # Mount the MCP Starlette app under the prefix and add utility routes
         # to a parent application.
-        parent = Starlette(routes=[Route(health_path, _health_handler)])
+        parent = Starlette(
+            routes=[Route(health_path, _health_handler), Route(metrics_path, _metrics_handler)]
+        )
         parent.mount(f"/{prefix}", mcp_app)
         app = parent
     else:
         mcp_app.routes.append(Route("/health", _health_handler))
+        mcp_app.routes.append(Route("/metrics", _metrics_handler))
         app = mcp_app
 
+    # Metrics middleware is always active to record request telemetry.
+    app.add_middleware(MetricsMiddleware)  # ty: ignore[invalid-argument-type]
     if rate_limit:
         app.add_middleware(
             RateLimitMiddleware,  # ty: ignore[invalid-argument-type]

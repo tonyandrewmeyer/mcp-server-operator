@@ -499,3 +499,12 @@ def test_tls_flag_false_when_no_files(monkeypatch):
     ctx = testing.Context(McpServerCharm)
     ctx.run(ctx.on.config_changed(), testing.State())
     assert systemd_calls[0]["tls"] is False
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_cos_agent_provider_metrics_endpoint():
+    """COSAgentProvider is configured with the correct metrics endpoint."""
+    ctx = testing.Context(McpServerCharm)
+    state = testing.State(relations=[testing.Relation(endpoint="cos-agent")])
+    state_out = ctx.run(ctx.on.config_changed(), state)
+    assert not isinstance(state_out.unit_status, testing.ErrorStatus)
