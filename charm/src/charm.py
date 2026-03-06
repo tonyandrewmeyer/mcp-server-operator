@@ -11,7 +11,7 @@ import logging
 import pathlib
 
 import ops
-from charmlibs.mcp import McpRequirer
+from charmlibs.interfaces.mcp import McpRequirer
 
 import mcp_server
 

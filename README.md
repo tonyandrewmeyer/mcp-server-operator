@@ -58,10 +58,10 @@ See [docs/integration-schema.md](docs/integration-schema.md) for the full schema
 
 ### Charm library
 
-The `charmlibs-mcp` package provides typed dataclasses and helper classes for working with the `mcp` interface:
+The `charmlibs-interfaces-mcp` package provides typed dataclasses and helper classes for working with the `mcp` interface:
 
 ```python
-from charmlibs.mcp import McpProvider, Tool, ExecHandler
+from charmlibs.interfaces.mcp import McpProvider, Tool, ExecHandler
 
 self.mcp = McpProvider(self, "mcp")
 self.mcp.set_tools([
@@ -70,7 +70,7 @@ self.mcp.set_tools([
 ])
 ```
 
-Install with `pip install charmlibs-mcp`. See the [charmlib README](charmlib/README.md) for full details.
+Install with `pip install charmlibs-interfaces-mcp`. See the [charmlib README](charmlib/README.md) for full details.
 
 ## Deployment
 

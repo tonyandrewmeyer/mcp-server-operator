@@ -4,16 +4,16 @@ This document defines the data schema for the `mcp` relation interface.
 
 ## Using the charm library
 
-The easiest way to work with the `mcp` interface is via the `charmlibs-mcp` package:
+The easiest way to work with the `mcp` interface is via the `charmlibs-interfaces-mcp` package:
 
 ```bash
-pip install charmlibs-mcp
+pip install charmlibs-interfaces-mcp
 ```
 
 ### Provider (principal charm)
 
 ```python
-from charmlibs.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+from charmlibs.interfaces.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
 
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
@@ -34,7 +34,7 @@ class MyCharm(ops.CharmBase):
 ### Requirer (mcp-server charm)
 
 ```python
-from charmlibs.mcp import McpRequirer
+from charmlibs.interfaces.mcp import McpRequirer
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):
@@ -245,10 +245,10 @@ Here is a full example of what a PostgreSQL charm might set on the relation:
 
 ### Using the charm library
 
-The same example using `charmlibs-mcp`:
+The same example using `charmlibs-interfaces-mcp`:
 
 ```python
-from charmlibs.mcp import (
+from charmlibs.interfaces.mcp import (
     ExecHandler,
     McpDefinitions,
     McpProvider,

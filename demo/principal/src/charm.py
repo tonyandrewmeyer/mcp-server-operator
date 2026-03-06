@@ -8,7 +8,7 @@ import logging
 
 import ops
 
-from charmlibs.mcp import (
+from charmlibs.interfaces.mcp import (
     ExecHandler,
     McpDefinitions,
     McpProvider,

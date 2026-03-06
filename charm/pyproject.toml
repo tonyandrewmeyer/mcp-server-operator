@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 # dependencies of any charmlibs that the charm uses (copy the dependencies from PYDEPS).
 dependencies = [
     "ops>=3,<4",
-    "charmlibs-mcp",
+    "charmlibs-interfaces-mcp",
 ]
 
 [dependency-groups]
@@ -73,4 +73,4 @@ max-complexity = 10
 skip = "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage"
 
 [tool.uv.sources]
-charmlibs-mcp = { path = "../charmlib", editable = true }
+charmlibs-interfaces-mcp = { path = "../charmlib", editable = true }

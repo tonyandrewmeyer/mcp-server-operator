@@ -32,9 +32,9 @@
 - [x] UK English throughout
 - [x] Comments: full sentences, sparingly, explain why not what
 
-## Phase 3: Charm library (`charmlibs-mcp`)
+## Phase 3: Charm library (`charmlibs-interfaces-mcp`)
 
-- [x] Create `charmlibs-mcp` Python package (published to PyPI)
+- [x] Create `charmlibs-interfaces-mcp` Python package (published to PyPI)
 - [x] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
 - [x] Requirer class — used internally by the mcp-server charm to read relation data
 - [x] Typed data models for tools, prompts, resources, and handlers (no pydantic — use dataclasses)
@@ -94,7 +94,7 @@ mcp.set_tools([...])
 ## Phase 10: Polish + packaging
 
 - [ ] Publish to Charmhub
-- [ ] Publish `charmlibs-mcp` to PyPI
+- [ ] Publish `charmlibs-interfaces-mcp` to PyPI
 - [ ] Documentation site (Read the Docs or similar)
 
 ## Future: Kubernetes version

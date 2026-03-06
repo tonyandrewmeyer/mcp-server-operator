@@ -10,7 +10,7 @@ import logging
 
 import ops
 
-from charmlibs.mcp._models import McpDefinitions, Prompt, Resource, Tool
+from charmlibs.interfaces.mcp._models import McpDefinitions, Prompt, Resource, Tool
 
 logger = logging.getLogger(__name__)
 

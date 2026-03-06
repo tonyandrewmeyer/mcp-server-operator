@@ -9,7 +9,7 @@ that charm authors can use to integrate with the ``mcp`` relation interface.
 A **provider** (typically a principal charm) declares tools, prompts, and
 resources that it wants to expose via MCP::
 
-    from charmlibs.mcp import McpProvider, Tool, ExecHandler
+    from charmlibs.interfaces.mcp import McpProvider, Tool, ExecHandler
 
     class MyCharm(ops.CharmBase):
         def __init__(self, framework):
@@ -33,7 +33,7 @@ resources that it wants to expose via MCP::
 A **requirer** (the mcp-server subordinate charm) reads and merges
 definitions from all related providers::
 
-    from charmlibs.mcp import McpRequirer
+    from charmlibs.interfaces.mcp import McpRequirer
 
     class McpServerCharm(ops.CharmBase):
         def __init__(self, framework):
@@ -44,7 +44,7 @@ definitions from all related providers::
             definitions = self.mcp.collect_definitions()
 """
 
-from charmlibs.mcp._models import (
+from charmlibs.interfaces.mcp._models import (
     ExecHandler,
     HttpHandler,
     McpDefinitions,
@@ -53,8 +53,8 @@ from charmlibs.mcp._models import (
     Resource,
     Tool,
 )
-from charmlibs.mcp._provider import McpProvider
-from charmlibs.mcp._requirer import McpRequirer
+from charmlibs.interfaces.mcp._provider import McpProvider
+from charmlibs.interfaces.mcp._requirer import McpRequirer
 
 __all__ = [
     "ExecHandler",

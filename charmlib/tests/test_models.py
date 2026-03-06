@@ -3,7 +3,7 @@
 
 import json
 
-from charmlibs.mcp import (
+from charmlibs.interfaces.mcp import (
     ExecHandler,
     HttpHandler,
     McpDefinitions,

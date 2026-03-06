@@ -6,7 +6,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "charmlibs-mcp"
+name = "charmlibs-interfaces-mcp"
 version = "0.1.0"
 requires-python = ">=3.10"
 description = "Charm library for the MCP (Model Context Protocol) Juju interface"

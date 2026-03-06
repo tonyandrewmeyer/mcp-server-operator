@@ -1,4 +1,4 @@
-name: Publish charmlibs-mcp to PyPI
+name: Publish charmlibs-interfaces-mcp to PyPI
 
 on:
   push:

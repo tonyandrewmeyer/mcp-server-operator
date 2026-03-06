@@ -1,4 +1,4 @@
-# charmlibs-mcp
+# charmlibs-interfaces-mcp
 
 Charm library for the MCP (Model Context Protocol) Juju interface.
 
@@ -8,7 +8,7 @@ to integrate with the `mcp` relation interface.
 ## Installation
 
 ```bash
-pip install charmlibs-mcp
+pip install charmlibs-interfaces-mcp
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ pip install charmlibs-mcp
 
 ```python
 import ops
-from charmlibs.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+from charmlibs.interfaces.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
 
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
@@ -48,7 +48,7 @@ class MyCharm(ops.CharmBase):
 
 ```python
 import ops
-from charmlibs.mcp import McpRequirer
+from charmlibs.interfaces.mcp import McpRequirer
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):

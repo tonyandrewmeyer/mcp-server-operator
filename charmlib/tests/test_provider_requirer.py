@@ -6,7 +6,7 @@ import json
 import ops
 from ops import testing
 
-from charmlibs.mcp import ExecHandler, McpDefinitions, McpProvider, McpRequirer, Tool
+from charmlibs.interfaces.mcp import ExecHandler, McpDefinitions, McpProvider, McpRequirer, Tool
 
 
 class ProviderCharm(ops.CharmBase):
