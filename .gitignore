@@ -36,8 +36,7 @@ htmlcov/
 # Ruff
 .ruff_cache/
 
-# uv
-uv.lock
+# uv — lockfiles in subprojects are tracked (charmcraft pack needs them)
 
 # OS
 .DS_Store

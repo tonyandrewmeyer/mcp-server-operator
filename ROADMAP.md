@@ -76,6 +76,7 @@ mcp.set_tools([...])
 - [ ] Unit tests for `charm.py`
 - [ ] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [ ] Integration test with a dummy principal charm
+- [ ] Spread for charm integration tests
 - [ ] CI with GitHub Actions + tox
 
 ## Phase 8: Demo
