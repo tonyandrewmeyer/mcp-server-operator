@@ -3,6 +3,5 @@ rules:
     config:
       policies:
         "actions/*": ref-pin
-        "astral-sh/*": ref-pin
         "github/*": ref-pin
         "pypa/*": ref-pin
