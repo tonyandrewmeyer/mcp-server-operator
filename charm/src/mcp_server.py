@@ -1,34 +1,159 @@
-# Copyright 2026 Ubuntu
+# Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
 
-"""Functions for managing and interacting with the workload.
+"""Functions for managing the MCP server workload on the local machine.
 
-The intention is that this module could be used outside the context of a charm.
+This module handles installing, configuring, starting, and stopping the MCP
+server process via systemd. It is intentionally decoupled from charm concerns
+so it could be used outside the context of a charm.
 """
 
+from __future__ import annotations
+
+import json
 import logging
+import subprocess
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
+CONFIG_DIR = Path("/etc/mcp-server")
+CONFIG_PATH = CONFIG_DIR / "config.json"
+INSTALL_DIR = Path("/opt/mcp-server")
+VENV_DIR = INSTALL_DIR / "venv"
+SERVICE_NAME = "mcp-server"
+SYSTEMD_UNIT_PATH = Path(f"/etc/systemd/system/{SERVICE_NAME}.service")
 
-# Functions for managing the workload process on the local machine:
+SYSTEMD_UNIT_TEMPLATE = """\
+[Unit]
+Description=MCP Server for Juju charms
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={venv}/bin/python -m server \
+    --config {config} \
+    --host 0.0.0.0 \
+    --port {port} \
+    --log-level {log_level}
+WorkingDirectory={install_dir}/src
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONPATH={install_dir}/src
+
+[Install]
+WantedBy=multi-user.target
+"""
 
 
-def install() -> None:
-    """Install the workload (by installing a snap, for example)."""
-    # You'll need to implement this function.
+def install(workload_src: Path) -> None:
+    """Install the MCP server workload.
+
+    Creates a virtualenv, installs dependencies, and copies the server source.
+    """
+    logger.info("Installing MCP server workload")
+
+    INSTALL_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Create virtualenv.
+    subprocess.run(
+        ["/usr/bin/python3", "-m", "venv", str(VENV_DIR)],
+        check=True,
+    )
+
+    # Install dependencies into the venv.
+    pip = str(VENV_DIR / "bin" / "pip")
+    subprocess.run(
+        [pip, "install", "mcp[cli]", "httpx"],
+        check=True,
+    )
+
+    # Copy server source.
+    src_dest = INSTALL_DIR / "src"
+    src_dest.mkdir(parents=True, exist_ok=True)
+    server_src = workload_src / "server.py"
+    if server_src.exists():
+        (src_dest / "server.py").write_text(server_src.read_text())
+    else:
+        logger.warning("Server source not found at %s", server_src)
+
+    logger.info("MCP server installed to %s", INSTALL_DIR)
+
+
+def write_config(definitions: dict[str, Any]) -> None:
+    """Write MCP definitions to the config file."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_PATH.write_text(json.dumps(definitions, indent=2))
+    logger.info("Wrote MCP config to %s", CONFIG_PATH)
+
+
+def write_systemd_unit(port: int = 8081, log_level: str = "info") -> None:
+    """Write the systemd unit file for the MCP server."""
+    unit_content = SYSTEMD_UNIT_TEMPLATE.format(
+        venv=VENV_DIR,
+        config=CONFIG_PATH,
+        install_dir=INSTALL_DIR,
+        port=port,
+        log_level=log_level,
+    )
+    SYSTEMD_UNIT_PATH.write_text(unit_content)
+    subprocess.run(
+        ["/usr/bin/systemctl", "daemon-reload"],
+        check=True,
+    )
+    logger.info("Wrote systemd unit to %s", SYSTEMD_UNIT_PATH)
 
 
 def start() -> None:
-    """Start the workload (by running a commamd, for example)."""
-    # You'll need to implement this function.
-    # Ideally, this function should only return once the workload is ready to use.
+    """Start (or restart) the MCP server service."""
+    subprocess.run(
+        ["/usr/bin/systemctl", "enable", "--now", SERVICE_NAME],
+        check=True,
+    )
+    logger.info("MCP server started")
 
 
-# Functions for interacting with the workload, for example over HTTP:
+def restart() -> None:
+    """Restart the MCP server service."""
+    subprocess.run(
+        ["/usr/bin/systemctl", "restart", SERVICE_NAME],
+        check=True,
+    )
+    logger.info("MCP server restarted")
+
+
+def stop() -> None:
+    """Stop the MCP server service."""
+    subprocess.run(
+        ["/usr/bin/systemctl", "stop", SERVICE_NAME],
+        check=False,
+    )
+    logger.info("MCP server stopped")
+
+
+def is_running() -> bool:
+    """Check if the MCP server service is running."""
+    result = subprocess.run(
+        ["/usr/bin/systemctl", "is-active", "--quiet", SERVICE_NAME],
+        check=False,
+    )
+    return result.returncode == 0
 
 
 def get_version() -> str | None:
-    """Get the running version of the workload."""
-    # You'll need to implement this function (or remove it if not needed).
+    """Get the version of the MCP server."""
+    try:
+        result = subprocess.run(
+            [str(VENV_DIR / "bin" / "pip"), "show", "mcp"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        for line in result.stdout.splitlines():
+            if line.startswith("Version:"):
+                return line.split(":", 1)[1].strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
     return None

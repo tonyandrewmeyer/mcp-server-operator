@@ -54,18 +54,40 @@ mcp.set_tools([...])
 - [ ] TLS termination via Traefik
 - [ ] Configurable path prefix per principal
 
-## Phase 5: Testing
+## Phase 5: Observability (COS integration)
+
+- [ ] Tracing for the charm (tempo integration)
+- [ ] Tracing for the MCP server workload
+- [ ] Metrics endpoint (prometheus integration)
+- [ ] Log forwarding (loki integration)
+- [ ] Grafana dashboard
+- [ ] SLOs via sloth-k8s charm
+
+## Phase 6: Testing
 
 - [ ] Unit tests for `charm.py`
 - [ ] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [ ] Integration test with a dummy principal charm
 - [ ] CI with GitHub Actions + tox
 
-## Phase 6: Polish + packaging
+## Phase 7: Demo
+
+- [ ] Example principal charm showing how easy it is to add MCP to an existing charm
+- [ ] End-to-end demo: deploy principal + mcp-server, connect Claude Code, invoke tools
+- [ ] Screencast / README walkthrough
+
+## Phase 8: Documentation (Diataxis)
+
+- [ ] Tutorials — step-by-step guide to adding MCP to your charm
+- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
+- [ ] Reference — integration schema, config options, API docs
+- [ ] Explanation — architecture, design decisions, security model
+
+## Phase 9: Polish + packaging
 
 - [ ] Publish to Charmhub
-- [ ] Example principal charm (e.g. a simple app exposing a few tools)
-- [ ] Documentation for charm authors wanting to integrate
+- [ ] Publish `charmlibs-mcp` to PyPI
+- [ ] Documentation site (Read the Docs or similar)
 
 ## Future: Kubernetes version
 
