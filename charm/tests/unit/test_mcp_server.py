@@ -75,6 +75,7 @@ class TestWriteSystemdUnit:
         content = unit_path.read_text()
         assert "--port 9090" in content
         assert "--log-level debug" in content
+        assert "--log-format json" in content
         assert "ExecStart=" in content
         assert "--auth-token" not in content
 

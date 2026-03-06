@@ -1,0 +1,19 @@
+groups:
+  - name: mcp-server-logs
+    rules:
+      - alert: McpServerHighErrorLogRate
+        expr: >
+          sum(rate({juju_charm="mcp-server"} |= "ERROR" [5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP server producing more than 0.5 error logs per second
+      - alert: McpServerToolHandlerFailures
+        expr: >
+          sum(rate({juju_charm="mcp-server"} |= "handler failed" [5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: MCP server tool handlers failing frequently

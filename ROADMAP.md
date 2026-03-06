@@ -76,7 +76,7 @@ mcp.set_tools([...])
 - [x] Prometheus alert rules (McpServerDown, McpServerHighErrorRate, McpServerHighLatency)
 - [x] Charm tracing via `ops[tracing]` (Tempo integration via `charm-tracing` relation)
 - [x] Workload tracing via OpenTelemetry ASGI instrumentation (OTLP HTTP export)
-- [ ] Log forwarding (loki integration)
+- [x] Log forwarding (structured JSON logging, Loki alert rules via cos-agent)
 - [ ] SLOs via sloth-k8s charm
 
 ## Phase 7: Testing

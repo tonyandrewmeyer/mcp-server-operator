@@ -41,7 +41,8 @@ ExecStart={venv}/bin/python -m server \
     --config {config} \
     --host 0.0.0.0 \
     --port {port} \
-    --log-level {log_level}{extra_args}
+    --log-level {log_level} \
+    --log-format json{extra_args}
 WorkingDirectory={install_dir}/src
 Restart=on-failure
 RestartSec=5

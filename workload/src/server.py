@@ -542,6 +542,12 @@ def main() -> None:
         help="Log level",
     )
     parser.add_argument(
+        "--log-format",
+        default="text",
+        choices=["text", "json"],
+        help="Log format: 'text' for human-readable, 'json' for structured logging",
+    )
+    parser.add_argument(
         "--auth-token",
         default=None,
         help="Bearer token for authentication (disabled if not set)",
@@ -615,10 +621,17 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=getattr(logging, args.log_level.upper()),
-        format="%(asctime)s %(name)s %(levelname)s %(message)s",
-    )
+    log_level = getattr(logging, args.log_level.upper())
+    if args.log_format == "json":
+        logging.basicConfig(
+            level=log_level,
+            format='{"timestamp":"%(asctime)s","logger":"%(name)s","level":"%(levelname)s","message":"%(message)s"}',
+        )
+    else:
+        logging.basicConfig(
+            level=log_level,
+            format="%(asctime)s %(name)s %(levelname)s %(message)s",
+        )
 
     jwt_access_tokens = not args.oauth_opaque_tokens
 
