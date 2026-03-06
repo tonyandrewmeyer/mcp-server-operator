@@ -34,11 +34,11 @@
 
 ## Phase 3: Charm library (`charmlibs-mcp`)
 
-- [ ] Create `charmlibs-mcp` Python package (published to PyPI)
-- [ ] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
-- [ ] Requirer class — used internally by the mcp-server charm to read relation data
-- [ ] Typed data models for tools, prompts, resources, and handlers (no pydantic — use dataclasses)
-- [ ] Documentation and examples for charm authors
+- [x] Create `charmlibs-mcp` Python package (published to PyPI)
+- [x] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
+- [x] Requirer class — used internally by the mcp-server charm to read relation data
+- [x] Typed data models for tools, prompts, resources, and handlers (no pydantic — use dataclasses)
+- [x] Documentation and examples for charm authors
 
 This library lets any charm add MCP support with minimal code:
 ```python

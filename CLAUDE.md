@@ -7,6 +7,7 @@ that lets principal charms declaratively expose tools, prompts, and resources to
 ## Repository structure
 - `charm/` — Juju charm (ops framework). Subordinate, attaches via `mcp` relation with `scope: container`.
 - `workload/` — Standalone MCP server process (FastMCP, streamable HTTP). Runs as a systemd service.
+- `charmlib/` — `charmlibs-mcp` Python package: McpProvider, McpRequirer, typed dataclass models.
 - `demo/principal/` — Demo principal charm for e2e testing.
 - `docs/` — Documentation (integration schema reference, etc.)
 

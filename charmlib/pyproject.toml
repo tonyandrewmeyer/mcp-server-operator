@@ -1,0 +1,76 @@
+# Copyright 2026 Tony Meyer
+# See LICENSE file for licensing details.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "charmlibs-mcp"
+version = "0.1.0"
+requires-python = ">=3.10"
+description = "Charm library for the MCP (Model Context Protocol) Juju interface"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+    {name = "Tony Meyer", email = "tony.meyer@canonical.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "ops>=3,<4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/charmlibs"]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "ty",
+    "pytest",
+    "coverage[toml]",
+    "ops[testing]",
+]
+
+[tool.uv.sources]
+# Ensure the charmlibs namespace package is found.
+
+# Testing tools configuration
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+log_cli_level = "INFO"
+pythonpath = ["src"]
+
+# Linting tools configuration
+[tool.ruff]
+line-length = 99
+lint.select = ["E", "W", "F", "C", "N", "D", "I001"]
+lint.ignore = [
+    "D105",
+    "D107",
+    "D203",
+    "D204",
+    "D213",
+    "D215",
+    "D400",
+    "D404",
+    "D406",
+    "D407",
+    "D408",
+    "D409",
+    "D413",
+]
+extend-exclude = ["__pycache__", "*.egg_info"]
+lint.per-file-ignores = {"tests/*" = ["D100","D101","D102","D103","D104"]}
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10

@@ -4,9 +4,9 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]
-        files: ^(charm|workload)/
+        files: ^(charm|workload|charmlib)/
       - id: ruff-format
-        files: ^(charm|workload)/
+        files: ^(charm|workload|charmlib)/
 
   - repo: local
     hooks:
@@ -24,6 +24,13 @@ repos:
         files: ^workload/src/server\.py$
         types: [python]
         pass_filenames: false
+      - id: ty-charmlib
+        name: ty (charmlib)
+        entry: uv run --directory charmlib ty check src/
+        language: system
+        files: ^charmlib/src/
+        types: [python]
+        pass_filenames: false
       - id: test-charm
         name: unit tests (charm)
         entry: bash -c 'cd charm && PYTHONPATH=src:lib uv run --group unit pytest tests/unit -q'
@@ -36,6 +43,13 @@ repos:
         entry: uv run --directory workload pytest tests/ -q
         language: system
         files: ^workload/
+        types: [python]
+        pass_filenames: false
+      - id: test-charmlib
+        name: unit tests (charmlib)
+        entry: uv run --directory charmlib pytest tests/ -q
+        language: system
+        files: ^charmlib/
         types: [python]
         pass_filenames: false
 

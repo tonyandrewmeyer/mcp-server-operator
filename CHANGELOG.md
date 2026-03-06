@@ -28,6 +28,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CLAUDE.md project guide with code style conventions
 - This changelog
 
+- `charmlibs-mcp` Python package (`charmlib/`) with `McpProvider`, `McpRequirer`, and typed dataclass models (`Tool`, `Prompt`, `Resource`, `ExecHandler`, `HttpHandler`, `McpDefinitions`)
+- 23 unit tests for charmlib (16 model tests, 7 provider/requirer tests)
+- README for charmlib with usage examples
+
 ### Changed
 - Charm uses `self.load_config(CharmConfig)` and `relation.load(McpRelationData)` instead of raw relation data access
 - Import style: `import pathlib` (modules) rather than `from pathlib import Path` (objects)
