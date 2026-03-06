@@ -77,9 +77,13 @@ mcp.set_tools([...])
 
 ## Phase 7: Testing
 
-- [ ] Unit tests for `charm.py`
-- [ ] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
-- [ ] Integration test with a dummy principal charm
+- [x] Unit tests for `charm.py` (17 tests covering all events and OAuth)
+- [x] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
+- [x] Workload unit tests (41 tests covering server, middleware, token verifier)
+- [ ] Workload integration tests (start server, make HTTP requests, verify MCP protocol)
+- [ ] Security boundary tests (injection attempts, malformed input, oversized payloads)
+- [ ] Load and stress tests (concurrent connections, rate limiter under pressure)
+- [ ] Integration test with a dummy principal charm (needs Juju)
 - [ ] Spread for charm integration tests
 - [ ] CI with GitHub Actions + tox
 
