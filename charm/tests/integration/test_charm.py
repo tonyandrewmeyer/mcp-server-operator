@@ -1,8 +1,7 @@
-# Copyright 2026 Ubuntu
+# Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
 #
 # The integration tests use the Jubilant library. See https://documentation.ubuntu.com/jubilant/
-# To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
 
 import logging
 import pathlib
@@ -13,17 +12,32 @@ import pytest
 logger = logging.getLogger(__name__)
 
 
-def test_deploy(charm: pathlib.Path, juju: jubilant.Juju):
-    """Deploy the charm under test."""
+def _find_repo_root() -> pathlib.Path:
+    """Walk up from this file to find the repository root (contains Makefile)."""
+    path = pathlib.Path(__file__).resolve().parent
+    while path != path.parent:
+        if (path / "Makefile").exists():
+            return path
+        path = path.parent
+    raise FileNotFoundError("Could not find repository root")
+
+
+@pytest.fixture(scope="module")
+def principal_charm():
+    """Return the path to the pre-built demo principal charm."""
+    demo_dir = _find_repo_root() / "demo" / "principal"
+    charm_paths = list(demo_dir.glob("*.charm"))
+    if not charm_paths:
+        pytest.skip("No demo-principal .charm file found; build it first")
+    return charm_paths[0]
+
+
+def test_deploy(charm: pathlib.Path, principal_charm: pathlib.Path, juju: jubilant.Juju):
+    """Deploy the subordinate charm alongside a principal and verify it goes active."""
+    juju.deploy(principal_charm.resolve(), app="demo-principal")
     juju.deploy(charm.resolve(), app="mcp-server")
-    juju.wait(jubilant.all_active)
+    juju.integrate("demo-principal:mcp", "mcp-server:mcp")
+    juju.wait(jubilant.all_active, timeout=300)
 
-
-# If you implement mcp_server.get_version in the charm source,
-# remove the @pytest.mark.skip line to enable this test.
-# Alternatively, remove this test if you don't need it.
-@pytest.mark.skip(reason="mcp_server.get_version is not implemented")
-def test_workload_version_is_set(charm: pathlib.Path, juju: jubilant.Juju):
-    """Check that the correct version of the workload is running."""
-    version = juju.status().apps["mcp-server"].version
-    assert version == "3.14"  # Replace 3.14 by the expected version of the workload.
+    status = juju.status()
+    assert status.apps["mcp-server"].app_status.current == "active"

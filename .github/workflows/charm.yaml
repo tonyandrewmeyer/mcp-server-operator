@@ -8,10 +8,14 @@ on:
     branches: [main]
     paths:
       - "charm/**"
+      - "workload/src/**"
+      - "demo/principal/**"
       - ".github/workflows/charm.yaml"
   pull_request:
     paths:
       - "charm/**"
+      - "workload/src/**"
+      - "demo/principal/**"
       - ".github/workflows/charm.yaml"
 
 jobs:
@@ -51,6 +55,8 @@ jobs:
       - run: |
           uv run --group unit coverage run --source=src -m pytest -v -s --tb native tests/unit
           uv run --group unit coverage report
+        env:
+          PYTHONPATH: lib:src
 
   integration-test:
     name: Integration tests
@@ -66,7 +72,14 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
+      - name: Sync workload files
+        run: make -C .. sync-workload
       - name: Pack charm
         run: charmcraft pack
+      - name: Pack demo principal
+        run: charmcraft pack
+        working-directory: ${{ github.workspace }}/demo/principal
       - name: Run integration tests
         run: uv run --group integration pytest -v -s --tb native --log-cli-level=INFO tests/integration
+        env:
+          PYTHONPATH: lib:src
