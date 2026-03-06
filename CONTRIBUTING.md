@@ -6,8 +6,8 @@ Thanks for your interest in contributing to the MCP Server Charm!
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/mcp-charm.git
-cd mcp-charm
+git clone https://github.com/tonyandrewmeyer/mcp-server-operator.git
+cd mcp-server-operator
 
 # Install pre-commit hooks
 pre-commit install

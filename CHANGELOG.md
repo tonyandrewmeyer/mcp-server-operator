@@ -23,4 +23,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Subordinate machine charm (`charm/`): handles mcp relation, systemd lifecycle, config
 - MCP server workload (`workload/`): FastMCP with streamable HTTP, exec/http handlers, template substitution
 - Unit tests: 5 charm tests, 15 workload tests
+- Demo principal charm (`demo/principal/`) for e2e testing
+- End-to-end validation: deploy principal + subordinate, tools/prompts/resources work via HTTP
+- CLAUDE.md project guide with code style conventions
 - This changelog
+
+### Fixed
+- Workload server bundled as `charm/src/workload_server.py` (included in packed charm)
+- Install hook installs `python3-venv` before creating virtualenv
+- FastMCP API: `host`/`port` set in constructor, `Prompt.from_function()`, `FunctionResource`
+- Tool handlers use explicit `inspect.Signature` for proper parameter introspection

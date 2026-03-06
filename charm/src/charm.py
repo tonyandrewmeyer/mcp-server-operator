@@ -16,8 +16,8 @@ import mcp_server
 
 logger = logging.getLogger(__name__)
 
-# The workload server source is bundled with the charm.
-WORKLOAD_SRC = Path(__file__).parent.parent / "workload_src"
+# The workload server source is bundled alongside the charm code in src/.
+WORKLOAD_SERVER_SRC = Path(__file__).parent / "workload_server.py"
 
 
 class McpServerCharm(ops.CharmBase):
@@ -35,7 +35,7 @@ class McpServerCharm(ops.CharmBase):
     def _on_install(self, event: ops.InstallEvent) -> None:
         """Install the MCP server workload."""
         self.unit.status = ops.MaintenanceStatus("installing MCP server")
-        mcp_server.install(WORKLOAD_SRC)
+        mcp_server.install(WORKLOAD_SERVER_SRC)
         port = int(self.config.get("port", 8081))
         log_level = str(self.config.get("log-level", "info"))
         mcp_server.write_systemd_unit(port=port, log_level=log_level)

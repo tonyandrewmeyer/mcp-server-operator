@@ -47,15 +47,24 @@ WantedBy=multi-user.target
 """
 
 
-def install(workload_src: Path) -> None:
+def install(server_src: Path) -> None:
     """Install the MCP server workload.
 
     Creates a virtualenv, installs dependencies, and copies the server source.
+
+    Args:
+        server_src: Path to the server.py source file to install.
     """
     logger.info("Installing MCP server workload")
 
     INSTALL_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Ensure python3-venv is available.
+    subprocess.run(
+        ["/usr/bin/apt-get", "install", "-y", "python3-venv"],
+        check=True,
+    )
 
     # Create virtualenv.
     subprocess.run(
@@ -73,7 +82,6 @@ def install(workload_src: Path) -> None:
     # Copy server source.
     src_dest = INSTALL_DIR / "src"
     src_dest.mkdir(parents=True, exist_ok=True)
-    server_src = workload_src / "server.py"
     if server_src.exists():
         (src_dest / "server.py").write_text(server_src.read_text())
     else:

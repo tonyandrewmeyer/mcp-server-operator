@@ -30,11 +30,6 @@ parts:
     source: .
     build-snaps:
       - astral-uv
-  workload-src:
-    plugin: dump
-    source: ../workload/src
-    organize:
-      "*.py": workload_src/
 
 requires:
   mcp:

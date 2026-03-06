@@ -1,0 +1,23 @@
+# Demo principal charm for testing the MCP server subordinate.
+type: charm
+name: demo-principal
+title: Demo Principal
+summary: A simple charm that provides MCP tools for testing
+description: |
+  A minimal principal charm that provides tools, prompts, and resources
+  via the mcp relation for testing the mcp-server subordinate charm.
+
+base: ubuntu@24.04
+platforms:
+  amd64:
+
+parts:
+  charm:
+    plugin: uv
+    source: .
+    build-snaps:
+      - astral-uv
+
+provides:
+  mcp:
+    interface: mcp
