@@ -17,4 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Pre-commit config (ruff, codespell, trailing whitespace, etc.)
 - Top-level `Makefile` for format/lint/typecheck/test
 - `.gitignore`
+- GitHub Actions CI for charm (format, lint, unit tests, integration tests)
+- GitHub Actions CI for workload (format, lint, tests)
+- GitHub Actions zizmor workflow security audit
 - This changelog

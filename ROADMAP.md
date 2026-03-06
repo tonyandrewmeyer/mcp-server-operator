@@ -11,7 +11,9 @@
 - [x] Test infrastructure (pytest, coverage)
 - [x] Charm skeleton via `charmcraft init --profile machine`
 - [x] Workload project skeleton
-- [ ] GitHub Actions CI (lint, type check, unit tests)
+- [x] GitHub Actions CI: charm (format, lint, unit tests, integration tests)
+- [x] GitHub Actions CI: workload (format, lint, tests)
+- [x] GitHub Actions: zizmor workflow security audit
 
 ## Phase 1: Core — Charm skeleton + MCP server
 
