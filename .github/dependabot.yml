@@ -1,0 +1,45 @@
+version: 2
+
+updates:
+  # GitHub Actions — check weekly for updates
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+
+  # Charm Python dependencies
+  - package-ecosystem: pip
+    directory: /charm
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Workload Python dependencies
+  - package-ecosystem: pip
+    directory: /workload
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Charmlib Python dependencies
+  - package-ecosystem: pip
+    directory: /charmlib
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
