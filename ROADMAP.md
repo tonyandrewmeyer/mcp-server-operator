@@ -55,7 +55,9 @@ mcp.set_tools([...])
 - [x] Optional command allowlist in charm config (`command-allowlist`)
 - [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
 - [x] Auth token support (Bearer token via `auth-token` config)
-- [ ] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
+- [x] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
+- [ ] Charm unit tests for OAuth relation events and `_get_oauth_config`
+- [ ] Integration test for OAuth with a mock or real IdP (e.g. Hydra)
 
 ## Phase 5: Ingress + TLS
 
