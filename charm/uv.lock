@@ -8,22 +8,14 @@ resolution-markers = [
 
 [[package]]
 name = "charmlibs-interfaces-mcp"
-version = "0.1.0"
-source = { editable = "../charmlib" }
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ops" },
 ]
-
-[package.metadata]
-requires-dist = [{ name = "ops", specifier = ">=3,<4" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "coverage", extras = ["toml"] },
-    { name = "ops", extras = ["testing"] },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "ty" },
+sdist = { url = "https://files.pythonhosted.org/packages/38/3c/66b9a3e57a91ceb18ac773f4c82ff0c4791089d5963668792e891d16e987/charmlibs_interfaces_mcp-0.1.2.tar.gz", hash = "sha256:31811fa999e3a7c702baec67101206197be39353c729a7008a07e2cf8d4432af", size = 37010, upload-time = "2026-03-06T10:57:10.843Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/bd/bb79f9fe0117038dc88bfeae3fb1bbe75c42aabe8b5a90ffc38d149499d1/charmlibs_interfaces_mcp-0.1.2-py3-none-any.whl", hash = "sha256:37abde76b9854b36ddbdbfb60ebb918644d50ade19135d36f89cdcfcb9ecce41", size = 7563, upload-time = "2026-03-06T10:57:09.324Z" },
 ]
 
 [[package]]
@@ -185,7 +177,7 @@ unit = [
 
 [package.metadata]
 requires-dist = [
-    { name = "charmlibs-interfaces-mcp", editable = "../charmlib" },
+    { name = "charmlibs-interfaces-mcp" },
     { name = "ops", specifier = ">=3,<4" },
 ]
 

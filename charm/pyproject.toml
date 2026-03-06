@@ -72,6 +72,3 @@ max-complexity = 10
 
 [tool.codespell]
 skip = "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage"
-
-[tool.uv.sources]
-charmlibs-interfaces-mcp = { path = "../charmlib", editable = true }
