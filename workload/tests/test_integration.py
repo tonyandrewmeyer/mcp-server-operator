@@ -10,6 +10,7 @@ httpx with an ASGI transport — no network socket required.
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import json
 import pathlib
@@ -366,3 +367,56 @@ class TestMetricsEndpoint:
             assert response.status_code == 200
             # The POST request should have been counted.
             assert "mcp_requests_total" in response.text
+
+
+@pytest.mark.anyio
+class TestConcurrentLoad:
+    async def test_concurrent_requests(self, tmp_path: pathlib.Path):
+        """Many concurrent requests should all succeed."""
+        async with _make_client(tmp_path) as client:
+
+            async def _list_tools(req_id: int) -> int:
+                msg = _make_jsonrpc("tools/list", {}, req_id=req_id)
+                resp = await client.post("/mcp", json=msg, headers=MCP_HEADERS)
+                return resp.status_code
+
+            results = await asyncio.gather(*[_list_tools(i) for i in range(50)])
+            assert all(status == 200 for status in results)
+
+    async def test_concurrent_tool_calls(self, tmp_path: pathlib.Path):
+        """Many concurrent tool calls should all return results."""
+        async with _make_client(tmp_path) as client:
+
+            async def _call_echo(req_id: int) -> bool:
+                msg = _make_jsonrpc(
+                    "tools/call",
+                    {"name": "echo-test", "arguments": {"message": f"msg-{req_id}"}},
+                    req_id=req_id,
+                )
+                resp = await client.post("/mcp", json=msg, headers=MCP_HEADERS)
+                if resp.status_code != 200:
+                    return False
+                results = _parse_sse_response(resp.text)
+                return len(results) >= 1 and "result" in results[0]
+
+            results = await asyncio.gather(*[_call_echo(i) for i in range(20)])
+            assert all(results)
+
+    async def test_rate_limiter_under_pressure(self, tmp_path: pathlib.Path):
+        """Rate limiter should correctly enforce limits under concurrent load."""
+        from server import RateLimitMiddleware
+
+        middleware = [(RateLimitMiddleware, {"max_requests": 10, "window_seconds": 60})]
+        async with _make_client(tmp_path, middleware=middleware) as client:
+
+            async def _request(req_id: int) -> int:
+                msg = _make_jsonrpc("initialize", INITIALIZE_PARAMS, req_id=req_id)
+                resp = await client.post("/mcp", json=msg, headers=MCP_HEADERS)
+                return resp.status_code
+
+            # Send 20 concurrent requests with a limit of 10.
+            results = await asyncio.gather(*[_request(i) for i in range(20)])
+            ok_count = sum(1 for s in results if s == 200)
+            limited_count = sum(1 for s in results if s == 429)
+            assert ok_count == 10
+            assert limited_count == 10

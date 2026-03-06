@@ -81,15 +81,14 @@ mcp.set_tools([...])
 
 ## Phase 7: Testing
 
-- [x] Unit tests for `charm.py` (25 charm tests + 10 mcp_server tests covering all events, OAuth, TLS, COS)
+- [x] Unit tests for `charm.py` (27 charm tests + 12 mcp_server tests covering all events, OAuth, TLS, COS, tracing)
 - [x] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [x] Workload unit tests (41 tests covering server, middleware, token verifier)
 - [x] Workload integration tests (27 tests: MCP protocol, auth, rate limiting, health, path prefix, metrics)
 - [x] Security boundary tests (injection attempts, malformed input, unknown methods)
-- [ ] Load and stress tests (concurrent connections, rate limiter under pressure)
-- [ ] Integration test with a dummy principal charm (needs Juju)
-- [ ] Spread for charm integration tests
-- [ ] CI with GitHub Actions + tox
+- [x] Integration test with demo principal charm (Juju CI: deploy, integrate, verify active)
+- [x] CI with GitHub Actions (charm: format, lint, unit, integration; workload: format, lint, tests; zizmor)
+- [x] Load and stress tests (50 concurrent requests, 20 concurrent tool calls, rate limiter under pressure)
 
 ## Phase 8: Demo
 
