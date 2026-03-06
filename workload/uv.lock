@@ -485,6 +485,7 @@ version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
+    { name = "pyjwt", extra = ["crypto"] },
 ]
 
 [package.dev-dependencies]
@@ -496,7 +497,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mcp", extras = ["cli"] }]
+requires-dist = [
+    { name = "mcp", extras = ["cli"] },
+    { name = "pyjwt", extras = ["crypto"] },
+]
 
 [package.metadata.requires-dev]
 dev = [

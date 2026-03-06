@@ -35,6 +35,9 @@ requires:
   mcp:
     interface: mcp
     scope: container
+  oauth:
+    interface: oauth
+    limit: 1
 
 config:
   options:

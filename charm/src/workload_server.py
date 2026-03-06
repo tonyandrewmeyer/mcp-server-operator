@@ -325,11 +325,42 @@ def create_server(
     host: str = "0.0.0.0",  # noqa: S104
     port: int = 8081,
     command_allowlist: list[str] | None = None,
+    oauth_issuer_url: str | None = None,
+    oauth_resource_server_url: str | None = None,
+    oauth_jwks_uri: str | None = None,
+    oauth_introspection_endpoint: str | None = None,
+    oauth_client_id: str | None = None,
+    oauth_client_secret: str | None = None,
+    oauth_jwt_access_tokens: bool = True,
+    oauth_required_scopes: list[str] | None = None,
 ) -> FastMCP:
     """Create and configure an MCP server from a config file."""
     config = load_config(config_path)
 
-    mcp = FastMCP("mcp-server-charm", stateless_http=True, host=host, port=port)
+    extra_kwargs: dict[str, Any] = {}
+    if oauth_issuer_url and oauth_resource_server_url:
+        from mcp.server.auth.settings import AuthSettings
+
+        import token_verifier as tv
+
+        verifier = tv.create_token_verifier(
+            issuer_url=oauth_issuer_url,
+            resource_server_url=oauth_resource_server_url,
+            jwks_uri=oauth_jwks_uri,
+            introspection_endpoint=oauth_introspection_endpoint,
+            client_id=oauth_client_id,
+            client_secret=oauth_client_secret,
+            jwt_access_tokens=oauth_jwt_access_tokens,
+        )
+        extra_kwargs["auth"] = AuthSettings(
+            issuer_url=oauth_issuer_url,  # ty: ignore[invalid-argument-type]
+            resource_server_url=oauth_resource_server_url,  # ty: ignore[invalid-argument-type]
+            required_scopes=oauth_required_scopes,
+        )
+        extra_kwargs["token_verifier"] = verifier
+        logger.info("OAuth 2.1 resource server mode enabled (issuer: %s)", oauth_issuer_url)
+
+    mcp = FastMCP("mcp-server-charm", stateless_http=True, host=host, port=port, **extra_kwargs)
 
     for tool_def in config["tools"]:
         register_tool(mcp, tool_def, command_allowlist=command_allowlist)
@@ -396,6 +427,40 @@ def main() -> None:
         default=None,
         help="Allowed executable names for exec handlers (all allowed if not set)",
     )
+
+    # OAuth 2.1 resource server options.
+    oauth_group = parser.add_argument_group("OAuth 2.1", "Resource server authentication")
+    oauth_group.add_argument("--oauth-issuer-url", default=None, help="OAuth issuer URL")
+    oauth_group.add_argument(
+        "--oauth-resource-server-url", default=None, help="This server's public URL"
+    )
+    oauth_group.add_argument("--oauth-jwks-uri", default=None, help="JWKS endpoint URL")
+    oauth_group.add_argument(
+        "--oauth-introspection-endpoint",
+        default=None,
+        help="Token introspection endpoint URL",
+    )
+    oauth_group.add_argument("--oauth-client-id", default=None, help="OAuth client ID")
+    oauth_group.add_argument("--oauth-client-secret", default=None, help="OAuth client secret")
+    oauth_group.add_argument(
+        "--oauth-jwt-access-tokens",
+        action="store_true",
+        default=True,
+        help="Expect JWT access tokens (default; use JWKS validation)",
+    )
+    oauth_group.add_argument(
+        "--oauth-opaque-tokens",
+        action="store_true",
+        default=False,
+        help="Expect opaque access tokens (use introspection)",
+    )
+    oauth_group.add_argument(
+        "--oauth-required-scopes",
+        nargs="*",
+        default=None,
+        help="Required OAuth scopes",
+    )
+
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -403,11 +468,21 @@ def main() -> None:
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
 
+    jwt_access_tokens = not args.oauth_opaque_tokens
+
     mcp = create_server(
         args.config,
         host=args.host,
         port=args.port,
         command_allowlist=args.command_allowlist,
+        oauth_issuer_url=args.oauth_issuer_url,
+        oauth_resource_server_url=args.oauth_resource_server_url,
+        oauth_jwks_uri=args.oauth_jwks_uri,
+        oauth_introspection_endpoint=args.oauth_introspection_endpoint,
+        oauth_client_id=args.oauth_client_id,
+        oauth_client_secret=args.oauth_client_secret,
+        oauth_jwt_access_tokens=jwt_access_tokens,
+        oauth_required_scopes=args.oauth_required_scopes,
     )
 
     needs_middleware = args.auth_token or args.rate_limit

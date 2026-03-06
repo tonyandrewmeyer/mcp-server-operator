@@ -70,7 +70,7 @@ def install(server_src: pathlib.Path) -> None:
 
     pip = str(VENV_DIR / "bin" / "pip")
     subprocess.run(
-        [pip, "install", "mcp[cli]", "httpx"],
+        [pip, "install", "mcp[cli]", "httpx", "PyJWT[crypto]"],
         check=True,
     )
 
@@ -80,6 +80,11 @@ def install(server_src: pathlib.Path) -> None:
         (src_dest / "server.py").write_text(server_src.read_text())
     else:
         logger.warning("Server source not found at %s", server_src)
+
+    # Copy the token verifier module alongside the server.
+    token_verifier_src = server_src.parent / "token_verifier.py"
+    if token_verifier_src.exists():
+        (src_dest / "token_verifier.py").write_text(token_verifier_src.read_text())
 
     logger.info("MCP server installed to %s", INSTALL_DIR)
 
@@ -91,12 +96,32 @@ def write_config(definitions: dict[str, Any]) -> None:
     logger.info("Wrote MCP config to %s", CONFIG_PATH)
 
 
+def _oauth_extra_args(oauth_config: dict[str, Any]) -> str:
+    """Build CLI args for OAuth configuration."""
+    args = ""
+    key_to_flag = {
+        "issuer_url": "--oauth-issuer-url",
+        "resource_server_url": "--oauth-resource-server-url",
+        "jwks_uri": "--oauth-jwks-uri",
+        "introspection_endpoint": "--oauth-introspection-endpoint",
+        "client_id": "--oauth-client-id",
+        "client_secret": "--oauth-client-secret",
+    }
+    for key, flag in key_to_flag.items():
+        if oauth_config.get(key):
+            args += f" \\\n    {flag} {oauth_config[key]}"
+    if not oauth_config.get("jwt_access_token", True):
+        args += " \\\n    --oauth-opaque-tokens"
+    return args
+
+
 def write_systemd_unit(
     port: int = 8081,
     log_level: str = "info",
     auth_token: str = "",
     rate_limit: int = 0,
     command_allowlist: str = "",
+    oauth_config: dict[str, Any] | None = None,
 ) -> None:
     """Write the systemd unit file for the MCP server."""
     extra_args = ""
@@ -107,6 +132,8 @@ def write_systemd_unit(
     if command_allowlist.strip():
         commands = command_allowlist.strip().split()
         extra_args += " \\\n    --command-allowlist " + " ".join(commands)
+    if oauth_config:
+        extra_args += _oauth_extra_args(oauth_config)
 
     unit_content = SYSTEMD_UNIT_TEMPLATE.format(
         venv=VENV_DIR,

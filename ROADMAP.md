@@ -55,6 +55,7 @@ mcp.set_tools([...])
 - [x] Optional command allowlist in charm config (`command-allowlist`)
 - [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
 - [x] Auth token support (Bearer token via `auth-token` config)
+- [ ] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
 
 ## Phase 5: Ingress + TLS
 
@@ -92,6 +93,7 @@ mcp.set_tools([...])
 - [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
 - [ ] Reference — integration schema, config options, API docs
 - [ ] Explanation — architecture, design decisions, security model
+- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
 
 ## Phase 10: Polish + packaging
 
