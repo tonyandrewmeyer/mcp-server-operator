@@ -49,3 +49,22 @@ config:
         Acceptable values are: "info", "debug", "warning", "error"
       default: "info"
       type: string
+    auth-token:
+      description: |
+        Bearer token for MCP server authentication. When set, clients must
+        include an "Authorization: Bearer <token>" header. Leave empty to
+        disable authentication.
+      default: ""
+      type: string
+    rate-limit:
+      description: |
+        Maximum number of requests per minute to the MCP server endpoint.
+        Set to 0 to disable rate limiting.
+      default: 0
+      type: int
+    command-allowlist:
+      description: |
+        Space-separated list of executable names that exec handlers are
+        allowed to run. When empty, all commands are permitted.
+      default: ""
+      type: string

@@ -36,7 +36,7 @@ ExecStart={venv}/bin/python -m server \
     --config {config} \
     --host 0.0.0.0 \
     --port {port} \
-    --log-level {log_level}
+    --log-level {log_level}{extra_args}
 WorkingDirectory={install_dir}/src
 Restart=on-failure
 RestartSec=5
@@ -91,14 +91,30 @@ def write_config(definitions: dict[str, Any]) -> None:
     logger.info("Wrote MCP config to %s", CONFIG_PATH)
 
 
-def write_systemd_unit(port: int = 8081, log_level: str = "info") -> None:
+def write_systemd_unit(
+    port: int = 8081,
+    log_level: str = "info",
+    auth_token: str = "",
+    rate_limit: int = 0,
+    command_allowlist: str = "",
+) -> None:
     """Write the systemd unit file for the MCP server."""
+    extra_args = ""
+    if auth_token:
+        extra_args += f" \\\n    --auth-token {auth_token}"
+    if rate_limit > 0:
+        extra_args += f" \\\n    --rate-limit {rate_limit}"
+    if command_allowlist.strip():
+        commands = command_allowlist.strip().split()
+        extra_args += " \\\n    --command-allowlist " + " ".join(commands)
+
     unit_content = SYSTEMD_UNIT_TEMPLATE.format(
         venv=VENV_DIR,
         config=CONFIG_PATH,
         install_dir=INSTALL_DIR,
         port=port,
         log_level=log_level,
+        extra_args=extra_args,
     )
     SYSTEMD_UNIT_PATH.write_text(unit_content)
     subprocess.run(

@@ -50,16 +50,17 @@ mcp.set_tools([...])
 
 ## Phase 4: Security
 
-- [ ] Input validation — validate tool call arguments against declared `input_schema` before handler execution
-- [ ] No `shell=True` — enforce subprocess list args only (done by design)
-- [ ] Optional command allowlist in charm config
-- [ ] Rate limiting on the MCP server endpoint
-- [ ] Auth token support (shared secret via config or relation)
+- [x] Input validation — validate tool call arguments against declared `input_schema` before handler execution
+- [x] No `shell=True` — enforce subprocess list args only (done by design)
+- [x] Optional command allowlist in charm config (`command-allowlist`)
+- [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
+- [x] Auth token support (Bearer token via `auth-token` config)
 
-## Phase 5: Ingress
+## Phase 5: Ingress + TLS
 
 - [ ] Traefik integration for external access
 - [ ] TLS termination via Traefik
+- [ ] Direct TLS support (certificate relation or config)
 - [ ] Configurable path prefix per principal
 
 ## Phase 6: Observability (COS integration)
@@ -97,6 +98,10 @@ mcp.set_tools([...])
 - [ ] Publish to Charmhub
 - [ ] Publish `charmlibs-interfaces-mcp` to PyPI
 - [ ] Documentation site (Read the Docs or similar)
+
+## Future: Chaos testing
+
+- [ ] Integration with Litmus operators for chaos testing
 
 ## Future: Kubernetes version
 

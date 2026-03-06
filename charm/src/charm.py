@@ -26,6 +26,9 @@ class CharmConfig:
 
     port: int = 8081
     log_level: str = "info"
+    auth_token: str = ""
+    rate_limit: int = 0
+    command_allowlist: str = ""
 
 
 class McpServerCharm(ops.CharmBase):
@@ -50,7 +53,13 @@ class McpServerCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("installing MCP server")
         mcp_server.install(WORKLOAD_SERVER_SRC)
         config = self._get_config()
-        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
+        mcp_server.write_systemd_unit(
+            port=config.port,
+            log_level=config.log_level,
+            auth_token=config.auth_token,
+            rate_limit=config.rate_limit,
+            command_allowlist=config.command_allowlist,
+        )
 
     def _on_start(self, event: ops.StartEvent) -> None:
         """Start the MCP server."""
@@ -71,7 +80,13 @@ class McpServerCharm(ops.CharmBase):
     def _on_config_changed(self, event: ops.ConfigChangedEvent) -> None:
         """Handle config changes (port, log-level)."""
         config = self._get_config()
-        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
+        mcp_server.write_systemd_unit(
+            port=config.port,
+            log_level=config.log_level,
+            auth_token=config.auth_token,
+            rate_limit=config.rate_limit,
+            command_allowlist=config.command_allowlist,
+        )
         if mcp_server.is_running():
             mcp_server.restart()
 
@@ -82,7 +97,13 @@ class McpServerCharm(ops.CharmBase):
         mcp_server.write_config(definitions)
 
         config = self._get_config()
-        mcp_server.write_systemd_unit(port=config.port, log_level=config.log_level)
+        mcp_server.write_systemd_unit(
+            port=config.port,
+            log_level=config.log_level,
+            auth_token=config.auth_token,
+            rate_limit=config.rate_limit,
+            command_allowlist=config.command_allowlist,
+        )
 
         if mcp_server.is_running():
             mcp_server.restart()

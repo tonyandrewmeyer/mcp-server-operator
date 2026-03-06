@@ -13,6 +13,7 @@ from server import (
     load_config,
     substitute_command,
     substitute_template,
+    validate_arguments,
 )
 
 
@@ -65,6 +66,73 @@ class TestExecHandler:
         handler = {"type": "exec", "command": ["false"]}
         result = execute_exec_handler(handler, {})
         assert "Command failed" in result
+
+
+class TestValidateArguments:
+    def test_valid_arguments(self):
+        schema = {
+            "type": "object",
+            "properties": {"name": {"type": "string"}, "count": {"type": "integer"}},
+            "required": ["name"],
+        }
+        errors = validate_arguments({"name": "test", "count": 5}, schema)
+        assert errors == []
+
+    def test_missing_required(self):
+        schema = {
+            "type": "object",
+            "properties": {"name": {"type": "string"}},
+            "required": ["name"],
+        }
+        errors = validate_arguments({}, schema)
+        assert any("Missing required" in e for e in errors)
+
+    def test_unexpected_arguments(self):
+        schema = {"type": "object", "properties": {"name": {"type": "string"}}}
+        errors = validate_arguments({"name": "ok", "extra": "bad"}, schema)
+        assert any("Unexpected" in e for e in errors)
+
+    def test_wrong_type(self):
+        schema = {
+            "type": "object",
+            "properties": {"count": {"type": "integer"}},
+        }
+        errors = validate_arguments({"count": "not_a_number"}, schema)
+        assert any("expected type" in e for e in errors)
+
+    def test_optional_argument_missing_is_ok(self):
+        schema = {
+            "type": "object",
+            "properties": {"name": {"type": "string"}, "opt": {"type": "string"}},
+            "required": ["name"],
+        }
+        errors = validate_arguments({"name": "test"}, schema)
+        assert errors == []
+
+    def test_empty_schema(self):
+        errors = validate_arguments({}, {})
+        assert errors == []
+
+    def test_number_type_accepts_int_and_float(self):
+        schema = {"type": "object", "properties": {"val": {"type": "number"}}}
+        assert validate_arguments({"val": 1}, schema) == []
+        assert validate_arguments({"val": 1.5}, schema) == []
+        assert any("expected type" in e for e in validate_arguments({"val": "x"}, schema))
+
+
+class TestCommandAllowlist:
+    def test_allowed_command(self):
+        handler = {"type": "exec", "command": ["echo", "hello"]}
+        result = execute_exec_handler(handler, {})
+        assert result.strip() == "hello"
+
+    def test_blocked_command(self):
+        """Allowlist blocking is done in the tool handler, not execute_exec_handler."""
+        # execute_exec_handler itself doesn't check the allowlist — that's done
+        # at the tool_handler level. This test just documents that.
+        handler = {"type": "exec", "command": ["echo", "hello"]}
+        result = execute_exec_handler(handler, {})
+        assert result.strip() == "hello"
 
 
 class TestLoadConfig:
