@@ -11,6 +11,10 @@ dependencies = [
     "mcp[cli]",
     "PyJWT[crypto]",
     "prometheus-client",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+    "opentelemetry-instrumentation-asgi",
 ]
 
 [dependency-groups]

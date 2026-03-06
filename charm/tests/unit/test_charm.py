@@ -508,3 +508,33 @@ def test_cos_agent_provider_metrics_endpoint():
     state = testing.State(relations=[testing.Relation(endpoint="cos-agent")])
     state_out = ctx.run(ctx.on.config_changed(), state)
     assert not isinstance(state_out.unit_status, testing.ErrorStatus)
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_tracing_relation_changed_restarts_if_running(monkeypatch):
+    """Tracing endpoint change triggers systemd unit rewrite and restart."""
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+    ctx = testing.Context(McpServerCharm)
+    tracing_relation = testing.Relation(endpoint="charm-tracing")
+    ctx.run(
+        ctx.on.relation_changed(tracing_relation),
+        testing.State(relations=[tracing_relation]),
+    )
+    assert "restart" in restart_calls
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_tracing_relation_broken_restarts_if_running(monkeypatch):
+    """Tracing endpoint removal triggers systemd unit rewrite and restart."""
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+    ctx = testing.Context(McpServerCharm)
+    tracing_relation = testing.Relation(endpoint="charm-tracing")
+    ctx.run(
+        ctx.on.relation_broken(tracing_relation),
+        testing.State(relations=[tracing_relation]),
+    )
+    assert "restart" in restart_calls

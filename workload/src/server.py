@@ -26,6 +26,12 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts import Prompt
 from mcp.server.fastmcp.resources import FunctionResource
 from mcp.types import TextContent
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+from opentelemetry.sdk import trace as sdk_trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -443,12 +449,23 @@ async def _metrics_handler(request: Request) -> Response:
     return Response(content=body, media_type=prometheus_client.CONTENT_TYPE_LATEST)
 
 
+def _setup_tracing(otlp_endpoint: str, service_name: str = "mcp-server") -> None:
+    """Initialise OpenTelemetry tracing with an OTLP HTTP exporter."""
+    resource = Resource.create({"service.name": service_name})
+    provider = sdk_trace.TracerProvider(resource=resource)
+    exporter = OTLPSpanExporter(endpoint=f"{otlp_endpoint}/v1/traces")
+    provider.add_span_processor(BatchSpanProcessor(exporter))
+    trace.set_tracer_provider(provider)
+    logger.info("OpenTelemetry tracing enabled, exporting to %s", otlp_endpoint)
+
+
 def build_app(
     mcp: FastMCP,
     *,
     path_prefix: str = "",
     auth_token: str | None = None,
     rate_limit: int | None = None,
+    otlp_endpoint: str | None = None,
 ) -> Starlette:
     """Build the ASGI application with optional middleware and path prefix.
 
@@ -477,6 +494,9 @@ def build_app(
 
     # Metrics middleware is always active to record request telemetry.
     app.add_middleware(MetricsMiddleware)  # ty: ignore[invalid-argument-type]
+    if otlp_endpoint:
+        _setup_tracing(otlp_endpoint)
+        app.add_middleware(OpenTelemetryMiddleware)  # ty: ignore[invalid-argument-type]
     if rate_limit:
         app.add_middleware(
             RateLimitMiddleware,  # ty: ignore[invalid-argument-type]
@@ -552,6 +572,11 @@ def main() -> None:
         default=None,
         help="Path to TLS private key file for HTTPS",
     )
+    parser.add_argument(
+        "--otlp-endpoint",
+        default=None,
+        help="OTLP HTTP endpoint for OpenTelemetry trace export (e.g. http://localhost:4318)",
+    )
 
     # OAuth 2.1 resource server options.
     oauth_group = parser.add_argument_group("OAuth 2.1", "Resource server authentication")
@@ -610,7 +635,13 @@ def main() -> None:
         oauth_required_scopes=args.oauth_required_scopes,
     )
 
-    needs_uvicorn = args.auth_token or args.rate_limit or args.path_prefix or args.tls_cert
+    needs_uvicorn = (
+        args.auth_token
+        or args.rate_limit
+        or args.path_prefix
+        or args.tls_cert
+        or args.otlp_endpoint
+    )
     if needs_uvicorn:
         import uvicorn  # noqa: I001
 
@@ -619,6 +650,7 @@ def main() -> None:
             path_prefix=args.path_prefix,
             auth_token=args.auth_token,
             rate_limit=args.rate_limit,
+            otlp_endpoint=args.otlp_endpoint,
         )
 
         ssl_kwargs: dict[str, Any] = {}

@@ -13,6 +13,7 @@ import pathlib
 from typing import Any
 
 import ops
+import ops_tracing
 from charmlibs.interfaces.mcp import McpRequirer
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 
@@ -42,6 +43,11 @@ class McpServerCharm(ops.CharmBase):
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
         self.mcp = McpRequirer(self, "mcp")
+        self.tracing = ops_tracing.Tracing(
+            self,
+            tracing_relation_name="charm-tracing",
+            ca_relation_name="receive-ca-cert",
+        )
         self._cos_agent = COSAgentProvider(
             self,
             relation_name="cos-agent",
@@ -68,6 +74,10 @@ class McpServerCharm(ops.CharmBase):
         framework.observe(
             self.on.certificates_relation_broken, self._on_certificates_relation_broken
         )
+        framework.observe(
+            self.on.charm_tracing_relation_changed, self._on_tracing_relation_changed
+        )
+        framework.observe(self.on.charm_tracing_relation_broken, self._on_tracing_relation_changed)
 
     def _get_config(self) -> CharmConfig:
         """Load and return the typed charm configuration."""
@@ -108,6 +118,16 @@ class McpServerCharm(ops.CharmBase):
         """Check whether TLS certificate files have been written."""
         return mcp_server.TLS_CERT_PATH.exists() and mcp_server.TLS_KEY_PATH.exists()
 
+    def _get_otlp_endpoint(self) -> str:
+        """Get the OTLP HTTP endpoint from the tracing relation, if available."""
+        try:
+            if not self.tracing._tracing.is_ready():
+                return ""
+            endpoint = self.tracing._tracing.get_endpoint("otlp_http")
+            return endpoint or ""
+        except Exception:
+            return ""
+
     def _write_systemd_unit(self) -> None:
         """Write the systemd unit with current config and OAuth settings."""
         config = self._get_config()
@@ -120,6 +140,7 @@ class McpServerCharm(ops.CharmBase):
             oauth_config=self._get_oauth_config(),
             path_prefix=config.path_prefix,
             tls=self._has_tls(),
+            otlp_endpoint=self._get_otlp_endpoint(),
         )
 
     def _on_install(self, event: ops.InstallEvent) -> None:
@@ -233,6 +254,12 @@ class McpServerCharm(ops.CharmBase):
         for path in (mcp_server.TLS_CERT_PATH, mcp_server.TLS_KEY_PATH, mcp_server.TLS_CA_PATH):
             if path.exists():
                 path.unlink()
+        self._write_systemd_unit()
+        if mcp_server.is_running():
+            mcp_server.restart()
+
+    def _on_tracing_relation_changed(self, event: ops.RelationEvent) -> None:
+        """Handle tracing endpoint arriving, changing, or being removed."""
         self._write_systemd_unit()
         if mcp_server.is_running():
             mcp_server.restart()

@@ -114,6 +114,26 @@ class TestWriteSystemdUnit:
         assert "--tls-cert" in content
         assert "--tls-key" in content
 
+    @pytest.mark.usefixtures("_patch_subprocess")
+    def test_write_systemd_unit_with_otlp_endpoint(self, monkeypatch, tmp_path):
+        unit_path = tmp_path / "mcp-server.service"
+        monkeypatch.setattr(mcp_server, "SYSTEMD_UNIT_PATH", unit_path)
+
+        mcp_server.write_systemd_unit(otlp_endpoint="http://tempo:4318")
+
+        content = unit_path.read_text()
+        assert "--otlp-endpoint http://tempo:4318" in content
+
+    @pytest.mark.usefixtures("_patch_subprocess")
+    def test_write_systemd_unit_no_otlp_when_empty(self, monkeypatch, tmp_path):
+        unit_path = tmp_path / "mcp-server.service"
+        monkeypatch.setattr(mcp_server, "SYSTEMD_UNIT_PATH", unit_path)
+
+        mcp_server.write_systemd_unit()
+
+        content = unit_path.read_text()
+        assert "--otlp-endpoint" not in content
+
 
 class TestWriteTlsFiles:
     def test_write_tls_files(self, monkeypatch, tmp_path):

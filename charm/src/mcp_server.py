@@ -75,7 +75,18 @@ def install(server_src: pathlib.Path) -> None:
 
     pip = str(VENV_DIR / "bin" / "pip")
     subprocess.run(
-        [pip, "install", "mcp[cli]", "httpx", "PyJWT[crypto]", "prometheus-client"],
+        [
+            pip,
+            "install",
+            "mcp[cli]",
+            "httpx",
+            "PyJWT[crypto]",
+            "prometheus-client",
+            "opentelemetry-api",
+            "opentelemetry-sdk",
+            "opentelemetry-exporter-otlp-proto-http",
+            "opentelemetry-instrumentation-asgi",
+        ],
         check=True,
     )
 
@@ -141,6 +152,7 @@ def write_systemd_unit(
     oauth_config: dict[str, Any] | None = None,
     path_prefix: str = "",
     tls: bool = False,
+    otlp_endpoint: str = "",
 ) -> None:
     """Write the systemd unit file for the MCP server."""
     extra_args = ""
@@ -158,6 +170,8 @@ def write_systemd_unit(
         extra_args += f" \\\n    --tls-key {TLS_KEY_PATH}"
     if oauth_config:
         extra_args += _oauth_extra_args(oauth_config)
+    if otlp_endpoint:
+        extra_args += f" \\\n    --otlp-endpoint {otlp_endpoint}"
 
     unit_content = SYSTEMD_UNIT_TEMPLATE.format(
         venv=VENV_DIR,

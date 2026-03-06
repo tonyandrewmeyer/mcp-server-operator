@@ -74,8 +74,8 @@ mcp.set_tools([...])
 - [x] COSAgentProvider integration (cos-agent relation for grafana-agent subordinate)
 - [x] Grafana dashboard (request rate, latency percentiles, tool calls, active connections, error rate)
 - [x] Prometheus alert rules (McpServerDown, McpServerHighErrorRate, McpServerHighLatency)
-- [ ] Tracing for the charm (tempo integration)
-- [ ] Tracing for the MCP server workload (OpenTelemetry)
+- [x] Charm tracing via `ops[tracing]` (Tempo integration via `charm-tracing` relation)
+- [x] Workload tracing via OpenTelemetry ASGI instrumentation (OTLP HTTP export)
 - [ ] Log forwarding (loki integration)
 - [ ] SLOs via sloth-k8s charm
 
