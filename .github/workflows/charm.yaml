@@ -23,9 +23,9 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
-      - run: uv run ruff format --check --diff src tests
-      - run: uv run ruff check src tests
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
+      - run: uv run --group lint ruff format --check --diff src tests
+      - run: uv run --group lint ruff check src tests
 
   lint:
     name: Lint
@@ -35,9 +35,9 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
-      - run: uv run codespell .
-      - run: uv run ty check
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
+      - run: uv run --group lint codespell .
+      - run: uv run --group lint ty check src/charm.py src/mcp_server.py
 
   unit-test:
     name: Unit tests
@@ -47,10 +47,10 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: |
-          uv run coverage run --source=src -m pytest -v -s --tb native tests/unit
-          uv run coverage report
+          uv run --group unit coverage run --source=src -m pytest -v -s --tb native tests/unit
+          uv run --group unit coverage report
 
   integration-test:
     name: Integration tests
@@ -61,7 +61,7 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - name: Set up Juju
         uses: charmed-kubernetes/actions-operator@main
         with:
@@ -69,4 +69,4 @@ jobs:
       - name: Pack charm
         run: charmcraft pack
       - name: Run integration tests
-        run: uv run pytest -v -s --tb native --log-cli-level=INFO tests/integration
+        run: uv run --group integration pytest -v -s --tb native --log-cli-level=INFO tests/integration

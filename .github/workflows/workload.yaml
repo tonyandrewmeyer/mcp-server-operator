@@ -23,7 +23,7 @@ jobs:
         working-directory: workload
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: uv run ruff format --check --diff src
       - run: uv run ruff check src
 
@@ -35,7 +35,7 @@ jobs:
         working-directory: workload
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: uv run ty check
 
   test:
@@ -46,7 +46,7 @@ jobs:
         working-directory: workload
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f4a7d943c6e3ff714f # v6.0.1
+      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: |
           uv run coverage run --source=src -m pytest -v -s --tb native tests/
           uv run coverage report

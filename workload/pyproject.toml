@@ -31,6 +31,9 @@ minversion = "6.0"
 log_cli_level = "INFO"
 pythonpath = ["src"]
 
+[tool.ty.environment]
+extra-paths = ["src"]
+
 # Linting tools configuration
 [tool.ruff]
 line-length = 99
