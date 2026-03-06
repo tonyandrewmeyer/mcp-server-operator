@@ -20,4 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - GitHub Actions CI for charm (format, lint, unit tests, integration tests)
 - GitHub Actions CI for workload (format, lint, tests)
 - GitHub Actions zizmor workflow security audit
+- Subordinate machine charm (`charm/`): handles mcp relation, systemd lifecycle, config
+- MCP server workload (`workload/`): FastMCP with streamable HTTP, exec/http handlers, template substitution
+- Unit tests: 5 charm tests, 15 workload tests
 - This changelog

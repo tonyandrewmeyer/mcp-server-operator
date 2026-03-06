@@ -17,11 +17,12 @@
 
 ## Phase 1: Core — Charm skeleton + MCP server
 
-- [ ] `charm/charmcraft.yaml` — subordinate machine charm metadata (update from scaffold)
-- [ ] `charm/src/charm.py` — ops charm handling `mcp` relation and systemd lifecycle
-- [ ] `charm/src/mcp_server.py` — workload management (install, start, stop, configure)
-- [ ] `workload/src/server.py` — MCP server with streamable HTTP, dynamic tool/prompt/resource registration from a JSON config file
-- [ ] `charm/templates/mcp-server.service` — systemd unit file
+- [x] `charm/charmcraft.yaml` — subordinate machine charm metadata
+- [x] `charm/src/charm.py` — ops charm handling `mcp` relation and systemd lifecycle
+- [x] `charm/src/mcp_server.py` — workload management (install, start, stop, configure)
+- [x] `workload/src/server.py` — MCP server with streamable HTTP, dynamic tool/prompt/resource registration from a JSON config file
+- [x] systemd unit (template in mcp_server.py)
+- [x] Unit tests: 5 charm tests, 15 workload tests
 - [ ] End-to-end: principal sets relation data, MCP server starts and serves tools
 
 ## Phase 2: Charm library (`charmlibs-mcp`)
