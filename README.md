@@ -56,6 +56,22 @@ The principal charm provides tool/prompt/resource definitions as JSON in the `mc
 
 See [docs/integration-schema.md](docs/integration-schema.md) for the full schema reference.
 
+### Charm library
+
+The `charmlibs-mcp` package provides typed dataclasses and helper classes for working with the `mcp` interface:
+
+```python
+from charmlibs.mcp import McpProvider, Tool, ExecHandler
+
+self.mcp = McpProvider(self, "mcp")
+self.mcp.set_tools([
+    Tool(name="list-dbs", description="List databases",
+         handler=ExecHandler(command=["psql", "-l", "--csv"])),
+])
+```
+
+Install with `pip install charmlibs-mcp`. See the [charmlib README](charmlib/README.md) for full details.
+
 ## Deployment
 
 ```bash
@@ -83,7 +99,3 @@ juju integrate mcp-server:ingress traefik:ingress
 ## Status
 
 This project is in early development. See [ROADMAP.md](ROADMAP.md) for planned work.
-
-## License
-
-Apache 2.0
