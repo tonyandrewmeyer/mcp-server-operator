@@ -151,7 +151,9 @@ def test_config_changed_no_restart_if_not_running(monkeypatch):
 
 @pytest.mark.usefixtures("_patch_workload")
 def test_oauth_relation_changed_restarts_if_running(monkeypatch):
+    restart_calls = []
     monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
     ctx = testing.Context(McpServerCharm)
     oauth_relation = testing.Relation(
         endpoint="oauth",
@@ -162,6 +164,24 @@ def test_oauth_relation_changed_restarts_if_running(monkeypatch):
         testing.State(relations=[oauth_relation]),
     )
     assert not isinstance(state_out.unit_status, testing.ErrorStatus)
+    assert "restart" in restart_calls
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_oauth_relation_changed_no_restart_if_not_running(monkeypatch):
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_not_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={"issuer_url": "https://idp.example.com"},
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    assert restart_calls == []
 
 
 @pytest.mark.usefixtures("_patch_workload")
@@ -177,6 +197,170 @@ def test_oauth_relation_broken(monkeypatch):
         testing.State(relations=[oauth_relation]),
     )
     assert not isinstance(state_out.unit_status, testing.ErrorStatus)
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_oauth_relation_broken_restarts_if_running(monkeypatch):
+    restart_calls = []
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
+    monkeypatch.setattr("charm.mcp_server.restart", lambda: restart_calls.append("restart"))
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={"issuer_url": "https://idp.example.com"},
+    )
+    ctx.run(
+        ctx.on.relation_broken(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    assert "restart" in restart_calls
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_no_relation(monkeypatch):
+    """_get_oauth_config returns None when there is no oauth relation."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    ctx.run(ctx.on.config_changed(), testing.State())
+    assert systemd_calls[0]["oauth_config"] is None
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_no_issuer_url(monkeypatch):
+    """_get_oauth_config returns None when issuer_url is missing."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={"client_id": "my-client"},
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    assert systemd_calls[0]["oauth_config"] is None
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_basic(monkeypatch):
+    """_get_oauth_config extracts issuer_url and builds resource_server_url."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={"issuer_url": "https://idp.example.com"},
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    oauth_config = systemd_calls[0]["oauth_config"]
+    assert oauth_config is not None
+    assert oauth_config["issuer_url"] == "https://idp.example.com"
+    assert oauth_config["resource_server_url"] == "http://localhost:8081"
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_full(monkeypatch):
+    """_get_oauth_config extracts all optional fields."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={
+            "issuer_url": "https://idp.example.com",
+            "jwks_endpoint": "https://idp.example.com/.well-known/jwks.json",
+            "introspection_endpoint": "https://idp.example.com/oauth2/introspect",
+            "client_id": "mcp-server-client",
+            "jwt_access_token": "true",
+        },
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    oauth_config = systemd_calls[0]["oauth_config"]
+    assert oauth_config["issuer_url"] == "https://idp.example.com"
+    assert oauth_config["jwks_endpoint"] == "https://idp.example.com/.well-known/jwks.json"
+    assert oauth_config["jwks_uri"] == "https://idp.example.com/.well-known/jwks.json"
+    assert oauth_config["introspection_endpoint"] == "https://idp.example.com/oauth2/introspect"
+    assert oauth_config["client_id"] == "mcp-server-client"
+    assert oauth_config["jwt_access_token"] is True
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_with_client_secret(monkeypatch):
+    """_get_oauth_config resolves client_secret from a Juju secret."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    secret = testing.Secret(
+        tracked_content={"secret": "s3cr3t-value"},
+        owner=None,
+    )
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={
+            "issuer_url": "https://idp.example.com",
+            "client_id": "mcp-server-client",
+            "client_secret_id": secret.id,
+        },
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation], secrets=[secret]),
+    )
+    oauth_config = systemd_calls[0]["oauth_config"]
+    assert oauth_config["client_secret"] == "s3cr3t-value"
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_get_oauth_config_jwt_access_token_false(monkeypatch):
+    """_get_oauth_config parses jwt_access_token=false correctly."""
+    systemd_calls = []
+
+    def _track_write_systemd(**kwargs):
+        systemd_calls.append(kwargs)
+
+    monkeypatch.setattr("charm.mcp_server.write_systemd_unit", _track_write_systemd)
+    ctx = testing.Context(McpServerCharm)
+    oauth_relation = testing.Relation(
+        endpoint="oauth",
+        remote_app_data={
+            "issuer_url": "https://idp.example.com",
+            "jwt_access_token": "false",
+        },
+    )
+    ctx.run(
+        ctx.on.relation_changed(oauth_relation),
+        testing.State(relations=[oauth_relation]),
+    )
+    oauth_config = systemd_calls[0]["oauth_config"]
+    assert oauth_config["jwt_access_token"] is False
 
 
 @pytest.mark.usefixtures("_patch_workload")

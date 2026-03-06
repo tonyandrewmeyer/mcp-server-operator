@@ -56,8 +56,8 @@ mcp.set_tools([...])
 - [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
 - [x] Auth token support (Bearer token via `auth-token` config)
 - [x] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
-- [ ] Charm unit tests for OAuth relation events and `_get_oauth_config`
-- [ ] Integration test for OAuth with a mock or real IdP (e.g. Hydra)
+- [x] Charm unit tests for OAuth relation events and `_get_oauth_config`
+- [x] Integration test for OAuth with a mock IdP (JWT + introspection with mocked endpoints)
 
 ## Phase 5: Ingress + TLS
 
@@ -77,7 +77,7 @@ mcp.set_tools([...])
 
 ## Phase 7: Testing
 
-- [x] Unit tests for `charm.py` (17 tests covering all events and OAuth)
+- [x] Unit tests for `charm.py` (19 charm tests + 6 mcp_server tests covering all events and OAuth)
 - [x] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
 - [x] Workload unit tests (41 tests covering server, middleware, token verifier)
 - [ ] Workload integration tests (start server, make HTTP requests, verify MCP protocol)
