@@ -8,6 +8,37 @@ repos:
       - id: ruff-format
         files: ^(charm|workload)/
 
+  - repo: local
+    hooks:
+      - id: ty-charm
+        name: ty (charm)
+        entry: uv run --directory charm ty check src/charm.py src/mcp_server.py
+        language: system
+        files: ^charm/src/(charm|mcp_server)\.py$
+        types: [python]
+        pass_filenames: false
+      - id: ty-workload
+        name: ty (workload)
+        entry: uv run --directory workload ty check src/server.py
+        language: system
+        files: ^workload/src/server\.py$
+        types: [python]
+        pass_filenames: false
+      - id: test-charm
+        name: unit tests (charm)
+        entry: bash -c 'cd charm && PYTHONPATH=src:lib uv run --group unit pytest tests/unit -q'
+        language: system
+        files: ^charm/
+        types: [python]
+        pass_filenames: false
+      - id: test-workload
+        name: unit tests (workload)
+        entry: uv run --directory workload pytest tests/ -q
+        language: system
+        files: ^workload/
+        types: [python]
+        pass_filenames: false
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:

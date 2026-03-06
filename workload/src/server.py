@@ -148,7 +148,7 @@ def _build_tool_handler(
                 annotation=str,
             )
         )
-    tool_handler.__signature__ = inspect.Signature(params)
+    tool_handler.__signature__ = inspect.Signature(params)  # ty: ignore[unresolved-attribute]
 
     return tool_handler
 
