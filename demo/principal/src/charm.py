@@ -8,27 +8,18 @@ import logging
 
 import ops
 
-# CLAUDE: let's import mcp and then put 'mcp.' before all use
-from charmlibs.interfaces.mcp import (
-    ExecHandler,
-    McpDefinitions,
-    McpProvider,
-    Prompt,
-    PromptArgument,
-    Resource,
-    Tool,
-)
+from charmlibs.interfaces import mcp
 
 logger = logging.getLogger(__name__)
 
-MCP_DEFINITIONS = McpDefinitions(
+MCP_DEFINITIONS = mcp.McpDefinitions(
     tools=[
-        Tool(
+        mcp.Tool(
             name="system-info",
             description="Get basic system information (hostname, OS, uptime)",
-            handler=ExecHandler(command=["uname", "-a"], timeout=10),
+            handler=mcp.ExecHandler(command=["uname", "-a"], timeout=10),
         ),
-        Tool(
+        mcp.Tool(
             name="disk-usage",
             description="Show disk usage for a given path",
             input_schema={
@@ -41,9 +32,9 @@ MCP_DEFINITIONS = McpDefinitions(
                 },
                 "required": ["path"],
             },
-            handler=ExecHandler(command=["df", "-h", "{{path}}"], timeout=10),
+            handler=mcp.ExecHandler(command=["df", "-h", "{{path}}"], timeout=10),
         ),
-        Tool(
+        mcp.Tool(
             name="list-files",
             description="List files in a directory",
             input_schema={
@@ -56,11 +47,11 @@ MCP_DEFINITIONS = McpDefinitions(
                 },
                 "required": ["directory"],
             },
-            handler=ExecHandler(command=["ls", "-la", "{{directory}}"], timeout=10),
+            handler=mcp.ExecHandler(command=["ls", "-la", "{{directory}}"], timeout=10),
         ),
     ],
     prompts=[
-        Prompt(
+        mcp.Prompt(
             name="diagnose-system",
             description="Diagnose system health and suggest improvements",
             template=(
@@ -70,7 +61,7 @@ MCP_DEFINITIONS = McpDefinitions(
                 "a summary of findings and recommendations."
             ),
             arguments=[
-                PromptArgument(
+                mcp.PromptArgument(
                     name="focus",
                     description="Area to focus on (disk, memory, network, general)",
                     required=False,
@@ -79,11 +70,11 @@ MCP_DEFINITIONS = McpDefinitions(
         ),
     ],
     resources=[
-        Resource(
+        mcp.Resource(
             uri="config://os-release",
             name="OS Release Info",
             description="Contents of /etc/os-release",
-            handler=ExecHandler(command=["cat", "/etc/os-release"]),
+            handler=mcp.ExecHandler(command=["cat", "/etc/os-release"]),
         ),
     ],
 )
@@ -94,7 +85,7 @@ class DemoPrincipalCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
-        self.mcp = McpProvider(self, "mcp")
+        self.mcp = mcp.McpProvider(self, "mcp")
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.mcp_relation_joined, self._on_mcp_relation_joined)
 

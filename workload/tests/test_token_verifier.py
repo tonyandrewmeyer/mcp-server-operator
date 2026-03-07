@@ -1,7 +1,7 @@
 # Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
 
-# CLAUDE: add a module docstring
+"""Tests for the OAuth 2.1 token verifier."""
 
 import json
 import time
@@ -12,6 +12,7 @@ import jwt as pyjwt
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from jwt.algorithms import RSAAlgorithm
 
 from token_verifier import (
     IntrospectionTokenVerifier,
@@ -28,9 +29,6 @@ def _generate_rsa_key():
 
 def _rsa_public_jwk(private_key, kid="test-key-1"):
     """Build a JWK dict from an RSA private key's public component."""
-    # CLAUDE: all imports at the top of the module
-    from jwt.algorithms import RSAAlgorithm
-
     pub_json = RSAAlgorithm.to_jwk(private_key.public_key())
     jwk = json.loads(pub_json)
     jwk["kid"] = kid

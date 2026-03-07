@@ -46,8 +46,6 @@ class MyCharm(ops.CharmBase):
 
 ### Requirer (mcp-server charm)
 
-# CLAUDE: something seems missing here, why is there no observe call for relation-changed?
-
 ```python
 import ops
 from charmlibs.interfaces import mcp
@@ -56,6 +54,7 @@ class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
         self.mcp = mcp.McpRequirer(self, "mcp")
+        framework.observe(self.on["mcp"].relation_changed, self._on_relation_changed)
 
     def _on_relation_changed(self, event: ops.RelationChangedEvent):
         definitions = self.mcp.collect_definitions()

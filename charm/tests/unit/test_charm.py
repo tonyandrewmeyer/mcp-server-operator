@@ -112,26 +112,18 @@ def test_mcp_relation_broken():
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_stop():
+def test_stop(monkeypatch):
     calls = []
 
     def _track_stop():
         calls.append("stop")
 
     ctx = testing.Context(McpServerCharm)
-    # Temporarily replace the patched stop with one that records the call.
-    # CLAUDE: can't we monkeypatch or similar here?
     ctx.run(ctx.on.install(), testing.State())
-    import charm
-
-    original = charm.mcp_server.stop
-    charm.mcp_server.stop = _track_stop
-    try:
-        ctx = testing.Context(McpServerCharm)
-        ctx.run(ctx.on.stop(), testing.State())
-        assert "stop" in calls
-    finally:
-        charm.mcp_server.stop = original
+    monkeypatch.setattr("charm.mcp_server.stop", _track_stop)
+    ctx = testing.Context(McpServerCharm)
+    ctx.run(ctx.on.stop(), testing.State())
+    assert "stop" in calls
 
 
 @pytest.mark.usefixtures("_patch_workload")

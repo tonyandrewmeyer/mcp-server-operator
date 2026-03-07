@@ -22,6 +22,7 @@ from typing import Any
 
 import httpx
 import prometheus_client
+from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts import Prompt
 from mcp.server.fastmcp.resources import FunctionResource
@@ -37,6 +38,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
+
+import token_verifier as tv
 
 logger = logging.getLogger(__name__)
 
@@ -393,12 +396,6 @@ def create_server(
 
     extra_kwargs: dict[str, Any] = {}
     if oauth_issuer_url and oauth_resource_server_url:
-        # CLAUDE: two imports here both should be at the top of the module
-        from mcp.server.auth.settings import AuthSettings
-
-        # CLAUDE: as well as moving this, seems like it should be relative
-        import token_verifier as tv
-
         verifier = tv.create_token_verifier(
             issuer_url=oauth_issuer_url,
             resource_server_url=oauth_resource_server_url,

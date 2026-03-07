@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 class _McpRelationData:
     """Schema for data on the relation app data bag."""
 
-    # CLAUDE: this shouldn't be dict|str, pick one. presumably dict.
-    mcp_definitions: dict | str = dataclasses.field(default_factory=dict)
+    mcp_definitions: dict = dataclasses.field(default_factory=dict)
 
 
 class McpRequirer(ops.Object):

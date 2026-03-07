@@ -6,8 +6,7 @@ import json
 import ops
 from ops import testing
 
-# CLAUDE: let's import mcp and use 'mcp.' when referring to these
-from charmlibs.interfaces.mcp import ExecHandler, McpDefinitions, McpProvider, McpRequirer, Tool
+from charmlibs.interfaces import mcp
 
 
 class ProviderCharm(ops.CharmBase):
@@ -20,7 +19,7 @@ class ProviderCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
-        self.mcp = McpProvider(self, "mcp")
+        self.mcp = mcp.McpProvider(self, "mcp")
 
 
 class RequirerCharm(ops.CharmBase):
@@ -34,20 +33,19 @@ class RequirerCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
-        self.mcp = McpRequirer(self, "mcp")
+        self.mcp = mcp.McpRequirer(self, "mcp")
 
 
-SAMPLE_DEFINITIONS = McpDefinitions(
+SAMPLE_DEFINITIONS = mcp.McpDefinitions(
     tools=[
-        Tool(
+        mcp.Tool(
             name="hello",
             description="Say hello",
-            handler=ExecHandler(command=["echo", "hello"]),
+            handler=mcp.ExecHandler(command=["echo", "hello"]),
         ),
     ],
 )
 
-# CLAUDE: i don't like the double-JSON. Either use a custom encoder/decoder with the load/save or make it so that the dataclasses can be dumped to JSON in the way that ops expects.
 
 class TestMcpProvider:
     def test_set_definitions_writes_to_relation(self):
@@ -85,8 +83,8 @@ class TestMcpProvider:
         state = testing.State(relations=[relation], leader=True)
 
         tools = [
-            Tool(name="t1", description="Tool 1", handler=ExecHandler(command=["ls"])),
-            Tool(name="t2", description="Tool 2", handler=ExecHandler(command=["df"])),
+            mcp.Tool(name="t1", description="Tool 1", handler=mcp.ExecHandler(command=["ls"])),
+            mcp.Tool(name="t2", description="Tool 2", handler=mcp.ExecHandler(command=["df"])),
         ]
         with ctx(ctx.on.relation_joined(relation), state) as mgr:
             mgr.charm.mcp.set_tools(tools)

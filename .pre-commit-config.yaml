@@ -10,7 +10,6 @@ repos:
         files: ^(charm|workload|charmlib)/
         exclude: ^charm/lib/
 
-# CLAUDE: there's a lot of config here, can some of it go into pyproject.toml so it also applies if manually running the tool?
   - repo: local
     hooks:
       - id: ty-charm

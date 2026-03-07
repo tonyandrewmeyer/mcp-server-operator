@@ -83,7 +83,6 @@ def _make_jsonrpc(method: str, params: dict[str, Any], req_id: int = 1) -> dict[
     }
 
 
-# CLAUDE: us spelling
 INITIALIZE_PARAMS = {
     "protocolVersion": "2025-03-26",
     "capabilities": {},
@@ -125,8 +124,7 @@ async def _make_client(
             yield client
 
 
-# CLAUDE: us spelling throughout this function and its name
-async def _initialize(
+async def _initialise(
     client: httpx.AsyncClient,
     extra_headers: dict[str, str] | None = None,
 ) -> dict[str, Any]:
@@ -161,10 +159,9 @@ async def _send_message(
 
 @pytest.mark.anyio
 class TestServerEndToEnd:
-    # CLAUDE: us spelling
-    async def test_initialize(self, tmp_path: pathlib.Path):
+    async def test_initialise(self, tmp_path: pathlib.Path):
         async with _make_client(tmp_path) as client:
-            result = await _initialize(client)
+            result = await _initialise(client)
             assert "result" in result
             assert result["result"]["protocolVersion"] is not None
             assert result["result"]["serverInfo"]["name"] == "mcp-server-charm"
@@ -227,7 +224,7 @@ class TestBearerAuthEndToEnd:
     async def test_accepts_with_token(self, tmp_path: pathlib.Path):
         middleware = [(BearerAuthMiddleware, {"token": "test-secret"})]
         async with _make_client(tmp_path, middleware=middleware) as client:
-            result = await _initialize(
+            result = await _initialise(
                 client,
                 extra_headers={"Authorization": "Bearer test-secret"},
             )
