@@ -102,8 +102,8 @@ mcp.set_tools([...])
   - list-databases, run-query, table-sizes, active-connections, explain-query, list-indexes
   - Prompts: analyse-database, diagnose-performance
   - Resources: pg_settings (non-default), pg_hba_file_rules
-- [ ] End-to-end: deploy postgresql + postgresql-mcp + mcp-server, connect Claude Code, have an LLM manage a real database
-- [ ] README / walkthrough showing the "blow your mind" experience — ask Claude to analyse your database, it discovers the schema, runs queries, and gives insights
+- [x] End-to-end: deploy postgresql + postgresql-mcp + mcp-server, connect Claude Code, have an LLM manage a real database
+- [x] README / walkthrough showing the "blow your mind" experience — ask Claude to analyse your database, it discovers the schema, runs queries, and gives insights
 
 ## Phase 9: Documentation (Diataxis)
 

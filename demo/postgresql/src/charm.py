@@ -2,7 +2,11 @@
 # Copyright 2026 Ubuntu
 # See LICENSE file for licensing details.
 
-"""PostgreSQL MCP demo charm — exposes PostgreSQL tools, prompts, and resources via MCP."""
+"""PostgreSQL MCP demo charm — exposes PostgreSQL tools, prompts, and resources via MCP.
+
+Works with the charmed-postgresql snap, which runs as snap_daemon and uses
+the ``backup`` database role with peer authentication over the local socket.
+"""
 
 import logging
 
@@ -11,6 +15,12 @@ import ops
 from charmlibs.interfaces import mcp
 
 logger = logging.getLogger(__name__)
+
+# The charmed-postgresql snap's psql binary and auth details.
+_PSQL = [
+    "sudo", "-u", "snap_daemon", "charmed-postgresql.psql",
+    "-h", "/tmp", "-U", "backup", "-d", "postgres",
+]
 
 # SQL fragments used in tool commands, kept here for readability.
 _TABLE_SIZES_SQL = (
@@ -29,7 +39,7 @@ _ACTIVE_CONNECTIONS_SQL = (
 )
 
 _LIST_INDEXES_SQL = (
-    "SELECT schemaname, tablename, indexname,"
+    "SELECT schemaname, relname AS tablename, indexrelname AS indexname,"
     " pg_size_pretty(pg_relation_size(indexrelid)) AS size"
     " FROM pg_stat_user_indexes"
     " ORDER BY pg_relation_size(indexrelid) DESC;"
@@ -54,7 +64,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             name="list-databases",
             description="List all PostgreSQL databases on this server",
             handler=mcp.ExecHandler(
-                command=["sudo", "-u", "postgres", "psql", "-l", "--csv"],
+                command=[*_PSQL, "-l", "--csv"],
                 timeout=10,
             ),
         ),
@@ -76,12 +86,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
                 "required": ["database", "query"],
             },
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-d", "{{database}}",
-                    "-c", "{{query}}",
-                    "--csv",
-                ],
+                command=[*_PSQL, "-d", "{{database}}", "-c", "{{query}}", "--csv"],
                 timeout=30,
             ),
         ),
@@ -99,12 +104,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
                 "required": ["database"],
             },
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-d", "{{database}}",
-                    "-c", _TABLE_SIZES_SQL,
-                    "--csv",
-                ],
+                command=[*_PSQL, "-d", "{{database}}", "-c", _TABLE_SIZES_SQL, "--csv"],
                 timeout=15,
             ),
         ),
@@ -112,11 +112,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             name="active-connections",
             description="Show all non-idle connections with their current queries",
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-c", _ACTIVE_CONNECTIONS_SQL,
-                    "--csv",
-                ],
+                command=[*_PSQL, "-c", _ACTIVE_CONNECTIONS_SQL, "--csv"],
                 timeout=10,
             ),
         ),
@@ -139,10 +135,8 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             },
             handler=mcp.ExecHandler(
                 command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-d", "{{database}}",
-                    "-c", "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {{query}}",
-                    "--csv",
+                    *_PSQL, "-d", "{{database}}",
+                    "-c", "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {{query}}", "--csv",
                 ],
                 timeout=60,
             ),
@@ -161,12 +155,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
                 "required": ["database"],
             },
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-d", "{{database}}",
-                    "-c", _LIST_INDEXES_SQL,
-                    "--csv",
-                ],
+                command=[*_PSQL, "-d", "{{database}}", "-c", _LIST_INDEXES_SQL, "--csv"],
                 timeout=15,
             ),
         ),
@@ -217,11 +206,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             name="PostgreSQL Configuration",
             description="All non-default PostgreSQL settings (from pg_settings)",
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-c", _NON_DEFAULT_SETTINGS_SQL,
-                    "--csv",
-                ],
+                command=[*_PSQL, "-c", _NON_DEFAULT_SETTINGS_SQL, "--csv"],
             ),
         ),
         mcp.Resource(
@@ -229,11 +214,7 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             name="PostgreSQL HBA Rules",
             description="Client authentication rules (from pg_hba_file_rules)",
             handler=mcp.ExecHandler(
-                command=[
-                    "sudo", "-u", "postgres", "psql",
-                    "-c", _HBA_RULES_SQL,
-                    "--csv",
-                ],
+                command=[*_PSQL, "-c", _HBA_RULES_SQL, "--csv"],
             ),
         ),
     ],
