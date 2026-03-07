@@ -13,20 +13,20 @@ pip install charmlibs-interfaces-mcp
 ### Provider (principal charm)
 
 ```python
-from charmlibs.interfaces.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+from charmlibs.interfaces import mcp
 
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
-        self.mcp = McpProvider(self, "mcp")
+        self.mcp = mcp.McpProvider(self, "mcp")
         framework.observe(self.on.mcp_relation_joined, self._publish_mcp)
 
     def _publish_mcp(self, event):
-        self.mcp.set_definitions(McpDefinitions(tools=[
-            Tool(
+        self.mcp.set_definitions(mcp.McpDefinitions(tools=[
+            mcp.Tool(
                 name="list-databases",
                 description="List all PostgreSQL databases",
-                handler=ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
+                handler=mcp.ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
             ),
         ]))
 ```
@@ -34,12 +34,12 @@ class MyCharm(ops.CharmBase):
 ### Requirer (mcp-server charm)
 
 ```python
-from charmlibs.interfaces.mcp import McpRequirer
+from charmlibs.interfaces import mcp
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
-        self.mcp = McpRequirer(self, "mcp")
+        self.mcp = mcp.McpRequirer(self, "mcp")
 
     def _on_relation_changed(self, event):
         definitions = self.mcp.collect_definitions()
@@ -248,28 +248,20 @@ Here is a full example of what a PostgreSQL charm might set on the relation:
 The same example using `charmlibs-interfaces-mcp`:
 
 ```python
-from charmlibs.interfaces.mcp import (
-    ExecHandler,
-    McpDefinitions,
-    McpProvider,
-    Prompt,
-    PromptArgument,
-    Resource,
-    Tool,
-)
+from charmlibs.interfaces import mcp
 
-mcp = McpProvider(self, "mcp")
-mcp.set_definitions(McpDefinitions(
+provider = mcp.McpProvider(self, "mcp")
+provider.set_definitions(mcp.McpDefinitions(
     tools=[
-        Tool(
+        mcp.Tool(
             name="list-databases",
             description="List all PostgreSQL databases",
-            handler=ExecHandler(
+            handler=mcp.ExecHandler(
                 command=["sudo", "-u", "postgres", "psql", "-l", "--csv"],
                 timeout=10,
             ),
         ),
-        Tool(
+        mcp.Tool(
             name="run-query",
             description="Run a read-only SQL query against a database",
             input_schema={
@@ -280,28 +272,28 @@ mcp.set_definitions(McpDefinitions(
                 },
                 "required": ["query", "database"],
             },
-            handler=ExecHandler(
+            handler=mcp.ExecHandler(
                 command=["sudo", "-u", "postgres", "psql", "-d", "{{database}}", "-c", "{{query}}", "--csv"],
                 timeout=30,
             ),
         ),
     ],
     prompts=[
-        Prompt(
+        mcp.Prompt(
             name="analyse-database",
             description="Analyse database health and performance",
             template="Please analyse the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.",
             arguments=[
-                PromptArgument(name="database", description="Database to analyse"),
+                mcp.PromptArgument(name="database", description="Database to analyse"),
             ],
         ),
     ],
     resources=[
-        Resource(
+        mcp.Resource(
             uri="config://postgresql/main",
             name="PostgreSQL Configuration",
             description="Current postgresql.conf contents",
-            handler=ExecHandler(command=["cat", "/etc/postgresql/14/main/postgresql.conf"]),
+            handler=mcp.ExecHandler(command=["cat", "/etc/postgresql/14/main/postgresql.conf"]),
         ),
     ],
 ))

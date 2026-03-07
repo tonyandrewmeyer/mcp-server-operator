@@ -8,7 +8,7 @@ A subordinate machine charm that deploys a [Model Context Protocol](https://mode
                   ┌─────────────────────────────────────────────┐
                   │              Machine (Juju unit)            │
                   │                                             │
-  Client ──► Traefik ──► MCP Server (subordinate charm)         │
+  Client ──► HAProxy ──► MCP Server (subordinate charm)         │
                   │            │                                │
                   │            │ exec / http                    │
                   │            ▼                                │
@@ -21,7 +21,7 @@ A subordinate machine charm that deploys a [Model Context Protocol](https://mode
 2. The MCP server charm attaches as a **subordinate** (via `scope: container`) and reads those declarations.
 3. It runs a Python MCP server (using the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)) as a **systemd service** on the same machine.
 4. When an MCP client calls a tool, the server executes the declared handler — either a shell command (`exec`) or a local HTTP call (`http`).
-5. Ingress is provided via **Traefik** integration.
+5. Ingress is provided via **HAProxy** integration.
 
 ## Integration interface
 
@@ -61,12 +61,12 @@ See [docs/integration-schema.md](docs/integration-schema.md) for the full schema
 The `charmlibs-interfaces-mcp` package provides typed dataclasses and helper classes for working with the `mcp` interface:
 
 ```python
-from charmlibs.interfaces.mcp import McpProvider, Tool, ExecHandler
+from charmlibs.interfaces import mcp
 
-self.mcp = McpProvider(self, "mcp")
+self.mcp = mcp.McpProvider(self, "mcp")
 self.mcp.set_tools([
-    Tool(name="list-dbs", description="List databases",
-         handler=ExecHandler(command=["psql", "-l", "--csv"])),
+    mcp.Tool(name="list-dbs", description="List databases",
+         handler=mcp.ExecHandler(command=["psql", "-l", "--csv"])),
 ])
 ```
 
@@ -84,18 +84,39 @@ juju deploy mcp-server
 # Integrate them
 juju integrate postgresql:mcp mcp-server:mcp
 
-# Optionally add ingress
-juju deploy traefik
-juju integrate mcp-server:ingress traefik:ingress
+# HAProxy ingress
+juju integrate mcp-server:reverse-proxy haproxy:reverseproxy
+
+# TLS
+juju integrate mcp-server:certificates easyrsa:client
+
+# OAuth
+juju integrate mcp-server:oauth identity-platform:oauth
+
+# COS observability
+juju integrate mcp-server:cos-agent grafana-agent:cos-agent
 ```
 
 ## Configuration
 
-| Option    | Type   | Default | Description                          |
-|-----------|--------|---------|--------------------------------------|
-| port      | int    | 8081    | Port for the MCP server to listen on |
-| log-level | string | info    | Log level (debug, info, warning, error) |
+| Option | Type | Default | Description |
+|---|---|---|---|
+| port | int | 8081 | Port for the MCP server to listen on |
+| log-level | string | info | Log level (debug, info, warning, error) |
+| auth-token | string | "" | Bearer token for authentication (empty = disabled) |
+| rate-limit | int | 0 | Maximum requests per minute (0 = disabled) |
+| command-allowlist | string | "" | Space-separated allowed executable names (empty = all allowed) |
+| path-prefix | string | "" | URL path prefix for MCP endpoint (e.g. /postgresql) |
+| external-hostname | string | "" | FQDN for TLS certificate requests |
+
+## Documentation
+
+- [Tutorial](docs/tutorial.md)
+- [How-to guides](docs/how-to/)
+- [Reference](docs/reference/)
+- [Architecture & design](docs/explanation.md)
+- [Integration schema](docs/integration-schema.md)
 
 ## Status
 
-This project is in early development. See [ROADMAP.md](ROADMAP.md) for planned work.
+This project is under active development. See [ROADMAP.md](ROADMAP.md) for planned work.

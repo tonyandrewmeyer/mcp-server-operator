@@ -62,6 +62,36 @@ When deploying and using this charm:
 
 ## Known Security Considerations
 
+- **Exec handlers run commands on the machine.** By default, any command
+  declared by a principal charm is permitted. Use the `command-allowlist`
+  configuration option to restrict which executables the MCP server is allowed
+  to invoke.
+
+- **Template substitution uses argv boundaries (no shell injection), but values
+  are not escaped for the target command's syntax.** For example, a user-supplied
+  value that contains valid SQL will be passed verbatim to `psql`. Principal
+  charms should validate or sanitise inputs in their `input_schema` where
+  possible.
+
+- **The MCP server listens on all interfaces by default.** Use firewall rules,
+  Juju network spaces, or an ingress/reverse-proxy relation to restrict which
+  networks can reach the server port.
+
+- **Bearer tokens are sent in plaintext without TLS.** Always terminate TLS in
+  production, either via the `certificates` relation or a TLS-terminating
+  reverse proxy, to prevent credentials from being intercepted on the wire.
+
+- **OAuth tokens must be validated against the IdP.** Clock skew between the MCP
+  server and the identity provider can cause false rejections of otherwise valid
+  tokens. Ensure NTP is configured on all machines.
+
+- **Rate limiting is per-server, not per-client.** A single client can consume
+  the entire quota configured via the `rate-limit` option, effectively denying
+  service to other clients.
+
+- **The subordinate charm has full machine access.** It runs handlers as root by
+  default. Use the `user` field on `ExecHandler` to drop privileges, and
+  restrict the `command-allowlist` to the minimum set of commands required.
 
 ## Additional Resources
 

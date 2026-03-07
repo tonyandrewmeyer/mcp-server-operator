@@ -98,11 +98,12 @@ mcp.set_tools([...])
 
 ## Phase 9: Documentation (Diataxis)
 
-- [ ] Tutorials — step-by-step guide to adding MCP to your charm
-- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
-- [ ] Reference — integration schema, config options, API docs
-- [ ] Explanation — architecture, design decisions, security model
-- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
+- [x] Tutorials — step-by-step guide to adding MCP to your charm (`docs/tutorial.md`)
+- [x] How-to guides — specific tasks: add tools, configure ingress, TLS, auth, observability (`docs/how-to/`)
+- [x] Reference — config options (`docs/reference/config.md`), charm library API (`docs/reference/api.md`), integration schema (`docs/integration-schema.md`)
+- [x] Explanation — architecture, design decisions, security model (`docs/explanation.md`)
+- [x] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
+- [x] Update README.md with full config table, correct import style, docs links
 
 ## Phase 10: Polish + packaging
 
