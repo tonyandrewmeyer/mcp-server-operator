@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 0: Project infrastructure (current)
+## Phase 0: Project infrastructure
 
 - [x] Project documentation (README, ROADMAP, PLAN, CHANGELOG, CONTRIBUTING)
 - [x] `pyproject.toml` — project metadata, dependencies, tool config (charm + workload)

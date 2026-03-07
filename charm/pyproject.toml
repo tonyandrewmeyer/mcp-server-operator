@@ -9,6 +9,8 @@ requires-python = ">=3.10"
 # Dependencies of the charm code
 # You should include the dependencies of the code in src/. You should also include the
 # dependencies of any charmlibs that the charm uses (copy the dependencies from PYDEPS).
+
+# CLAUDE: i don't want to use pydantic, why is it here? if it is used by a dependency, have that get pulled automatically. if it is from a charmhub charmlib please add a comment explaining that.
 dependencies = [
     "ops[tracing]>=3,<4",
     "charmlibs-interfaces-mcp",

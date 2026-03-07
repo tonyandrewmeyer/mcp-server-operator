@@ -6,6 +6,7 @@ import json
 import ops
 from ops import testing
 
+# CLAUDE: let's import mcp and use 'mcp.' when referring to these
 from charmlibs.interfaces.mcp import ExecHandler, McpDefinitions, McpProvider, McpRequirer, Tool
 
 
@@ -46,6 +47,7 @@ SAMPLE_DEFINITIONS = McpDefinitions(
     ],
 )
 
+# CLAUDE: i don't like the double-JSON. Either use a custom encoder/decoder with the load/save or make it so that the dataclasses can be dumped to JSON in the way that ops expects.
 
 class TestMcpProvider:
     def test_set_definitions_writes_to_relation(self):

@@ -9,14 +9,14 @@ that charm authors can use to integrate with the ``mcp`` relation interface.
 A **provider** (typically a principal charm) declares tools, prompts, and
 resources that it wants to expose via MCP::
 
-    from charmlibs.interfaces.mcp import McpProvider, Tool, ExecHandler
+    from charmlibs.interfaces import mcp
 
     class MyCharm(ops.CharmBase):
         def __init__(self, framework):
             super().__init__(framework)
-            self.mcp = McpProvider(self, "mcp")
+            self.mcp = mcp.McpProvider(self, "mcp")
             self.mcp.set_tools([
-                Tool(
+                mcp.Tool(
                     name="list-files",
                     description="List files in a directory",
                     input_schema={
@@ -26,19 +26,19 @@ resources that it wants to expose via MCP::
                         },
                         "required": ["dir"],
                     },
-                    handler=ExecHandler(command=["ls", "-la", "{{dir}}"]),
+                    handler=mcp.ExecHandler(command=["ls", "-la", "{{dir}}"]),
                 ),
             ])
 
 A **requirer** (the mcp-server subordinate charm) reads and merges
 definitions from all related providers::
 
-    from charmlibs.interfaces.mcp import McpRequirer
+    from charmlibs.interfaces import mcp
 
     class McpServerCharm(ops.CharmBase):
         def __init__(self, framework):
             super().__init__(framework)
-            self.mcp = McpRequirer(self, "mcp")
+            self.mcp = mcp.McpRequirer(self, "mcp")
 
         def _on_relation_changed(self, event):
             definitions = self.mcp.collect_definitions()

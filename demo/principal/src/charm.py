@@ -8,6 +8,7 @@ import logging
 
 import ops
 
+# CLAUDE: let's import mcp and then put 'mcp.' before all use
 from charmlibs.interfaces.mcp import (
     ExecHandler,
     McpDefinitions,

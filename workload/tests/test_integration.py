@@ -82,6 +82,7 @@ def _make_jsonrpc(method: str, params: dict[str, Any], req_id: int = 1) -> dict[
     }
 
 
+# CLAUDE: us spelling
 INITIALIZE_PARAMS = {
     "protocolVersion": "2025-03-26",
     "capabilities": {},
@@ -123,6 +124,7 @@ async def _make_client(
             yield client
 
 
+# CLAUDE: us spelling throughout this function and its name
 async def _initialize(
     client: httpx.AsyncClient,
     extra_headers: dict[str, str] | None = None,
@@ -158,6 +160,7 @@ async def _send_message(
 
 @pytest.mark.anyio
 class TestServerEndToEnd:
+    # CLAUDE: us spelling
     async def test_initialize(self, tmp_path: pathlib.Path):
         async with _make_client(tmp_path) as client:
             result = await _initialize(client)

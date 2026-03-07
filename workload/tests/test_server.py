@@ -1,6 +1,8 @@
 # Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
 
+# CLAUDE: add a module docstring
+
 import json
 import pathlib
 import tempfile

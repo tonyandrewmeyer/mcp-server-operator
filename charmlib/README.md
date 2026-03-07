@@ -17,18 +17,18 @@ pip install charmlibs-interfaces-mcp
 
 ```python
 import ops
-from charmlibs.interfaces.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+from charmlibs.interfaces import mcp
 
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
-        self.mcp = McpProvider(self, "mcp")
-        framework.observe(self.on.mcp_relation_joined, self._on_mcp_joined)
+        self.mcp = mcp.McpProvider(self, "mcp")
+        framework.observe(self.on["mcp"].relation_joined, self._on_mcp_joined)
 
-    def _on_mcp_joined(self, event):
-        self.mcp.set_definitions(McpDefinitions(
+    def _on_mcp_joined(self, event: ops.RelationJoinedEvent):
+        self.mcp.set_definitions(mcp.McpDefinitions(
             tools=[
-                Tool(
+                mcp.Tool(
                     name="list-files",
                     description="List files in a directory",
                     input_schema={
@@ -38,7 +38,7 @@ class MyCharm(ops.CharmBase):
                         },
                         "required": ["dir"],
                     },
-                    handler=ExecHandler(command=["ls", "-la", "{{dir}}"]),
+                    handler=mcp.ExecHandler(command=["ls", "-la", "{{dir}}"]),
                 ),
             ],
         ))
@@ -46,23 +46,25 @@ class MyCharm(ops.CharmBase):
 
 ### Requirer (mcp-server charm)
 
+# CLAUDE: something seems missing here, why is there no observe call for relation-changed?
+
 ```python
 import ops
-from charmlibs.interfaces.mcp import McpRequirer
+from charmlibs.interfaces import mcp
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
-        self.mcp = McpRequirer(self, "mcp")
+        self.mcp = mcp.McpRequirer(self, "mcp")
 
-    def _on_relation_changed(self, event):
+    def _on_relation_changed(self, event: ops.RelationChangedEvent):
         definitions = self.mcp.collect_definitions()
         # definitions = {"tools": [...], "prompts": [...], "resources": [...]}
 ```
 
 ## Data models
 
-All models are plain dataclasses (no pydantic):
+All models are plain dataclasses:
 
 - `Tool` — an MCP tool with name, description, input_schema, and handler
 - `Prompt` — a prompt template with arguments

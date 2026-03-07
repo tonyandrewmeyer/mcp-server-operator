@@ -3,7 +3,7 @@
 
 """Data models for MCP relation data.
 
-All models are plain dataclasses — no pydantic.
+All models are plain dataclasses.
 """
 
 from __future__ import annotations

@@ -14,7 +14,7 @@ from typing import Any
 
 import ops
 import ops_tracing
-from charmlibs.interfaces.mcp import McpRequirer
+from charmlibs.interfaces import mcp
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 
 import mcp_server
@@ -42,7 +42,7 @@ class McpServerCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
-        self.mcp = McpRequirer(self, "mcp")
+        self.mcp = mcp.McpRequirer(self, "mcp")
         self.tracing = ops_tracing.Tracing(
             self,
             tracing_relation_name="charm-tracing",

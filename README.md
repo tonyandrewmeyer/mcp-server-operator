@@ -8,7 +8,7 @@ A subordinate machine charm that deploys a [Model Context Protocol](https://mode
                   ┌─────────────────────────────────────────────┐
                   │              Machine (Juju unit)            │
                   │                                             │
-  Client ──► Traefik ──► MCP Server (subordinate charm)        │
+  Client ──► Traefik ──► MCP Server (subordinate charm)         │
                   │            │                                │
                   │            │ exec / http                    │
                   │            ▼                                │

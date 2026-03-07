@@ -120,6 +120,7 @@ def test_stop():
 
     ctx = testing.Context(McpServerCharm)
     # Temporarily replace the patched stop with one that records the call.
+    # CLAUDE: can't we monkeypatch or similar here?
     ctx.run(ctx.on.install(), testing.State())
     import charm
 

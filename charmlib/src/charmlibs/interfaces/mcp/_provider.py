@@ -34,7 +34,7 @@ class McpProvider(ops.Object):
             def __init__(self, framework):
                 super().__init__(framework)
                 self.mcp = McpProvider(self, "mcp")
-                framework.observe(self.on.mcp_relation_joined, self._on_mcp_joined)
+                framework.observe(self.on["mcp"].relation_joined, self._on_mcp_joined)
 
             def _on_mcp_joined(self, event):
                 self.mcp.set_definitions(McpDefinitions(tools=[...]))

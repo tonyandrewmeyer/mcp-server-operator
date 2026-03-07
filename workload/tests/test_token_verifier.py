@@ -1,6 +1,7 @@
 # Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
 
+# CLAUDE: add a module docstring
 
 import json
 import time
@@ -27,6 +28,7 @@ def _generate_rsa_key():
 
 def _rsa_public_jwk(private_key, kid="test-key-1"):
     """Build a JWK dict from an RSA private key's public component."""
+    # CLAUDE: all imports at the top of the module
     from jwt.algorithms import RSAAlgorithm
 
     pub_json = RSAAlgorithm.to_jwk(private_key.public_key())

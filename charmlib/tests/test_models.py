@@ -3,6 +3,7 @@
 
 import json
 
+# CLAUDE: let's import mcp and prefix these with 'mcp.'
 from charmlibs.interfaces.mcp import (
     ExecHandler,
     HttpHandler,

@@ -393,8 +393,10 @@ def create_server(
 
     extra_kwargs: dict[str, Any] = {}
     if oauth_issuer_url and oauth_resource_server_url:
+        # CLAUDE: two imports here both should be at the top of the module
         from mcp.server.auth.settings import AuthSettings
 
+        # CLAUDE: as well as moving this, seems like it should be relative
         import token_verifier as tv
 
         verifier = tv.create_token_verifier(
