@@ -28,6 +28,21 @@ wheels = [
 ]
 
 [[package]]
+name = "charmlibs-interfaces-sloth"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cosl" },
+    { name = "ops" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/d7/2393442e9715d55b30b946f9a36f00aacdfae4f101cc793f25993f241dfb/charmlibs_interfaces_sloth-0.1.0.tar.gz", hash = "sha256:e05f68d7d096df49a24a6f0eebbbb265da12ea2d6801f5027f57c0d679fbd0f6", size = 45451, upload-time = "2026-02-13T08:16:22.594Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/6f/1e895e6f0640742e0ff5b0d23b06f00a6f88aedd843272fb3afeca530167/charmlibs_interfaces_sloth-0.1.0-py3-none-any.whl", hash = "sha256:f41fbe4f38d8bb8668375e91015c9fdb7bcf63f8f2005fcd4d3f607d6fb5aa09", size = 9214, upload-time = "2026-02-13T08:16:21.172Z" },
+]
+
+[[package]]
 name = "codespell"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -181,6 +196,7 @@ version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
     { name = "charmlibs-interfaces-mcp" },
+    { name = "charmlibs-interfaces-sloth" },
     { name = "cosl" },
     { name = "ops", extra = ["tracing"] },
     { name = "pydantic" },
@@ -205,6 +221,7 @@ unit = [
 [package.metadata]
 requires-dist = [
     { name = "charmlibs-interfaces-mcp" },
+    { name = "charmlibs-interfaces-sloth" },
     { name = "cosl", specifier = ">=0.0.50" },
     { name = "ops", extras = ["tracing"], specifier = ">=3,<4" },
     { name = "pydantic" },

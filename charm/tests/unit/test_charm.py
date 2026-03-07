@@ -531,3 +531,24 @@ def test_tracing_relation_broken_restarts_if_running(monkeypatch):
         testing.State(relations=[tracing_relation]),
     )
     assert "restart" in restart_calls
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_sloth_relation_joined_publishes_slos(monkeypatch):
+    """SLO specs are published when the sloth relation is joined."""
+    provide_calls = []
+
+    def _track_provide_slos(slo_config):
+        provide_calls.append(slo_config)
+
+    ctx = testing.Context(McpServerCharm)
+    sloth_relation = testing.Relation(endpoint="sloth")
+    state = testing.State(relations=[sloth_relation], leader=True)
+
+    with ctx(ctx.on.relation_joined(sloth_relation), state) as mgr:
+        monkeypatch.setattr(mgr.charm._slo_provider, "provide_slos", _track_provide_slos)
+        mgr.run()
+
+    assert len(provide_calls) == 1
+    assert "requests-availability" in provide_calls[0]
+    assert "requests-latency" in provide_calls[0]

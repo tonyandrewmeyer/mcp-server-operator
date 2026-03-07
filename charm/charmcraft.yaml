@@ -34,6 +34,8 @@ parts:
 provides:
   cos-agent:
     interface: cos_agent
+  sloth:
+    interface: sloth
 
 requires:
   mcp:

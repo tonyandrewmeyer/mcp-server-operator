@@ -77,7 +77,7 @@ mcp.set_tools([...])
 - [x] Charm tracing via `ops[tracing]` (Tempo integration via `charm-tracing` relation)
 - [x] Workload tracing via OpenTelemetry ASGI instrumentation (OTLP HTTP export)
 - [x] Log forwarding (structured JSON logging, Loki alert rules via cos-agent)
-- [ ] SLOs via sloth-k8s charm
+- [x] SLOs via sloth-k8s charm (sloth relation with `charmlibs-interfaces-sloth`, availability + latency SLO specs)
 
 ## Phase 7: Testing
 

@@ -14,7 +14,7 @@ from typing import Any
 
 import ops
 import ops_tracing
-from charmlibs.interfaces import mcp
+from charmlibs.interfaces import mcp, sloth
 from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 
 import mcp_server
@@ -22,6 +22,7 @@ import mcp_server
 logger = logging.getLogger(__name__)
 
 WORKLOAD_SERVER_SRC = pathlib.Path(__file__).parent / "workload_server.py"
+SLO_SPECS_PATH = pathlib.Path(__file__).parent / "slo_specs.yaml"
 
 
 @dataclasses.dataclass
@@ -48,6 +49,7 @@ class McpServerCharm(ops.CharmBase):
             tracing_relation_name="charm-tracing",
             ca_relation_name="receive-ca-cert",
         )
+        self._slo_provider = sloth.SlothProvider(self, "sloth")
         self._cos_agent = COSAgentProvider(
             self,
             relation_name="cos-agent",
@@ -78,6 +80,7 @@ class McpServerCharm(ops.CharmBase):
             self.on.charm_tracing_relation_changed, self._on_tracing_relation_changed
         )
         framework.observe(self.on.charm_tracing_relation_broken, self._on_tracing_relation_changed)
+        framework.observe(self.on.sloth_relation_joined, self._on_sloth_relation_joined)
 
     def _get_config(self) -> CharmConfig:
         """Load and return the typed charm configuration."""
@@ -263,6 +266,11 @@ class McpServerCharm(ops.CharmBase):
         self._write_systemd_unit()
         if mcp_server.is_running():
             mcp_server.restart()
+
+    def _on_sloth_relation_joined(self, event: ops.RelationJoinedEvent) -> None:
+        """Publish SLO specifications when the sloth relation is established."""
+        if SLO_SPECS_PATH.exists():
+            self._slo_provider.provide_slos(SLO_SPECS_PATH.read_text())
 
 
 if __name__ == "__main__":  # pragma: nocover

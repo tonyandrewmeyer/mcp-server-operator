@@ -1,0 +1,49 @@
+version: "prometheus/v1"
+service: "mcp-server"
+labels:
+  owner: "mcp-server-charm"
+slos:
+  # Availability: at most 0.1% of requests may fail (5xx responses).
+  - name: "requests-availability"
+    objective: 99.9
+    description: "Proportion of successful MCP requests (non-5xx responses)."
+    sli:
+      events:
+        error_query: sum(rate(mcp_requests_total{status=~"5.."}[{{.window}}]))
+        total_query: sum(rate(mcp_requests_total[{{.window}}]))
+    alerting:
+      name: McpServerSloAvailability
+      labels:
+        category: "availability"
+      annotations:
+        summary: "MCP server availability SLO is at risk"
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
+
+  # Latency: 99% of requests should complete within 5 seconds.
+  - name: "requests-latency"
+    objective: 99
+    description: "Proportion of MCP requests completing within 5 seconds (p99)."
+    sli:
+      events:
+        error_query: >-
+          sum(rate(mcp_request_duration_seconds_count[{{.window}}]))
+          -
+          sum(rate(mcp_request_duration_seconds_bucket{le="5"}[{{.window}}]))
+        total_query: sum(rate(mcp_request_duration_seconds_count[{{.window}}]))
+    alerting:
+      name: McpServerSloLatency
+      labels:
+        category: "latency"
+      annotations:
+        summary: "MCP server latency SLO is at risk"
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
