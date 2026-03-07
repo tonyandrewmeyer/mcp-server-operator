@@ -92,9 +92,18 @@ mcp.set_tools([...])
 
 ## Phase 8: Demo
 
-- [ ] Example principal charm showing how easy it is to add MCP to an existing charm
-- [ ] End-to-end demo: deploy principal + mcp-server, connect Claude Code, invoke tools
-- [ ] Screencast / README walkthrough
+### 8a: Simple demo (system tools)
+- [x] Polish existing demo principal charm (`demo/principal/`)
+- [x] End-to-end walkthrough: deploy principal + mcp-server, connect Claude Code, invoke tools
+- [x] `demo/README.md` with step-by-step instructions
+
+### 8b: Real-world demo (PostgreSQL)
+- [x] `demo/postgresql/` — a principal charm that wraps PostgreSQL with MCP tools
+  - list-databases, run-query, table-sizes, active-connections, explain-query, list-indexes
+  - Prompts: analyse-database, diagnose-performance
+  - Resources: pg_settings (non-default), pg_hba_file_rules
+- [ ] End-to-end: deploy postgresql + postgresql-mcp + mcp-server, connect Claude Code, have an LLM manage a real database
+- [ ] README / walkthrough showing the "blow your mind" experience — ask Claude to analyse your database, it discovers the schema, runs queries, and gives insights
 
 ## Phase 9: Documentation (Diataxis)
 
