@@ -18,6 +18,8 @@ on:
       - "demo/principal/**"
       - ".github/workflows/charm.yaml"
 
+permissions: {}
+
 jobs:
   format-check:
     name: Format check
@@ -27,6 +29,8 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: uv run --group lint ruff format --check --diff src tests
       - run: uv run --group lint ruff check src tests
@@ -39,6 +43,8 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: uv run --group lint codespell .
       - run: uv run --group lint ty check src/charm.py src/mcp_server.py
@@ -51,6 +57,8 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - run: |
           uv run --group unit coverage run --source=src -m pytest -v -s --tb native tests/unit
@@ -67,9 +75,11 @@ jobs:
         working-directory: charm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
       - name: Set up Juju
-        uses: charmed-kubernetes/actions-operator@main
+        uses: charmed-kubernetes/actions-operator@ea90ed489690bf3b1c1fcca6ac5f9edab70aecb0 # main
         with:
           provider: lxd
       - name: Sync workload files
