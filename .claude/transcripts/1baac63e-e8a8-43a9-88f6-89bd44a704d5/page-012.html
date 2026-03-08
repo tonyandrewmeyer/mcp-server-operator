@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 12</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 12/15</h1>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-011.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-010.html">10</a>
+<a href="page-011.html">11</a>
+<span class="current">12</span>
+<a href="page-013.html">13</a>
+<a href="page-014.html">14</a>
+<a href="page-015.html">15</a>
+<a href="page-013.html">Next &rarr;</a>
+</div>
+
+
+<div class="message user" id="msg-2026-03-06T11-18-20-975Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-18-20-975Z" class="timestamp-link"><time datetime="2026-03-06T11:18:20.975Z" data-timestamp="2026-03-06T11:18:20.975Z">2026-03-06T11:18:20.975Z</time></a></div><div class="message-content">
+<div class="user-content"><p>add to the roadmap: when we do ingress we should also support tls. we should look into integrstion with the litmus operstors for chaos testing.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-27-465Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-27-465Z" class="timestamp-link"><time datetime="2026-03-06T11:18:27.465Z" data-timestamp="2026-03-06T11:18:27.465Z">2026-03-06T11:18:27.465Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_01RBDWGFFEPWwQrLZhuKMD3Q">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">ROADMAP.md</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/ROADMAP.md</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">## Phase 5: Ingress
+
+- [ ] Traefik integration for external access
+- [ ] TLS termination via Traefik
+- [ ] Configurable path prefix per principal</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">## Phase 5: Ingress + TLS
+
+- [ ] Traefik integration for external access
+- [ ] TLS termination via Traefik
+- [ ] Direct TLS support (certificate relation or config)
+- [ ] Configurable path prefix per principal</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-18-27-539Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-18-27-539Z" class="timestamp-link"><time datetime="2026-03-06T11:18:27.539Z" data-timestamp="2026-03-06T11:18:27.539Z">2026-03-06T11:18:27.539Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/ROADMAP.md has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-33-035Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-33-035Z" class="timestamp-link"><time datetime="2026-03-06T11:18:33.035Z" data-timestamp="2026-03-06T11:18:33.035Z">2026-03-06T11:18:33.035Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_01EHUK13FNqgRDkLW4WML1Jn">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">ROADMAP.md</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/ROADMAP.md</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">## Future: Kubernetes version
+
+- [ ] Separate charm designed for k8s (HTTP-only handlers, sidecar container pattern)
+- [ ] Pebble exec support for container access</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">## Future: Chaos testing
+
+- [ ] Integration with Litmus operators for chaos testing
+
+## Future: Kubernetes version
+
+- [ ] Separate charm designed for k8s (HTTP-only handlers, sidecar container pattern)
+- [ ] Pebble exec support for container access</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-18-33-056Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-18-33-056Z" class="timestamp-link"><time datetime="2026-03-06T11:18:33.056Z" data-timestamp="2026-03-06T11:18:33.056Z">2026-03-06T11:18:33.056Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/ROADMAP.md has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-41-093Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-41-093Z" class="timestamp-link"><time datetime="2026-03-06T11:18:41.093Z" data-timestamp="2026-03-06T11:18:41.093Z">2026-03-06T11:18:41.093Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01KqFsGK9qPamtUpYXdVDaBP">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit Phase 4 security changes</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git add ROADMAP.md charm/charmcraft.yaml charm/src/charm.py charm/src/mcp_server.py charm/src/workload_server.py workload/src/server.py workload/tests/test_server.py &amp;&amp; git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Add Phase 4 security: input validation, auth, rate limiting, allowlist
+
+- Input validation: validate tool arguments against input_schema before
+  handler execution (type checks, required fields, no extra args)
+- Bearer token auth: new auth-token charm config, enforced via HTTP
+  middleware when set
+- Rate limiting: new rate-limit charm config (requests/minute), sliding
+  window middleware
+- Command allowlist: new command-allowlist charm config, restricts which
+  executables exec handlers may run
+- 9 new workload tests for validation and allowlist
+- Update roadmap: Phase 4 complete, add TLS and Litmus chaos testing
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-18-48-190Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-18-48-190Z" class="timestamp-link"><time datetime="2026-03-06T11:18:48.190Z" data-timestamp="2026-03-06T11:18:48.190Z">2026-03-06T11:18:48.190Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 1
+ruff.....................................................................Failed
+- hook id: ruff
+- exit code: 1
+
+charm/src/workload_server.py:419:100: E501 Line too long (118 &gt; 99)
+    |
+417 |         app = mcp.streamable_http_app()
+418 |         if args.rate_limit:
+419 |             app.add_middleware(RateLimitMiddleware, max_requests=args.rate_limit)  # ty: ignore[invalid-argument-type]
+    |                                                                                                    ^^^^^^^^^^^^^^^^^^^ E501
+420 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+421 |         if args.auth_token:
+    |
+
+charm/src/workload_server.py:422:100: E501 Line too long (112 &gt; 99)
+    |
+420 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+421 |         if args.auth_token:
+422 |             app.add_middleware(BearerAuthMiddleware, token=args.auth_token)  # ty: ignore[invalid-argument-type]
+    |                                                                                                    ^^^^^^^^^^^^^ E501
+423 |             logger.info(&quot;Bearer token authentication enabled&quot;)
+    |
+
+workload/src/server.py:419:100: E501 Line too long (118 &gt; 99)
+    |
+417 |         app = mcp.streamable_http_app()
+418 |         if args.rate_limit:
+419 |             app.add_middleware(RateLimitMiddleware, max_requests=args.rate_limit)  # ty: ignore[invalid-argument-type]
+    |                                                                                                    ^^^^^^^^^^^^^^^^^^^ E501
+420 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+421 |         if args.auth_token:
+    |
+
+workload/src/server.py:422:100: E501 Line too long (112 &gt; 99)
+    |
+420 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+421 |         if args.auth_token:
+422 |             app.add_middleware(BearerAuthMiddleware, token=args.auth_token)  # ty: ignore[invalid-argument-type]
+    |                                                                                                    ^^^^^^^^^^^^^ E501
+423 |             logger.info(&quot;Bearer token authentication enabled&quot;)
+    |
+
+Found 4 errors.
+
+ruff-format..............................................................Failed
+- hook id: ruff-format
+- files were modified by this hook
+
+2 files reformatted, 3 files left unchanged
+
+ty (charm)...............................................................Passed
+ty (workload)............................................................Failed
+- hook id: ty-workload
+- exit code: 1
+
+error[invalid-argument-type]: Argument to bound method `add_middleware` is incorrect
+   --&gt; src/server.py:420:17
+    |
+418 |         if args.rate_limit:
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+    |                 ^^^^^^^^^^^^^^^^^^^ Expected `_MiddlewareFactory[(...)]`, found `&lt;class &#x27;RateLimitMiddleware&#x27;&gt;`
+421 |             )  # ty: ignore[invalid-argument-type]
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+    |
+info: Method defined here
+   --&gt; .venv/lib/python3.12/site-packages/starlette/applications.py:118:9
+    |
+116 |         self.router.host(host, app=app, name=name)  # pragma: no cover
+117 |
+118 |     def add_middleware(
+    |         ^^^^^^^^^^^^^^
+119 |         self,
+120 |         middleware_class: _MiddlewareFactory[P],
+    |         --------------------------------------- Parameter declared here
+121 |         *args: P.args,
+122 |         **kwargs: P.kwargs,
+    |
+info: rule `invalid-argument-type` is enabled by default
+
+warning[unused-ignore-comment]: Unused `ty: ignore` directive
+   --&gt; src/server.py:421:16
+    |
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+421 |             )  # ty: ignore[invalid-argument-type]
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+423 |         if args.auth_token:
+    |
+help: Remove the unused suppression comment
+418 |         if args.rate_limit:
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+    -             )  # ty: ignore[invalid-argument-type]
+421 +             )
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+423 |         if args.auth_token:
+424 |             app.add_middleware(
+
+error[invalid-argument-type]: Argument to bound method `add_middleware` is incorrect
+   --&gt; src/server.py:425:17
+    |
+423 |         if args.auth_token:
+424 |             app.add_middleware(
+425 |                 BearerAuthMiddleware, token=args.auth_token
+    |                 ^^^^^^^^^^^^^^^^^^^^ Expected `_MiddlewareFactory[(...)]`, found `&lt;class &#x27;BearerAuthMiddleware&#x27;&gt;`
+426 |             )  # ty: ignore[invalid-a
+
+... [4634 characters truncated] ...
+
+..Failed
+- hook id: ruff-format
+- files were modified by this hook
+
+2 files reformatted, 3 files left unchanged
+
+ty (charm)...............................................................Passed
+ty (workload)............................................................Failed
+- hook id: ty-workload
+- exit code: 1
+
+error[invalid-argument-type]: Argument to bound method `add_middleware` is incorrect
+   --&gt; src/server.py:420:17
+    |
+418 |         if args.rate_limit:
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+    |                 ^^^^^^^^^^^^^^^^^^^ Expected `_MiddlewareFactory[(...)]`, found `&lt;class &#x27;RateLimitMiddleware&#x27;&gt;`
+421 |             )  # ty: ignore[invalid-argument-type]
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+    |
+info: Method defined here
+   --&gt; .venv/lib/python3.12/site-packages/starlette/applications.py:118:9
+    |
+116 |         self.router.host(host, app=app, name=name)  # pragma: no cover
+117 |
+118 |     def add_middleware(
+    |         ^^^^^^^^^^^^^^
+119 |         self,
+120 |         middleware_class: _MiddlewareFactory[P],
+    |         --------------------------------------- Parameter declared here
+121 |         *args: P.args,
+122 |         **kwargs: P.kwargs,
+    |
+info: rule `invalid-argument-type` is enabled by default
+
+warning[unused-ignore-comment]: Unused `ty: ignore` directive
+   --&gt; src/server.py:421:16
+    |
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+421 |             )  # ty: ignore[invalid-argument-type]
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+423 |         if args.auth_token:
+    |
+help: Remove the unused suppression comment
+418 |         if args.rate_limit:
+419 |             app.add_middleware(
+420 |                 RateLimitMiddleware, max_requests=args.rate_limit
+    -             )  # ty: ignore[invalid-argument-type]
+421 +             )
+422 |             logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+423 |         if args.auth_token:
+424 |             app.add_middleware(
+
+error[invalid-argument-type]: Argument to bound method `add_middleware` is incorrect
+   --&gt; src/server.py:425:17
+    |
+423 |         if args.auth_token:
+424 |             app.add_middleware(
+425 |                 BearerAuthMiddleware, token=args.auth_token
+    |                 ^^^^^^^^^^^^^^^^^^^^ Expected `_MiddlewareFactory[(...)]`, found `&lt;class &#x27;BearerAuthMiddleware&#x27;&gt;`
+426 |             )  # ty: ignore[invalid-argument-type]
+427 |             logger.info(&quot;Bearer token authentication enabled&quot;)
+    |
+info: Method defined here
+   --&gt; .venv/lib/python3.12/site-packages/starlette/applications.py:118:9
+    |
+116 |         self.router.host(host, app=app, name=name)  # pragma: no cover
+117 |
+118 |     def add_middleware(
+    |         ^^^^^^^^^^^^^^
+119 |         self,
+120 |         middleware_class: _MiddlewareFactory[P],
+    |         --------------------------------------- Parameter declared here
+121 |         *args: P.args,
+122 |         **kwargs: P.kwargs,
+    |
+info: rule `invalid-argument-type` is enabled by default
+
+warning[unused-ignore-comment]: Unused `ty: ignore` directive
+   --&gt; src/server.py:426:16
+    |
+424 |             app.add_middleware(
+425 |                 BearerAuthMiddleware, token=args.auth_token
+426 |             )  # ty: ignore[invalid-argument-type]
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+427 |             logger.info(&quot;Bearer token authentication enabled&quot;)
+    |
+help: Remove the unused suppression comment
+423 |         if args.auth_token:
+424 |             app.add_middleware(
+425 |                 BearerAuthMiddleware, token=args.auth_token
+    -             )  # ty: ignore[invalid-argument-type]
+426 +             )
+427 |             logger.info(&quot;Bearer token authentication enabled&quot;)
+428 |
+429 |         logger.info(&quot;Starting MCP server on %s:%d&quot;, args.host, args.port)
+
+Found 4 diagnostics
+
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm).......................................................Passed
+unit tests (workload)....................................................Passed
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...............................................................Passed
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-52-449Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-52-449Z" class="timestamp-link"><time datetime="2026-03-06T11:18:52.449Z" data-timestamp="2026-03-06T11:18:52.449Z">2026-03-06T11:18:52.449Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Ruff reformatted the lines (splitting them), and now the <code>ty: ignore</code> comments are on the closing paren instead of the line with the error. I need to move them to the correct lines:</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-52-676Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-52-676Z" class="timestamp-link"><time datetime="2026-03-06T11:18:52.676Z" data-timestamp="2026-03-06T11:18:52.676Z">2026-03-06T11:18:52.676Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_011SjqkeVbt6iW9DcxCe2LFu"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/workload/src/server.py&#34;,
+  &#34;offset&#34;: 415
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-18-52-732Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-18-52-732Z" class="timestamp-link"><time datetime="2026-03-06T11:18:52.732Z" data-timestamp="2026-03-06T11:18:52.732Z">2026-03-06T11:18:52.732Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>   415→        import uvicorn  # noqa: I001
+   416→
+   417→        app = mcp.streamable_http_app()
+   418→        if args.rate_limit:
+   419→            app.add_middleware(
+   420→                RateLimitMiddleware, max_requests=args.rate_limit
+   421→            )  # ty: ignore[invalid-argument-type]
+   422→            logger.info(&quot;Rate limiting enabled: %d requests/minute&quot;, args.rate_limit)
+   423→        if args.auth_token:
+   424→            app.add_middleware(
+   425→                BearerAuthMiddleware, token=args.auth_token
+   426→            )  # ty: ignore[invalid-argument-type]
+   427→            logger.info(&quot;Bearer token authentication enabled&quot;)
+   428→
+   429→        logger.info(&quot;Starting MCP server on %s:%d&quot;, args.host, args.port)
+   430→        uvicorn.run(app, host=args.host, port=args.port)
+   431→    else:
+   432→        logger.info(&quot;Starting MCP server on %s:%d&quot;, args.host, args.port)
+   433→        mcp.run(transport=&quot;streamable-http&quot;)
+   434→
+   435→
+   436→if __name__ == &quot;__main__&quot;:
+   437→    main()
+   438→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-55-753Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-55-753Z" class="timestamp-link"><time datetime="2026-03-06T11:18:55.753Z" data-timestamp="2026-03-06T11:18:55.753Z">2026-03-06T11:18:55.753Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>The <code>ty: ignore</code> needs to go on the line with <code>RateLimitMiddleware</code> / <code>BearerAuthMiddleware</code>, not the closing paren:</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-18-58-641Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-18-58-641Z" class="timestamp-link"><time datetime="2026-03-06T11:18:58.641Z" data-timestamp="2026-03-06T11:18:58.641Z">2026-03-06T11:18:58.641Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_01MdBdBhMUQtdSkaLPVRQCQ9">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">server.py</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/workload/src/server.py</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">        if args.rate_limit:
+            app.add_middleware(
+                RateLimitMiddleware, max_requests=args.rate_limit
+            )  # ty: ignore[invalid-argument-type]
+            logger.info(&#34;Rate limiting enabled: %d requests/minute&#34;, args.rate_limit)
+        if args.auth_token:
+            app.add_middleware(
+                BearerAuthMiddleware, token=args.auth_token
+            )  # ty: ignore[invalid-argument-type]</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">        if args.rate_limit:
+            app.add_middleware(
+                RateLimitMiddleware,  # ty: ignore[invalid-argument-type]
+                max_requests=args.rate_limit,
+            )
+            logger.info(&#34;Rate limiting enabled: %d requests/minute&#34;, args.rate_limit)
+        if args.auth_token:
+            app.add_middleware(
+                BearerAuthMiddleware,  # ty: ignore[invalid-argument-type]
+                token=args.auth_token,
+            )</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-18-58-724Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-18-58-724Z" class="timestamp-link"><time datetime="2026-03-06T11:18:58.724Z" data-timestamp="2026-03-06T11:18:58.724Z">2026-03-06T11:18:58.724Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/workload/src/server.py has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-07-645Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-07-645Z" class="timestamp-link"><time datetime="2026-03-06T11:19:07.645Z" data-timestamp="2026-03-06T11:19:07.645Z">2026-03-06T11:19:07.645Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01344wp2Aj8pVAPCFpkbq7DN">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Verify workload passes all checks</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /home/ubuntu/mcp-charm/workload &amp;&amp; uv run ruff check src &amp;&amp; uv run ruff format --check src &amp;&amp; uv run ty check 2&gt;&amp;1</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-19-09-345Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-19-09-345Z" class="timestamp-link"><time datetime="2026-03-06T11:19:09.345Z" data-timestamp="2026-03-06T11:19:09.345Z">2026-03-06T11:19:09.345Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>All checks passed!
+2 files already formatted
+All checks passed!</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-13-199Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-13-199Z" class="timestamp-link"><time datetime="2026-03-06T11:19:13.199Z" data-timestamp="2026-03-06T11:19:13.199Z">2026-03-06T11:19:13.199Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NMZcX6u6xYAeJ6oP6LD1EB">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Copy fixed server to charm</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cp /home/ubuntu/mcp-charm/workload/src/server.py /home/ubuntu/mcp-charm/charm/src/workload_server.py</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-19-13-299Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-19-13-299Z" class="timestamp-link"><time datetime="2026-03-06T11:19:13.299Z" data-timestamp="2026-03-06T11:19:13.299Z">2026-03-06T11:19:13.299Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre></pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-22-344Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-22-344Z" class="timestamp-link"><time datetime="2026-03-06T11:19:22.344Z" data-timestamp="2026-03-06T11:19:22.344Z">2026-03-06T11:19:22.344Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01QT66crP1zUum85WWf4DnaA">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit Phase 4 security changes</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /home/ubuntu/mcp-charm &amp;&amp; git add ROADMAP.md charm/charmcraft.yaml charm/src/charm.py charm/src/mcp_server.py charm/src/workload_server.py workload/src/server.py workload/tests/test_server.py &amp;&amp; git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Add Phase 4 security: input validation, auth, rate limiting, allowlist
+
+- Input validation: validate tool arguments against input_schema before
+  handler execution (type checks, required fields, no extra args)
+- Bearer token auth: new auth-token charm config, enforced via HTTP
+  middleware when set
+- Rate limiting: new rate-limit charm config (requests/minute), sliding
+  window middleware
+- Command allowlist: new command-allowlist charm config, restricts which
+  executables exec handlers may run
+- 9 new workload tests for validation and allowlist
+- Update roadmap: Phase 4 complete, add TLS and Litmus chaos testing
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-19-29-466Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-19-29-466Z" class="timestamp-link"><time datetime="2026-03-06T11:19:29.466Z" data-timestamp="2026-03-06T11:19:29.466Z">2026-03-06T11:19:29.466Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ruff.....................................................................Passed
+ruff-format..............................................................Passed
+ty (charm)...............................................................Passed
+ty (workload)............................................................Passed
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm).......................................................Passed
+unit tests (workload)....................................................Passed
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...............................................................Passed
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre><div class="commit-card"><a href="https://github.com/tonyandrewmeyer/mcp-server-operator/commit/046779d"><span class="commit-card-hash">046779d</span> Add Phase 4 security: input validation, auth, rate limiting, allowlist</a></div><pre>7 files changed, 440 insertions(+), 23 deletions(-)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-33-463Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-33-463Z" class="timestamp-link"><time datetime="2026-03-06T11:19:33.463Z" data-timestamp="2026-03-06T11:19:33.463Z">2026-03-06T11:19:33.463Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>All hooks pass. Committed as <code>046779d</code>. Ready for you to push.</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-19-34-701Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-19-34-701Z" class="timestamp-link"><time datetime="2026-03-06T11:19:34.701Z" data-timestamp="2026-03-06T11:19:34.701Z">2026-03-06T11:19:34.701Z</time></a></div><div class="message-content">
+<div class="user-content"><p>i'm mot sure that auth is sufficient. when using an mcp server with something like claude desktop, don't we need to do an oauth flow? not sure if an integration could do that for us or if we would need to handle it in the workload.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-47-763Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-47-763Z" class="timestamp-link"><time datetime="2026-03-06T11:19:47.763Z" data-timestamp="2026-03-06T11:19:47.763Z">2026-03-06T11:19:47.763Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>The user is asking about OAuth for MCP servers. Let me think about this.</p>
+<p>The MCP spec has evolved to include OAuth 2.0 authentication. When Claude Desktop or other MCP clients connect to a remote MCP server, the MCP spec defines an OAuth 2.1 authorization flow. This is different from a simple Bearer token.</p>
+<p>Looking at the MCP spec:
+- The MCP protocol supports OAuth 2.1 for authentication
+- The server acts as both an OAuth authorization server and resource server
+- The client (like Claude Desktop) performs the OAuth flow to get an access token
+- FastMCP has some built-in support for this</p>
+<ul>
+<li>Bearer tokens work fine for server-to-server setups with pre-shared credentials, but Claude Desktop and interactive clients need proper OAuth discovery at the well-known endpoint and PKCE authorization code flows, which FastMCP supports through its <code>OAuthServerProvider</code> interface</li>
+<li>The Juju ecosystem also has relevant OAuth considerations</li>
+</ul>
+<p>: the workload could implement OAuth directly, delegate to an identity provider through a relation, or use a reverse proxy like Traefik to handle the OAuth layer</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-19-58-294Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-19-58-294Z" class="timestamp-link"><time datetime="2026-03-06T11:19:58.294Z" data-timestamp="2026-03-06T11:19:58.294Z">2026-03-06T11:19:58.294Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Good question. The MCP spec defines an OAuth 2.1 flow for remote servers. When Claude Desktop connects to a remote MCP server over streamable HTTP, it expects:</p>
+<ol>
+<li>Discovery at <code>/.well-known/oauth-authorization-server</code> </li>
+<li>Dynamic client registration</li>
+<li>PKCE authorization code flow</li>
+<li>Token endpoint for exchanging codes for access tokens</li>
+</ol>
+<p>Our simple Bearer token works for pre-shared secrets (e.g. server-to-server, or a user manually configuring a known token), but won't work for interactive clients like Claude Desktop that expect the full OAuth flow.</p>
+<p><strong>Options:</strong></p>
+<ol>
+<li>
+<p><strong>Workload handles it</strong> — FastMCP has built-in OAuth support via <code>OAuthServerProvider</code>. The workload would need to implement the authorization server (consent screen, token storage, etc.). This is self-contained but means we're building an auth server.</p>
+</li>
+<li>
+<p><strong>Integration with an identity provider</strong> — Use a Juju relation to an existing OAuth/OIDC provider (e.g. Canonical Identity Platform, Hydra, Keycloak). The MCP server becomes an OAuth resource server that validates tokens issued by the IdP. The IdP handles the authorization flow.</p>
+</li>
+<li>
+<p><strong>Reverse proxy handles it</strong> — When we do Phase 5 (Traefik ingress), OAuth2 Proxy or Traefik's ForwardAuth could handle the flow, and the MCP server just receives pre-authenticated requests.</p>
+</li>
+<li>
+<p><strong>Hybrid</strong> — Keep the Bearer token for internal/simple use, add OAuth as an optional mode for external-facing deployments.</p>
+</li>
+</ol>
+<p>Option 2 is probably most "Juju-native" — there are existing charms for identity providers. Option 1 gives the most control but is more work. Option 3 pushes it to the ingress layer.</p>
+<p>Want me to research what FastMCP's <code>OAuthServerProvider</code> looks like and what identity provider charms are available, or would you rather defer this to a later phase and note it on the roadmap?</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-20-45-055Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-20-45-055Z" class="timestamp-link"><time datetime="2026-03-06T11:20:45.055Z" data-timestamp="2026-03-06T11:20:45.055Z">2026-03-06T11:20:45.055Z</time></a></div><div class="message-content">
+<div class="user-content"><p>it seems like option 2 is most correct, assuming it will work</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-20-50-096Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-20-50-096Z" class="timestamp-link"><time datetime="2026-03-06T11:20:50.096Z" data-timestamp="2026-03-06T11:20:50.096Z">2026-03-06T11:20:50.096Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_015ETPQ7qMsxRTP7qxfHrUuJ">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">ROADMAP.md</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/ROADMAP.md</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">- [x] Auth token support (Bearer token via `auth-token` config)</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">- [x] Auth token support (Bearer token via `auth-token` config)
+- [ ] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-20-50-166Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-20-50-166Z" class="timestamp-link"><time datetime="2026-03-06T11:20:50.166Z" data-timestamp="2026-03-06T11:20:50.166Z">2026-03-06T11:20:50.166Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/ROADMAP.md has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-20-53-677Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-20-53-677Z" class="timestamp-link"><time datetime="2026-03-06T11:20:53.677Z" data-timestamp="2026-03-06T11:20:53.677Z">2026-03-06T11:20:53.677Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Added to the roadmap. It'll need research into which IdP charms exist and how FastMCP's <code>OAuthServerProvider</code> delegates token validation to an external provider. Want me to dig into that now, or move on to Phase 5?</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-20-59-017Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-20-59-017Z" class="timestamp-link"><time datetime="2026-03-06T11:20:59.017Z" data-timestamp="2026-03-06T11:20:59.017Z">2026-03-06T11:20:59.017Z</time></a></div><div class="message-content">
+<div class="user-content"><p>now</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-21-02-430Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-21-02-430Z" class="timestamp-link"><time datetime="2026-03-06T11:21:02.430Z" data-timestamp="2026-03-06T11:21:02.430Z">2026-03-06T11:21:02.430Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_019rpQ8hc3zDdmvBANqRZ4hP"><div class="tool-header"><span class="tool-icon">⚙</span> ToolSearch</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;query&#34;: &#34;select:Agent&#34;,
+  &#34;max_results&#34;: 1
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-21-02-431Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-21-02-431Z" class="timestamp-link"><time datetime="2026-03-06T11:21:02.431Z" data-timestamp="2026-03-06T11:21:02.431Z">2026-03-06T11:21:02.431Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &quot;type&quot;: &quot;tool_reference&quot;,
+  &quot;tool_name&quot;: &quot;Agent&quot;
+}</pre></div><button class="expand-btn">Show more</button></div></div>
+<div class="assistant-text"><p>Tool loaded.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-21-12-625Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-21-12-625Z" class="timestamp-link"><time datetime="2026-03-06T11:21:12.625Z" data-timestamp="2026-03-06T11:21:12.625Z">2026-03-06T11:21:12.625Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_013UZbkBpw4KPihAhxAJ5PKe"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Research FastMCP OAuth support</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Research how FastMCP (the Python MCP SDK) supports OAuth 2.1. I need to understand:\n\n1. What is the `OAuthServerProvider` interface? What methods does it require?\n2. How does a FastMCP server integrate with an external OAuth/OIDC identity provider (like Keycloak, Hydra, or similar) rather than implementing its own authorization server?\n3. What does the MCP spec require at the HTTP level for OAuth? (e.g. `/.well-known/oauth-authorization-server`, token endpoints, etc.)\n4. Can the MCP server act purely as a resource server (validating tokens issued by an external IdP) or must it also be the authorization server?\n\nLook at the FastMCP/MCP Python SDK source code in the workload&#39;s .venv if available, and also check the web for current MCP OAuth documentation.\n\nThis is research only — do not write any code.&#34;,
+  &#34;subagent_type&#34;: &#34;general-purpose&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-21-17-984Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-21-17-984Z" class="timestamp-link"><time datetime="2026-03-06T11:21:17.984Z" data-timestamp="2026-03-06T11:21:17.984Z">2026-03-06T11:21:17.984Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01WfCVcaTL88MrD38wXY8iRZ"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Research Juju identity provider charms</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Research what identity provider / OAuth / OIDC charms exist in the Juju ecosystem. I need to understand:\n\n1. What charms provide OAuth/OIDC identity provider functionality? (e.g. Canonical Identity Platform, Hydra, Keycloak, etc.)\n2. What Juju relation interfaces do they use for OAuth integration? (e.g. `oauth`, `oidc`, etc.)\n3. Are there existing charm libraries for integrating as an OAuth resource server (i.e. a charm that needs to validate tokens issued by the IdP)?\n4. How does a charm typically integrate — does it get the OIDC discovery URL, JWKS endpoint, client credentials via relation data?\n\nSearch the web for Charmhub listings and documentation. This is research only — do not write any code.&#34;,
+  &#34;subagent_type&#34;: &#34;general-purpose&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-22-50-396Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-22-50-396Z" class="timestamp-link"><time datetime="2026-03-06T11:22:50.396Z" data-timestamp="2026-03-06T11:22:50.396Z">2026-03-06T11:22:50.396Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Now I have all the information needed. Here is the comprehensive research summary.
+
+---
+
+## Research Findings: FastMCP OAuth 2.1 Support
+
+### SDK Version Examined
+
+MCP Python SDK v1.26.0, installed at `/home/ubuntu/mcp-charm/workload/.venv/lib/python3.12/site-packages/mcp/`.
+
+---
+
+### 1. The `OAuthAuthorizationServerProvider` Interface
+
+Defined in `/home/ubuntu/mcp-charm/workload/.venv/lib/python3.12/site-packages/mcp/server/auth/provider.py`, it is a `Protocol` (structural typing) that is generic over three type variables (`AuthorizationCodeT`, `RefreshTokenT`, `AccessTokenT`). It requires these async methods:
+
+| Method | Purpose |
+|---|---|
+| `get_client(client_id) -&gt; OAuthClientInformationFull | None` | Look up a registered OAuth client |
+| `register_client(client_info)` | Store a dynamically registered client (RFC 7591) |
+| `authorize(client, params) -&gt; str` | Handle the `/authorize` endpoint; returns a redirect URL. The docstring explicitly describes a double-OAuth pattern where the MCP server redirects to a 3rd-party IdP |
+| `load_authorization_code(client, code) -&gt; AuthorizationCode | None` | Retrieve a stored auth code |
+| `exchange_authorization_code(client, code) -&gt; OAuthToken` | Exchange auth code for access + refresh tokens |
+| `load_refresh_token(client, token) -&gt; RefreshToken | None` | Load a stored refresh token |
+| `exchange_refresh_token(client, refresh_token, scopes) -&gt; OAuthToken` | Rotate refresh token for new tokens |
+| `load_access_token(token) -&gt; AccessToken | None` | Validate/load an access token |
+| `revoke_token(token)` | Revoke an access or refresh token |
+
+When you provide an `OAuthAuthorizationServerProvider`, the SDK creates all the OAuth endpoints (`/authorize`, `/token`, `/register`, `/revoke`, `/.well-known/oauth-authorization-server`) and the MCP server acts as **both** the authorization server and the resource server.
+
+---
+
+### 2. Resource-Server-Only Mode (External IdP Integration)
+
+The SDK supports **AS/RS separation** — the MCP server can act purely as a resource server while delegating authorization to an external IdP. This is the key mechanism:
+
+**`TokenVerifier` Protocol** (also in `provider.py`):
+
+```python
+class TokenVerifier(Protocol):
+    async def verify_token(self, token: str) -&gt; AccessToken | None:
+        &quot;&quot;&quot;Verify a bearer token and return access info if valid.&quot;&quot;&quot;
+```
+
+In the `FastMCP` constructor (`server/fastmcp/server.py`, line 147), there are two mutually exclusive parameters:
+
+- **`auth_server_provider`** — Use this when the MCP server IS the authorization server (creates all OAuth endpoints)
+- **`token_verifier`** — Use this when the MCP server is ONLY a resource server (validates tokens issued elsewhere)
+
+You cannot pass both. The validation logic (line 218-224):
+- If `auth` settings are provided, you must provide exactly one of the two
+- If `auth_server_provider` is given without `token_verifier`, a `ProviderTokenVerifier` wrapper is automatically created
+
+**To integrate with an external IdP (Keycloak, Hydra, etc.):**
+
+1. Implement the `TokenVerifier` protocol with a single `verify_token` method. This would typically do one of:
+   - **JWT validation**: Verify the token signature using the IdP&#x27;s JWKS endpoint, check claims (audience, expiry, scopes)
+   - **Token introspection**: Call the IdP&#x27;s introspection endpoint (RFC 7662)
+
+2. Pass it to FastMCP along with `AuthSettings`:
+
+```python
+FastMCP(
+    auth=AuthSettings(
+        issuer_url=&quot;https://keycloak.example.com/realms/myrealm&quot;,
+        resource_server_url=&quot;https://mcp.example.com/mcp&quot;,
+        required_scopes=[&quot;mcp:read&quot;],
+    ),
+    token_verifier=my_token_verifier,
+)
+```
+
+The SDK does **not** include any built-in `IntrospectionTokenVerifier` or JWT verification implementation — there are no references to `jose`, `jwk`, `introspect`, or any JWT library anywhere in the MCP SDK. You must implement `TokenVerifier` yourself.
+
+**`AuthSettings`** (in `server/auth/settings.py`) has two relevant fields for RS-only mode:
+- `issuer_url` — The external authorization server URL (used in the `/.well-known/oauth-protected-resource` metadata to tell clients where to get tokens)
+- `resource_server_url` — The MCP server&#x27;s own URL (used as the resource identifier and to build the protected resource metadata path)
+
+---
+
+### 3. HTTP-Level Requirements per the MCP Spec (2025-06-18)
+
+The MCP authorization spec defines these roles and endpoints:
+
+**MCP Server as Resource Server (MUST):**
+- Serve `/.well-known/oauth-protected-resource` (RFC 9728) — tells clients which authorization server(s) to use
+- Return `WWW-Authenticate` header on 401 responses pointing to the resource metadata URL
+- Validate Bearer tokens in `Authorization` headers
+- Validate token audience (the token must have been issued specifically for this MCP server)
+
+**Authorization Server (separate or co-located, MUST):**
+- Serve `/.well-known/oauth-authorization-server` (RFC 8414) — metadata including endpoints
+- `/authorize` — authorization endpoint
+- `/token` — token endpoint
+- `/register` — dynamic client registration (SHOULD, RFC 7591)
+- `/revoke` — token revocation (optional)
+
+**When using `auth_server_provider`**, the SDK creates all of these on the MCP server itself. **When using `token_verifier`**, it only creates the protected resource metadata endpoint and bearer token validation — the AS endpoints must exist on the external IdP.
+
+The SDK automatically handles:
+- Building and serving the `ProtectedResourceMetadata` at `/.well-known/oauth-protected-resource{/path}` (via `create_protected_resource_routes`)
+- Including `resource_metadata` in `WWW-Authenticate` headers on 401 responses (via `RequireAuthMiddleware`)
+- Bearer token extraction and validation (via `BearerAuthBackend` middleware)
+- Scope enforcement (via `RequireAuthMiddleware`)
+
+---
+
+### 4. Can the MCP Server Act Purely as a Resource Server?
+
+**Yes, absolutely.** Both the MCP spec and the SDK explicitly support this.
+
+From the MCP spec (2025-06-18): *&quot;The implementation details of the authorization server are beyond the scope of this specification. It may be hosted with the resource server or a separate entity.&quot;*
+
+From the SDK source (provider.py, line 288-294): The `ProviderTokenVerifier` class docstring says: *&quot;This is provided for backwards compatibility with existing auth_server_provider configurations. For new implementations using AS/RS separation, consider using the TokenVerifier protocol with a dedicated implementation like IntrospectionTokenVerifier.&quot;*
+
+The recommended approach for RS-only mode:
+1. Implement `TokenVerifier` to validate tokens from your external IdP
+2. Pass `token_verifier=...` (not `auth_server_provider`) to `FastMCP`
+3. Set `AuthSettings.issuer_url` to your IdP&#x27;s URL and `resource_server_url` to the MCP server&#x27;s URL
+4. The SDK will serve protected resource metadata pointing clients to the external IdP and enforce bearer token validation on all MCP endpoints</pre><pre>agentId: a4d49802814782978 (for resuming to continue this agent&#x27;s work if needed)
+&lt;usage&gt;total_tokens: 41628
+tool_uses: 21
+duration_ms: 97770&lt;/usage&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-23-57-559Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-23-57-559Z" class="timestamp-link"><time datetime="2026-03-06T11:23:57.559Z" data-timestamp="2026-03-06T11:23:57.559Z">2026-03-06T11:23:57.559Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Now I have a comprehensive picture. Let me compile the findings.
+
+---
+
+Here is a summary of the research findings on OAuth/OIDC charms in the Juju ecosystem.
+
+## 1. Charms providing OAuth/OIDC identity provider functionality
+
+The primary offering is the **Canonical Identity Platform**, a composable identity broker/provider system built on Juju. It consists of these K8s charms:
+
+- **Hydra** (`hydra`) -- Ory Hydra, the OAuth2/OIDC server. This is the core component that issues tokens and manages OAuth clients. It is the **provider** side of the `oauth` relation interface.
+- **Kratos** (`kratos`) -- Ory Kratos, handles user identity management and authentication flows.
+- **Kratos External IdP Integrator** (`kratos-external-idp-integrator`) -- Connects the platform to external OIDC-compliant identity providers (e.g. Google, Azure AD, Keycloak) for SSO.
+- **Identity Platform Login UI** (`identity-platform-login-ui-operator`) -- User-facing login pages and error screens.
+- **Oathkeeper** (`oathkeeper`) -- Ory Oathkeeper, an Identity &amp; Access Proxy (IAP) that intercepts requests and enforces authn/authz. Used to protect apps that do not natively support OAuth/OIDC.
+- **OAuth2 Proxy** (`oauth2-proxy-k8s`) -- An alternative IAP that works with the Identity Platform.
+- **OIDC Gatekeeper** (`oidc-gatekeeper`) -- Part of the Kubeflow authentication flow.
+
+There is **no dedicated Keycloak charm** on Charmhub. However, Keycloak can be used as an external IdP via the Kratos External IdP Integrator. For OpenStack, there is `charm-keystone-openidc` (subordinate charm for Keystone OIDC).
+
+## 2. Juju relation interfaces for OAuth integration
+
+The key interfaces (all catalogued at `https://charmhub.io/integrations`):
+
+| Interface | Version | Status | Purpose |
+|---|---|---|---|
+| **`oauth`** | v0 | draft | The primary interface for OAuth2/OIDC client registration. Requirer = app needing OAuth credentials; Provider = Hydra. |
+| **`auth_proxy`** | v0 | draft | For apps protected by Oathkeeper IAP. Requirer = downstream app; Provider = Oathkeeper. |
+| **`forward_auth`** | v0 | draft | Forward authentication decisions. |
+| **`saml`** | v0 | published | SAML-based authentication. |
+| **`kratos_info`** | v0 | published | Kratos endpoint information sharing. |
+| **`kratos_external_idp`** | v0 | draft | External IdP configuration for Kratos. |
+| **`grafana_auth`** | v0 | draft | Grafana-specific auth integration. |
+| **`jwt`** | v0 | draft | JWT-based authentication. |
+| **`ldap`** | v0 | draft | LDAP directory integration. |
+
+The **`oauth` interface** is the one most relevant for your use case. Its specification lives at `https://github.com/canonical/charm-relation-interfaces/blob/main/interfaces/oauth/v0/README.md`.
+
+## 3. Existing charm library for OAuth integration
+
+The canonical library is published by the **Hydra charm** at:
+
+`https://charmhub.io/hydra/libraries/oauth/source-code` (lib v0.11)
+
+It provides two classes:
+
+- **`OAuthRequirer`** -- For charms that need to act as an OAuth2 client (or resource server). Provides methods: `update_client_config()`, `is_client_created()`, `get_provider_info()`, `get_client_secret()`.
+- **`OAuthProvider`** -- For charms implementing the OAuth2/OIDC provider side (i.e. Hydra). Provides: `set_provider_info_in_relation_data()`, `set_client_credentials_in_relation_data()`.
+
+There is **no separate &quot;resource server&quot; library**. The `oauth` library is designed around the client registration pattern. However, a resource server can use it to obtain the provider&#x27;s JWKS endpoint and issuer URL, which is everything needed for local JWT validation.
+
+For apps that cannot do their own OAuth, the **`auth_proxy`** library (from Oathkeeper) provides a sidecar-style protection model instead.
+
+## 4. What data is exchanged via the `oauth` relation
+
+### Requirer provides (app databag):
+- `redirect_uri` -- HTTPS callback URL
+- `scope` -- Space-separated requested scopes
+- `grant_types` -- Array (e.g. `[&quot;authorization_code&quot;]`, `[&quot;client_credentials&quot;]`)
+- `token_endpoint_auth_method` -- e.g. `&quot;client_secret_basic&quot;`
+- `audience` -- Array of audiences for issued tokens (optional)
+
+### Provider provides (app databag):
+- `issuer_url` -- OIDC issuer URL
+- `authorization_endpoint` -- URL for auth flows
+- `token_endpoint` -- Token exchange URL
+- `introspection_endpoint` -- Token introspection URL
+- `userinfo_endpoint` -- User info URL
+- **`jwks_endpoint`** -- JWKS public keys URL (for local JWT validation)
+- `scope` -- Supported scopes
+- `client_id` -- Registered client identifier
+- `client_secret_id` -- **Juju Secret ID** referencing the client secret (requires Juju 3+)
+- `groups` -- Optional group membership claim
+- `ca_chain` -- Optional CA certificate array
+- **`jwt_access_token`** -- Optional boolean indicating whether access tokens are JWTs (as opposed to Hydra&#x27;s default opaque tokens)
+
+### Client registration flow:
+1. Requirer charm puts its `ClientConfig` in the relation databag.
+2. Provider (Hydra) receives a `client_created` event, registers the OAuth client.
+3. Provider stores the client secret in a **Juju Secret**, puts the `client_id` and `client_secret_id` in the databag.
+4. Requirer receives `oauth_info_changed` event, retrieves all provider endpoints and credentials via `get_provider_info()`.
+
+### Implications for a resource server charm:
+A charm acting as a resource server (validating tokens, not redirecting users) would use the `oauth` relation to obtain:
+- The **`jwks_endpoint`** for local JWT signature validation
+- The **`introspection_endpoint`** for opaque token validation
+- The **`issuer_url`** for `iss` claim validation
+- The `client_id` / `client_secret_id` if it needs to call the introspection endpoint (which requires client credentials)
+
+The `jwt_access_token` field tells the resource server whether to expect JWTs (validate locally via JWKS) or opaque tokens (validate via introspection). Hydra defaults to opaque tokens but can be configured per-client to issue JWTs.
+
+The Charmed Kafka integration demonstrates this pattern: `juju integrate kafka hydra` sets up the `oauth` relation, and Kafka then validates bearer tokens from clients using the endpoints provided by Hydra.
+
+Sources:
+- [Canonical Identity Platform](https://charmhub.io/topics/canonical-identity-platform)
+- [OAuth2/OIDC Explanation](https://charmhub.io/topics/canonical-identity-platform/explanation-oauth2-oidc)
+- [OAuth v0 Interface Specification](https://github.com/canonical/charm-relation-interfaces/blob/main/interfaces/oauth/v0/README.md)
+- [Hydra OAuth Library Source Code](https://charmhub.io/hydra/libraries/oauth/source-code)
+- [How To Integrate With OIDC Compatible Charms](https://charmhub.io/topics/canonical-identity-platform/how-to/integrate-oidc-compatible-charms)
+- [Oathkeeper auth_proxy Library](https://charmhub.io/oathkeeper/libraries/auth_proxy/source-code)
+- [Charmhub Interface Catalogue](https://charmhub.io/integrations)
+- [Charmed Kafka OAuth with Hydra](https://documentation.ubuntu.com/charmed-kafka/3/how-to/oauth/)
+- [Identity and Access Proxy Tutorial](https://charmhub.io/topics/canonical-identity-platform/tutorials/identity-access-proxy-tutorial)
+- [charm-relation-interfaces Repository](https://github.com/canonical/charm-relation-interfaces)</pre><pre>agentId: a496da08688e43c16 (for resuming to continue this agent&#x27;s work if needed)
+&lt;usage&gt;total_tokens: 22783
+tool_uses: 24
+duration_ms: 159575&lt;/usage&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-24-12-777Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-24-12-777Z" class="timestamp-link"><time datetime="2026-03-06T11:24:12.777Z" data-timestamp="2026-03-06T11:24:12.777Z">2026-03-06T11:24:12.777Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Great news — this is very feasible. Here's the picture:</p>
+<h2>How it fits together</h2>
+<p><strong>FastMCP side (workload):</strong>
+- FastMCP supports <strong>resource-server-only mode</strong> via a <code>TokenVerifier</code> protocol — a single method: <code>verify_token(token) -&gt; AccessToken | None</code>
+- You pass <code>token_verifier=...</code> (not <code>auth_server_provider</code>) to <code>FastMCP</code>, along with <code>AuthSettings(issuer_url=..., resource_server_url=...)</code>
+- The SDK automatically serves <code>/.well-known/oauth-protected-resource</code> pointing clients to the external IdP, and enforces Bearer token validation
+- We just need to implement <code>TokenVerifier</code> to validate JWTs using the IdP's JWKS endpoint (or call its introspection endpoint for opaque tokens)</p>
+<p><strong>Juju side (charm):</strong>
+- The <strong><code>oauth</code> relation interface</strong> (v0, provided by Hydra) is the standard
+- Hydra's <code>OAuthRequirer</code> library handles client registration and gives us back: <code>jwks_endpoint</code>, <code>introspection_endpoint</code>, <code>issuer_url</code>, <code>client_id</code>, <code>client_secret_id</code>
+- The <code>jwt_access_token</code> flag tells us whether to expect JWTs (validate locally via JWKS) or opaque tokens (validate via introspection)
+- Charmed Kafka already uses this exact pattern</p>
+<p><strong>The flow would be:</strong>
+1. <code>juju integrate mcp-server hydra</code> — the charm gets OIDC endpoints via the <code>oauth</code> relation
+2. The charm writes the issuer URL, JWKS endpoint, etc. to the workload config
+3. The workload implements <code>TokenVerifier</code> using the JWKS endpoint for JWT validation (or introspection for opaque tokens)
+4. MCP clients (Claude Desktop etc.) see the protected resource metadata, get redirected to Hydra for auth, then present their token to the MCP server</p>
+<p>This is option 2 confirmed — the MCP server is purely a resource server, Hydra handles the authorization flow. Want me to implement this now or move on to something else?</p></div></div></div>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-011.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-010.html">10</a>
+<a href="page-011.html">11</a>
+<span class="current">12</span>
+<a href="page-013.html">13</a>
+<a href="page-014.html">14</a>
+<a href="page-015.html">15</a>
+<a href="page-013.html">Next &rarr;</a>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

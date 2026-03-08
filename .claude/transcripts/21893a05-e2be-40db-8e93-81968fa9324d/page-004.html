@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 4</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 4/9</h1>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-003.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<span class="current">4</span>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-005.html">Next &rarr;</a>
+</div>
+
+
+<div class="message user" id="msg-2026-03-07T09-22-37-107Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-22-37-107Z" class="timestamp-link"><time datetime="2026-03-07T09:22:37.107Z" data-timestamp="2026-03-07T09:22:37.107Z">2026-03-07T09:22:37.107Z</time></a></div><div class="message-content">
+<div class="user-content"><p><task-notification>
+<task-id>af9eb8c14c8f3643d</task-id>
+<tool-use-id>toolu_01AJnPo5J8kVfx983swy5Eru</tool-use-id>
+<status>completed</status></p>
+<summary>Agent "Write tutorial doc" completed</summary>
+<p><result>The tutorial has been created at <code>/home/ubuntu/mcp-charm/docs/tutorial.md</code>. It covers all ten requested sections in Diataxis tutorial style:</p>
+<ol>
+<li><strong>Prerequisites</strong> -- Juju, existing charm, charmcraft, curl</li>
+<li><strong>Relation metadata</strong> -- Adding <code>provides: mcp</code> to <code>charmcraft.yaml</code></li>
+<li><strong>Library dependency</strong> -- Adding <code>charmlibs-interfaces-mcp</code> to <code>pyproject.toml</code></li>
+<li><strong>McpProvider setup</strong> -- Importing, instantiating, observing <code>mcp_relation_joined</code></li>
+<li><strong>Simple exec tool</strong> -- <code>system-info</code> running <code>uname -a</code>, no parameters</li>
+<li><strong>Parameterised tool</strong> -- <code>disk-usage</code> with <code>{{path}}</code> template substitution and <code>input_schema</code></li>
+<li><strong>Prompt</strong> -- <code>diagnose-system</code> with an optional <code>focus</code> argument</li>
+<li><strong>Resource</strong> -- <code>config://os-release</code> reading <code>/etc/os-release</code></li>
+<li><strong>Complete code</strong> -- Full <code>src/charm.py</code> with definitions as a module-level constant</li>
+<li><strong>Deploy and test</strong> -- Pack, deploy, integrate, verify with curl; then next steps (auth, ingress, TLS, OAuth)</li>
+</ol>
+<p>The tutorial follows all project conventions: UK English ("initialise", "behaviour"), module-level imports (<code>from charmlibs.interfaces import mcp</code>), and the actual API as used in the demo principal charm (e.g. <code>McpProvider</code>, <code>set_definitions</code>, <code>McpDefinitions</code>, <code>ExecHandler</code> with list-based commands).</result>
+<usage><total_tokens>23406</total_tokens><tool_uses>12</tool_uses><duration_ms>91615</duration_ms></usage>
+</task-notification>
+Full transcript available at: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/af9eb8c14c8f3643d.output</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-22-39-891Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-22-39-891Z" class="timestamp-link"><time datetime="2026-03-07T09:22:39.891Z" data-timestamp="2026-03-07T09:22:39.891Z">2026-03-07T09:22:39.891Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Tutorial done. 3 remaining...</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-23-09-696Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-23-09-696Z" class="timestamp-link"><time datetime="2026-03-07T09:23:09.696Z" data-timestamp="2026-03-07T09:23:09.696Z">2026-03-07T09:23:09.696Z</time></a></div><div class="message-content">
+<div class="user-content"><p><task-notification>
+<task-id>a4e1dbc4cfee58643</task-id>
+<tool-use-id>toolu_01V7uuCd4erUatcWEG7Y9wut</tool-use-id>
+<status>completed</status></p>
+<summary>Agent "Write explanation doc" completed</summary>
+<p><result>The file has been created at <code>/home/ubuntu/mcp-charm/docs/explanation.md</code>. It covers all the requested topics in Diataxis explanation style (understanding-oriented, focused on concepts and design reasoning) using UK English throughout:</p>
+<ul>
+<li><strong>Architecture</strong>: subordinate pattern with <code>scope: container</code>, systemd service co-located with the principal, relation data flow pipeline (principal sets definitions, charm writes config JSON, server reads config), and the two handler execution models (exec and http).</li>
+<li><strong>Design decisions</strong>: seven "why" sections covering subordinate vs standalone, systemd vs per-request, JSON config file as the decoupling mechanism, no <code>shell=True</code>, dataclasses over pydantic, <code>{{param}}</code> template substitution safety, and FastMCP with streamable HTTP in stateless mode.</li>
+<li><strong>Security model</strong>: defence in depth (input validation, command allowlist, no shell interpolation, rate limiting), OAuth 2.1 resource server mode with JWT and introspection options, bearer token authentication, and TLS.</li>
+<li><strong>Observability architecture</strong>: Prometheus counters/histograms/gauges on <code>/metrics</code>, COS integration via <code>cos-agent</code>, OpenTelemetry ASGI middleware with OTLP export to Tempo, and structured JSON logging for Loki.</result>
+<usage><total_tokens>37085</total_tokens><tool_uses>12</tool_uses><duration_ms>103831</duration_ms></usage>
+</task-notification>
+Full transcript available at: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/a4e1dbc4cfee58643.output</li>
+</ul></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-23-12-684Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-23-12-684Z" class="timestamp-link"><time datetime="2026-03-07T09:23:12.684Z" data-timestamp="2026-03-07T09:23:12.684Z">2026-03-07T09:23:12.684Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Explanation doc done. 2 remaining (how-to guides and reference/SECURITY)...</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-23-39-436Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-23-39-436Z" class="timestamp-link"><time datetime="2026-03-07T09:23:39.436Z" data-timestamp="2026-03-07T09:23:39.436Z">2026-03-07T09:23:39.436Z</time></a></div><div class="message-content">
+<div class="user-content"><p><task-notification>
+<task-id>affd5e359f3e697a7</task-id>
+<tool-use-id>toolu_01RHbLwqPdQqTwd6BbbvhRNj</tool-use-id>
+<status>completed</status></p>
+<summary>Agent "Update reference docs and SECURITY" completed</summary>
+<p><result>All four files have been created or updated. Here is a summary:</p>
+<p><strong>Created:</strong></p>
+<ul>
+<li>
+<p><code>/home/ubuntu/mcp-charm/docs/reference/config.md</code> -- Full configuration reference documenting all seven config options (<code>port</code>, <code>log-level</code>, <code>auth-token</code>, <code>rate-limit</code>, <code>command-allowlist</code>, <code>path-prefix</code>, <code>external-hostname</code>) with types, defaults, descriptions, and example <code>juju config</code> commands.</p>
+</li>
+<li>
+<p><code>/home/ubuntu/mcp-charm/docs/reference/api.md</code> -- Charm library API reference covering <code>McpProvider</code>, <code>McpRequirer</code>, <code>McpDefinitions</code>, <code>Tool</code>, <code>Prompt</code>, <code>PromptArgument</code>, <code>Resource</code>, <code>ExecHandler</code>, and <code>HttpHandler</code>. All examples use the <code>from charmlibs.interfaces import mcp</code> import style with <code>mcp.</code> prefixed access.</p>
+</li>
+</ul>
+<p><strong>Updated:</strong></p>
+<ul>
+<li>
+<p><code>/home/ubuntu/mcp-charm/docs/integration-schema.md</code> -- All three Python code examples updated from <code>from charmlibs.interfaces.mcp import McpProvider, ...</code> style to <code>from charmlibs.interfaces import mcp</code> with <code>mcp.</code> prefix on all class references. No other content was changed.</p>
+</li>
+<li>
+<p><code>/home/ubuntu/mcp-charm/SECURITY.md</code> -- The "Known Security Considerations" section now contains seven bullet points covering: exec handler command restriction, template substitution limitations (argv-safe but not syntax-safe), default listen-on-all-interfaces behaviour, plaintext bearer tokens without TLS, OAuth clock-skew risks, per-server rate limiting, and full machine access as root.</result>
+<usage><total_tokens>34309</total_tokens><tool_uses>24</tool_uses><duration_ms>119930</duration_ms></usage>
+</task-notification>
+Full transcript available at: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/affd5e359f3e697a7.output</p>
+</li>
+</ul></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-23-42-257Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-23-42-257Z" class="timestamp-link"><time datetime="2026-03-07T09:23:42.257Z" data-timestamp="2026-03-07T09:23:42.257Z">2026-03-07T09:23:42.257Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Reference docs and SECURITY done. 1 remaining (how-to guides)...</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-23-53-099Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-23-53-099Z" class="timestamp-link"><time datetime="2026-03-07T09:23:53.099Z" data-timestamp="2026-03-07T09:23:53.099Z">2026-03-07T09:23:53.099Z</time></a></div><div class="message-content">
+<div class="user-content"><p><task-notification>
+<task-id>ad1a27ee9b8f40953</task-id>
+<tool-use-id>toolu_01LMNviHF7R3HB5YjfSQWAwB</tool-use-id>
+<status>completed</status></p>
+<summary>Agent "Write how-to guides" completed</summary>
+<p><result>All five how-to guides have been created. Here is a summary of what was written:</p>
+<ol>
+<li>
+<p><strong><code>/home/ubuntu/mcp-charm/docs/how-to/add-tools.md</code></strong> -- Covers exec handlers with template substitution, HTTP handlers, optional handler fields, input schema (with and without parameters), and the difference between <code>set_tools()</code> (preserves other definitions) and <code>set_definitions()</code> (full replacement). Includes a comparison table of all four setter methods.</p>
+</li>
+<li>
+<p><strong><code>/home/ubuntu/mcp-charm/docs/how-to/configure-ingress.md</code></strong> -- Covers deploying and relating HAProxy via the <code>reverse-proxy</code> relation (<code>haproxy-route</code> interface), setting <code>path-prefix</code> for multi-app routing with examples of the resulting endpoint paths, and the <code>/health</code> endpoint for backend health monitoring.</p>
+</li>
+<li>
+<p><strong><code>/home/ubuntu/mcp-charm/docs/how-to/configure-tls.md</code></strong> -- Covers two options: direct TLS via the <code>certificates</code> relation (<code>tls-certificates</code> interface) with <code>external-hostname</code> config, and TLS termination at HAProxy. Also covers the <code>receive-ca-cert</code> relation for trusting private CAs. Includes a comparison table for when to use each approach.</p>
+</li>
+<li>
+<p><strong><code>/home/ubuntu/mcp-charm/docs/how-to/configure-auth.md</code></strong> -- Covers bearer token auth (<code>auth-token</code> config), OAuth 2.1 via the <code>oauth</code> relation with JWT and opaque token validation, rate limiting (<code>rate-limit</code> config), and command allowlist (<code>command-allowlist</code> config). Ends with a recommended production security configuration example.</p>
+</li>
+<li>
+<p><strong><code>/home/ubuntu/mcp-charm/docs/how-to/configure-observability.md</code></strong> -- Covers the <code>cos-agent</code> relation with grafana-agent, the <code>/metrics</code> Prometheus endpoint, the shipped Grafana dashboard, distributed tracing via Tempo (<code>charm-tracing</code> relation), structured JSON log forwarding to Loki, and log level configuration. Ends with a full COS integration example.</p>
+</li>
+</ol>
+<p>All files use UK English, the <code>from charmlibs.interfaces import mcp</code> import style, and are written in Diataxis how-to style (goal-oriented, practical, minimal explanation).</result>
+<usage><total_tokens>40963</total_tokens><tool_uses>26</tool_uses><duration_ms>159786</duration_ms></usage>
+</task-notification>
+Full transcript available at: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/ad1a27ee9b8f40953.output</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-23-56-223Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-23-56-223Z" class="timestamp-link"><time datetime="2026-03-07T09:23:56.223Z" data-timestamp="2026-03-07T09:23:56.223Z">2026-03-07T09:23:56.223Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>All 5 agents complete. Let me verify everything and update the roadmap.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-23-56-655Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-23-56-655Z" class="timestamp-link"><time datetime="2026-03-07T09:23:56.655Z" data-timestamp="2026-03-07T09:23:56.655Z">2026-03-07T09:23:56.655Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01PNj6rgqH9yaoa1KdXeuFZo"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;docs/**/*.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-23-57-346Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-23-57-346Z" class="timestamp-link"><time datetime="2026-03-07T09:23:57.346Z" data-timestamp="2026-03-07T09:23:57.346Z">2026-03-07T09:23:57.346Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/docs/tutorial.md
+/home/ubuntu/mcp-charm/docs/how-to/add-tools.md
+/home/ubuntu/mcp-charm/docs/reference/config.md
+/home/ubuntu/mcp-charm/docs/how-to/configure-ingress.md
+/home/ubuntu/mcp-charm/docs/explanation.md
+/home/ubuntu/mcp-charm/docs/how-to/configure-tls.md
+/home/ubuntu/mcp-charm/docs/reference/api.md
+/home/ubuntu/mcp-charm/docs/integration-schema.md
+/home/ubuntu/mcp-charm/docs/how-to/configure-auth.md
+/home/ubuntu/mcp-charm/docs/how-to/configure-observability.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-03-444Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-03-444Z" class="timestamp-link"><time datetime="2026-03-07T09:24:03.444Z" data-timestamp="2026-03-07T09:24:03.444Z">2026-03-07T09:24:03.444Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Good — all 10 doc files are in place. Let me do a quick check for any issues with the import style consistency and then update the roadmap.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-04-263Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-04-263Z" class="timestamp-link"><time datetime="2026-03-07T09:24:04.263Z" data-timestamp="2026-03-07T09:24:04.263Z">2026-03-07T09:24:04.263Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01DfLWChJW6TTjqLgJSD8o6v"><div class="tool-header"><span class="tool-icon">⚙</span> Grep</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;from charmlibs\\.interfaces\\.mcp import&#34;,
+  &#34;path&#34;: &#34;/home/ubuntu/mcp-charm/docs&#34;,
+  &#34;output_mode&#34;: &#34;content&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-04-388Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-04-388Z" class="timestamp-link"><time datetime="2026-03-07T09:24:04.388Z" data-timestamp="2026-03-07T09:24:04.388Z">2026-03-07T09:24:04.388Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>No matches found</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-04-723Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-04-723Z" class="timestamp-link"><time datetime="2026-03-07T09:24:04.723Z" data-timestamp="2026-03-07T09:24:04.723Z">2026-03-07T09:24:04.723Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01VE8kjhVpq27npFgJEV9xBL"><div class="tool-header"><span class="tool-icon">⚙</span> Grep</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;from charmlibs\\.interfaces\\.mcp import&#34;,
+  &#34;path&#34;: &#34;/home/ubuntu/mcp-charm/README.md&#34;,
+  &#34;output_mode&#34;: &#34;content&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-04-842Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-04-842Z" class="timestamp-link"><time datetime="2026-03-07T09:24:04.842Z" data-timestamp="2026-03-07T09:24:04.842Z">2026-03-07T09:24:04.842Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>No matches found</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-08-501Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-08-501Z" class="timestamp-link"><time datetime="2026-03-07T09:24:08.501Z" data-timestamp="2026-03-07T09:24:08.501Z">2026-03-07T09:24:08.501Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>No old-style imports in docs. Now update the roadmap.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-12-859Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-12-859Z" class="timestamp-link"><time datetime="2026-03-07T09:24:12.859Z" data-timestamp="2026-03-07T09:24:12.859Z">2026-03-07T09:24:12.859Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_01EybLQwXVytCii4Rq7pfxrT">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">ROADMAP.md</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/ROADMAP.md</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">## Phase 9: Documentation (Diataxis)
+
+- [ ] Tutorials — step-by-step guide to adding MCP to your charm
+- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
+- [ ] Reference — integration schema, config options, API docs
+- [ ] Explanation — architecture, design decisions, security model
+- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">## Phase 9: Documentation (Diataxis)
+
+- [x] Tutorials — step-by-step guide to adding MCP to your charm (`docs/tutorial.md`)
+- [x] How-to guides — specific tasks: add tools, configure ingress, TLS, auth, observability (`docs/how-to/`)
+- [x] Reference — config options (`docs/reference/config.md`), charm library API (`docs/reference/api.md`), integration schema (`docs/integration-schema.md`)
+- [x] Explanation — architecture, design decisions, security model (`docs/explanation.md`)
+- [x] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
+- [x] Update README.md with full config table, correct import style, docs links</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-12-921Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-12-921Z" class="timestamp-link"><time datetime="2026-03-07T09:24:12.921Z" data-timestamp="2026-03-07T09:24:12.921Z">2026-03-07T09:24:12.921Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/ROADMAP.md has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-15-946Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-15-946Z" class="timestamp-link"><time datetime="2026-03-07T09:24:15.946Z" data-timestamp="2026-03-07T09:24:15.946Z">2026-03-07T09:24:15.946Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Now let me commit.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-16-587Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-16-587Z" class="timestamp-link"><time datetime="2026-03-07T09:24:16.587Z" data-timestamp="2026-03-07T09:24:16.587Z">2026-03-07T09:24:16.587Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Ry9ZuZ72hqjSLGbXdt54XA">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Show working tree status</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git status -u</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-16-685Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-16-685Z" class="timestamp-link"><time datetime="2026-03-07T09:24:16.685Z" data-timestamp="2026-03-07T09:24:16.685Z">2026-03-07T09:24:16.685Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>On branch main
+Your branch is up to date with &#x27;origin/main&#x27;.
+
+Changes not staged for commit:
+  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+	modified:   README.md
+	modified:   ROADMAP.md
+	modified:   SECURITY.md
+	modified:   docs/integration-schema.md
+
+Untracked files:
+  (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)
+	docs/explanation.md
+	docs/how-to/add-tools.md
+	docs/how-to/configure-auth.md
+	docs/how-to/configure-ingress.md
+	docs/how-to/configure-observability.md
+	docs/how-to/configure-tls.md
+	docs/reference/api.md
+	docs/reference/config.md
+	docs/tutorial.md
+
+no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-20-791Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-20-791Z" class="timestamp-link"><time datetime="2026-03-07T09:24:20.791Z" data-timestamp="2026-03-07T09:24:20.791Z">2026-03-07T09:24:20.791Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NoQr6wwWjC534cHvBhDnAv">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Stage all doc changes</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git add README.md ROADMAP.md SECURITY.md docs/integration-schema.md docs/explanation.md docs/how-to/add-tools.md docs/how-to/configure-auth.md docs/how-to/configure-ingress.md docs/how-to/configure-observability.md docs/how-to/configure-tls.md docs/reference/api.md docs/reference/config.md docs/tutorial.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-20-880Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-20-880Z" class="timestamp-link"><time datetime="2026-03-07T09:24:20.880Z" data-timestamp="2026-03-07T09:24:20.880Z">2026-03-07T09:24:20.880Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre></pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-27-567Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-27-567Z" class="timestamp-link"><time datetime="2026-03-07T09:24:27.567Z" data-timestamp="2026-03-07T09:24:27.567Z">2026-03-07T09:24:27.567Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_0189wHLrG1sfxj1wmnwJJ59o">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit documentation changes</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Add Diataxis documentation and update existing docs
+
+New documentation:
+- Tutorial: step-by-step guide to adding MCP to a charm
+- How-to guides: add tools, configure ingress, TLS, auth, observability
+- Reference: full config options, charm library API
+- Explanation: architecture, design decisions, security model
+
+Updated:
+- README: full config table, correct import style, HAProxy (not Traefik),
+  deployment examples for all integrations, docs links section
+- SECURITY.md: flesh out known security considerations (7 items)
+- integration-schema.md: fix import style to use mcp. prefix
+- ROADMAP: mark Phase 9 complete
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-24-28-484Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-24-28-484Z" class="timestamp-link"><time datetime="2026-03-07T09:24:28.484Z" data-timestamp="2026-03-07T09:24:28.484Z">2026-03-07T09:24:28.484Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ruff.................................................(no files to check)Skipped
+ruff-format..........................................(no files to check)Skipped
+ty (charm)...........................................(no files to check)Skipped
+ty (workload)........................................(no files to check)Skipped
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm)...................................(no files to check)Skipped
+unit tests (workload)................................(no files to check)Skipped
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre><div class="commit-card"><a href="https://github.com/tonyandrewmeyer/mcp-server-operator/commit/85bd6d7"><span class="commit-card-hash">85bd6d7</span> Add Diataxis documentation and update existing docs</a></div><pre>13 files changed, 2008 insertions(+), 46 deletions(-)
+ create mode 100644 docs/explanation.md
+ create mode 100644 docs/how-to/add-tools.md
+ create mode 100644 docs/how-to/configure-auth.md
+ create mode 100644 docs/how-to/configure-ingress.md
+ create mode 100644 docs/how-to/configure-observability.md
+ create mode 100644 docs/how-to/configure-tls.md
+ create mode 100644 docs/reference/api.md
+ create mode 100644 docs/reference/config.md
+ create mode 100644 docs/tutorial.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-24-35-198Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-24-35-198Z" class="timestamp-link"><time datetime="2026-03-07T09:24:35.198Z" data-timestamp="2026-03-07T09:24:35.198Z">2026-03-07T09:24:35.198Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>All committed and passing. Here's what was done for Phase 9:</p>
+<p><strong>New docs (Diataxis structure):</strong>
+- <code>docs/tutorial.md</code> — step-by-step guide to adding MCP to a charm
+- <code>docs/how-to/add-tools.md</code> — exec/http handlers, input schemas, set_tools vs set_definitions
+- <code>docs/how-to/configure-ingress.md</code> — HAProxy, path prefix, health checks
+- <code>docs/how-to/configure-tls.md</code> — direct TLS vs reverse proxy TLS
+- <code>docs/how-to/configure-auth.md</code> — bearer token, OAuth 2.1, rate limiting, command allowlist
+- <code>docs/how-to/configure-observability.md</code> — COS, Prometheus, Grafana, tracing, logging
+- <code>docs/reference/config.md</code> — all 7 config options
+- <code>docs/reference/api.md</code> — full charm library API
+- <code>docs/explanation.md</code> — architecture, design decisions, security model</p>
+<p><strong>Updated:</strong>
+- <code>README.md</code> — full config table, correct imports, HAProxy not Traefik, docs links
+- <code>SECURITY.md</code> — 7 security considerations fleshed out
+- <code>docs/integration-schema.md</code> — import style fix
+- <code>ROADMAP.md</code> — Phase 9 marked complete</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-25-26-458Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-25-26-458Z" class="timestamp-link"><time datetime="2026-03-07T09:25:26.458Z" data-timestamp="2026-03-07T09:25:26.458Z">2026-03-07T09:25:26.458Z</time></a></div><div class="message-content">
+<div class="user-content"><p>ok, what's next</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-25-36-509Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-25-36-509Z" class="timestamp-link"><time datetime="2026-03-07T09:25:36.509Z" data-timestamp="2026-03-07T09:25:36.509Z">2026-03-07T09:25:36.509Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Looking at the roadmap:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–5, 7, 9</td>
+<td>Done</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>One item left: SLOs via sloth-k8s charm</td>
+</tr>
+<tr>
+<td><strong>8 — Demo</strong></td>
+<td>Example principal, e2e demo with Claude Code, screencast/walkthrough</td>
+</tr>
+<tr>
+<td><strong>10 — Polish + Packaging</strong></td>
+<td>Publish to Charmhub, publish charmlib to PyPI, docs site</td>
+</tr>
+<tr>
+<td><strong>Future</strong></td>
+<td>Chaos testing, Kubernetes version</td>
+</tr>
+</tbody>
+</table>
+<p>Phase 8 (Demo) and Phase 10 (Packaging) are the remaining actionable phases. The Phase 6 SLO item is a k8s-specific integration that may not be relevant yet. The "Future" items are longer-term.</p>
+<p>What would you like to tackle next? Phase 8 (demo) seems like the natural next step — the demo principal charm already exists in <code>demo/principal/</code>, so it's mostly about documenting the e2e workflow and writing a walkthrough. Phase 10 involves publishing, which may need credentials/accounts.</p></div></div></div>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-003.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<span class="current">4</span>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-005.html">Next &rarr;</a>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

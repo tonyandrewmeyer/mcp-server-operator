@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 3</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 3/9</h1>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-002.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<span class="current">3</span>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-004.html">Next &rarr;</a>
+</div>
+
+
+<div class="message user" id="msg-2026-03-07T09-19-07-580Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-19-07-580Z" class="timestamp-link"><time datetime="2026-03-07T09:19:07.580Z" data-timestamp="2026-03-07T09:19:07.580Z">2026-03-07T09:19:07.580Z</time></a></div><div class="message-content">
+<div class="user-content"><p>ok, where are we on the roadmap</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-11-068Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-11-068Z" class="timestamp-link"><time datetime="2026-03-07T09:19:11.068Z" data-timestamp="2026-03-07T09:19:11.068Z">2026-03-07T09:19:11.068Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01RoP6wMNaQq35Nu2PvMi2N9"><div class="tool-header"><span class="tool-icon">⚙</span> ToolSearch</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;query&#34;: &#34;select:Glob&#34;,
+  &#34;max_results&#34;: 1
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-19-11-070Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-19-11-070Z" class="timestamp-link"><time datetime="2026-03-07T09:19:11.070Z" data-timestamp="2026-03-07T09:19:11.070Z">2026-03-07T09:19:11.070Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &quot;type&quot;: &quot;tool_reference&quot;,
+  &quot;tool_name&quot;: &quot;Glob&quot;
+}</pre></div><button class="expand-btn">Show more</button></div></div>
+<div class="assistant-text"><p>Tool loaded.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-14-212Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-14-212Z" class="timestamp-link"><time datetime="2026-03-07T09:19:14.212Z" data-timestamp="2026-03-07T09:19:14.212Z">2026-03-07T09:19:14.212Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01SWs5y14mbS6W7X4TDbmMxN"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/ROADMAP*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-14-595Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-14-595Z" class="timestamp-link"><time datetime="2026-03-07T09:19:14.595Z" data-timestamp="2026-03-07T09:19:14.595Z">2026-03-07T09:19:14.595Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_014rMCBYgFG6Bru98hhgcSwG"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/TODO*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-14-716Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-14-716Z" class="timestamp-link"><time datetime="2026-03-07T09:19:14.716Z" data-timestamp="2026-03-07T09:19:14.716Z">2026-03-07T09:19:14.716Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01QNYHpnwVth82tYhnNEmMqY"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/PLAN*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-19-14-947Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-19-14-947Z" class="timestamp-link"><time datetime="2026-03-07T09:19:14.947Z" data-timestamp="2026-03-07T09:19:14.947Z">2026-03-07T09:19:14.947Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/ROADMAP.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-19-15-332Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-19-15-332Z" class="timestamp-link"><time datetime="2026-03-07T09:19:15.332Z" data-timestamp="2026-03-07T09:19:15.332Z">2026-03-07T09:19:15.332Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>No files found</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-19-15-461Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-19-15-461Z" class="timestamp-link"><time datetime="2026-03-07T09:19:15.461Z" data-timestamp="2026-03-07T09:19:15.461Z">2026-03-07T09:19:15.461Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/PLAN.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-18-668Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-18-668Z" class="timestamp-link"><time datetime="2026-03-07T09:19:18.668Z" data-timestamp="2026-03-07T09:19:18.668Z">2026-03-07T09:19:18.668Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_012ixV1zbb2uYBtiHfM1d8ak"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/ROADMAP.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-19-18-689Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-19-18-689Z" class="timestamp-link"><time datetime="2026-03-07T09:19:18.689Z" data-timestamp="2026-03-07T09:19:18.689Z">2026-03-07T09:19:18.689Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Roadmap
+     2→
+     3→## Phase 0: Project infrastructure
+     4→
+     5→- [x] Project documentation (README, ROADMAP, PLAN, CHANGELOG, CONTRIBUTING)
+     6→- [x] `pyproject.toml` — project metadata, dependencies, tool config (charm + workload)
+     7→- [x] Linting: ruff (format + lint), ty (type checking)
+     8→- [x] Pre-commit hooks (ruff, codespell, trailing whitespace, etc.)
+     9→- [x] Makefile for common tasks (format, lint, typecheck, test)
+    10→- [x] tox for charm test environments
+    11→- [x] Test infrastructure (pytest, coverage)
+    12→- [x] Charm skeleton via `charmcraft init --profile machine`
+    13→- [x] Workload project skeleton
+    14→- [x] GitHub Actions CI: charm (format, lint, unit tests, integration tests)
+    15→- [x] GitHub Actions CI: workload (format, lint, tests)
+    16→- [x] GitHub Actions: zizmor workflow security audit
+    17→
+    18→## Phase 1: Core — Charm skeleton + MCP server
+    19→
+    20→- [x] `charm/charmcraft.yaml` — subordinate machine charm metadata
+    21→- [x] `charm/src/charm.py` — ops charm handling `mcp` relation and systemd lifecycle
+    22→- [x] `charm/src/mcp_server.py` — workload management (install, start, stop, configure)
+    23→- [x] `workload/src/server.py` — MCP server with streamable HTTP, dynamic tool/prompt/resource registration from a JSON config file
+    24→- [x] systemd unit (template in mcp_server.py)
+    25→- [x] Unit tests: 5 charm tests, 15 workload tests
+    26→- [x] End-to-end validated: demo principal sets relation data, MCP server starts, tools/prompts/resources callable via HTTP
+    27→
+    28→## Phase 2: Code quality
+    29→
+    30→- [x] Use `self.load_config` and `relation.save`/`relation.load` instead of raw relation data values
+    31→- [x] Fix import style: `import pathlib` not `from pathlib import Path` (modules, not objects)
+    32→- [x] UK English throughout
+    33→- [x] Comments: full sentences, sparingly, explain why not what
+    34→
+    35→## Phase 3: Charm library (`charmlibs-interfaces-mcp`)
+    36→
+    37→- [x] Create `charmlibs-interfaces-mcp` Python package (published to PyPI)
+    38→- [x] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
+    39→- [x] Requirer class — used internally by the mcp-server charm to read relation data
+    40→- [x] Typed data models for tools, prompts, resources, and handlers (no pydantic — use dataclasses)
+    41→- [x] Documentation and examples for charm authors
+    42→
+    43→This library lets any charm add MCP support with minimal code:
+    44→```python
+    45→from charmlibs.mcp import McpProvider
+    46→
+    47→mcp = McpProvider(self, &quot;mcp&quot;)
+    48→mcp.set_tools([...])
+    49→```
+    50→
+    51→## Phase 4: Security
+    52→
+    53→- [x] Input validation — validate tool call arguments against declared `input_schema` before handler execution
+    54→- [x] No `shell=True` — enforce subprocess list args only (done by design)
+    55→- [x] Optional command allowlist in charm config (`command-allowlist`)
+    56→- [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
+    57→- [x] Auth token support (Bearer token via `auth-token` config)
+    58→- [x] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
+    59→- [x] Charm unit tests for OAuth relation events and `_get_oauth_config`
+    60→- [x] Integration test for OAuth with a mock IdP (JWT + introspection with mocked endpoints)
+    61→
+    62→## Phase 5: Ingress + TLS
+    63→
+    64→- [x] HAProxy integration for external access (reverse-proxy relation with haproxy-route interface)
+    65→- [x] TLS termination via reverse proxy (HAProxy handles TLS; charm provides backend details)
+    66→- [x] Direct TLS support (certificates relation with tls-certificates interface)
+    67→- [x] Configurable path prefix per principal (`path-prefix` config option)
+    68→- [x] Health check endpoint (`/health` or `/&lt;prefix&gt;/health`)
+    69→
+    70→## Phase 6: Observability (COS integration)
+    71→
+    72→- [x] Prometheus metrics endpoint (`/metrics`) with request count, latency histogram, tool call counter, active connections gauge
+    73→- [x] MetricsMiddleware for automatic request instrumentation
+    74→- [x] COSAgentProvider integration (cos-agent relation for grafana-agent subordinate)
+    75→- [x] Grafana dashboard (request rate, latency percentiles, tool calls, active connections, error rate)
+    76→- [x] Prometheus alert rules (McpServerDown, McpServerHighErrorRate, McpServerHighLatency)
+    77→- [x] Charm tracing via `ops[tracing]` (Tempo integration via `charm-tracing` relation)
+    78→- [x] Workload tracing via OpenTelemetry ASGI instrumentation (OTLP HTTP export)
+    79→- [x] Log forwarding (structured JSON logging, Loki alert rules via cos-agent)
+    80→- [ ] SLOs via sloth-k8s charm
+    81→
+    82→## Phase 7: Testing
+    83→
+    84→- [x] Unit tests for `charm.py` (27 charm tests + 12 mcp_server tests covering all events, OAuth, TLS, COS, tracing)
+    85→- [x] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
+    86→- [x] Workload unit tests (41 tests covering server, middleware, token verifier)
+    87→- [x] Workload integration tests (27 tests: MCP protocol, auth, rate limiting, health, path prefix, metrics)
+    88→- [x] Security boundary tests (injection attempts, malformed input, unknown methods)
+    89→- [x] Integration test with demo principal charm (Juju CI: deploy, integrate, verify active)
+    90→- [x] CI with GitHub Actions (charm: format, lint, unit, integration; workload: format, lint, tests; zizmor)
+    91→- [x] Load and stress tests (50 concurrent requests, 20 concurrent tool calls, rate limiter under pressure)
+    92→
+    93→## Phase 8: Demo
+    94→
+    95→- [ ] Example principal charm showing how easy it is to add MCP to an existing charm
+    96→- [ ] End-to-end demo: deploy principal + mcp-server, connect Claude Code, invoke tools
+    97→- [ ] Screencast / README walkthrough
+    98→
+    99→## Phase 9: Documentation (Diataxis)
+   100→
+   101→- [ ] Tutorials — step-by-step guide to adding MCP to your charm
+   102→- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
+   103→- [ ] Reference — integration schema, config options, API docs
+   104→- [ ] Explanation — architecture, design decisions, security model
+   105→- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
+   106→
+   107→## Phase 10: Polish + packaging
+   108→
+   109→- [ ] Publish to Charmhub
+   110→- [ ] Publish `charmlibs-interfaces-mcp` to PyPI
+   111→- [ ] Documentation site (Read the Docs or similar)
+   112→
+   113→## Future: Chaos testing
+   114→
+   115→- [ ] Integration with Litmus operators for chaos testing
+   116→
+   117→## Future: Kubernetes version
+   118→
+   119→- [ ] Separate charm designed for k8s (HTTP-only handlers, sidecar container pattern)
+   120→- [ ] Pebble exec support for container access
+   121→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-18-925Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-18-925Z" class="timestamp-link"><time datetime="2026-03-07T09:19:18.925Z" data-timestamp="2026-03-07T09:19:18.925Z">2026-03-07T09:19:18.925Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_013miBpmvgMyXWZa53T8qBHc"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/PLAN.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-19-18-944Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-19-18-944Z" class="timestamp-link"><time datetime="2026-03-07T09:19:18.944Z" data-timestamp="2026-03-07T09:19:18.944Z">2026-03-07T09:19:18.944Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# MCP Server Charm for Juju — Plan
+     2→
+     3→## Overview
+     4→
+     5→A **subordinate machine charm** that deploys an MCP (Model Context Protocol) server
+     6→on the same machine as a principal charm. The principal declares tools, prompts,
+     7→and resources via Juju integration data. The MCP server charm aggregates these
+     8→declarations and serves them over streamable HTTP. Ingress is provided via Traefik.
+     9→
+    10→Clients (LLM agents, Claude Code, etc.) connect to the MCP server endpoint and
+    11→can discover and invoke the tools/prompts/resources declared by any integrated
+    12→principal charm — without the principal needing to implement MCP itself.
+    13→
+    14→## Architecture
+    15→
+    16→```
+    17→                  ┌─────────────────────────────────────────────┐
+    18→                  │              Machine (Juju unit)            │
+    19→                  │                                             │
+    20→  Client ──► Traefik ──► MCP Server (subordinate charm)        │
+    21→                  │            │                                │
+    22→                  │            │ exec / shell commands          │
+    23→                  │            ▼                                │
+    24→                  │       Principal workload                    │
+    25→                  │       (e.g. PostgreSQL, app, etc.)          │
+    26→                  └─────────────────────────────────────────────┘
+    27→```
+    28→
+    29→- The MCP server runs as a systemd service on the machine.
+    30→- On `call_tool`, it executes the declared handler (shell command, script, or
+    31→  HTTP call to localhost).
+    32→- The subordinate has full access to the machine, so exec-type handlers just run
+    33→  directly.
+    34→
+    35→## Integration Interface: `mcp`
+    36→
+    37→The principal charm provides integration data on the `mcp` interface. This is the
+    38→contract between the principal and the MCP server charm.
+    39→
+    40→### Integration data schema (principal provides on app data bag)
+    41→
+    42→```json
+    43→{
+    44→  &quot;tools&quot;: [
+    45→    {
+    46→      &quot;name&quot;: &quot;list-databases&quot;,
+    47→      &quot;description&quot;: &quot;List all PostgreSQL databases&quot;,
+    48→      &quot;input_schema&quot;: {
+    49→        &quot;type&quot;: &quot;object&quot;,
+    50→        &quot;properties&quot;: {},
+    51→        &quot;required&quot;: []
+    52→      },
+    53→      &quot;handler&quot;: {
+    54→        &quot;type&quot;: &quot;exec&quot;,
+    55→        &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;]
+    56→      }
+    57→    },
+    58→    {
+    59→      &quot;name&quot;: &quot;run-query&quot;,
+    60→      &quot;description&quot;: &quot;Run a read-only SQL query&quot;,
+    61→      &quot;input_schema&quot;: {
+    62→        &quot;type&quot;: &quot;object&quot;,
+    63→        &quot;properties&quot;: {
+    64→          &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;SQL SELECT query&quot;},
+    65→          &quot;database&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Database name&quot;}
+    66→        },
+    67→        &quot;required&quot;: [&quot;query&quot;, &quot;database&quot;]
+    68→      },
+    69→      &quot;handler&quot;: {
+    70→        &quot;type&quot;: &quot;exec&quot;,
+    71→        &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-d&quot;, &quot;{{database}}&quot;, &quot;-c&quot;, &quot;{{query}}&quot;, &quot;--csv&quot;],
+    72→        &quot;timeout&quot;: 30
+    73→      }
+    74→    }
+    75→  ],
+    76→  &quot;prompts&quot;: [
+    77→    {
+    78→      &quot;name&quot;: &quot;db-analysis&quot;,
+    79→      &quot;description&quot;: &quot;Analyze database health&quot;,
+    80→      &quot;arguments&quot;: [
+    81→        {&quot;name&quot;: &quot;database&quot;, &quot;description&quot;: &quot;Database to analyze&quot;, &quot;required&quot;: true}
+    82→      ],
+    83→      &quot;template&quot;: &quot;Analyze the health of the {{database}} database. List tables, sizes, and any issues.&quot;
+    84→    }
+    85→  ],
+    86→  &quot;resources&quot;: [
+    87→    {
+    88→      &quot;uri&quot;: &quot;config://postgresql&quot;,
+    89→      &quot;name&quot;: &quot;PostgreSQL Configuration&quot;,
+    90→      &quot;description&quot;: &quot;Current PostgreSQL configuration&quot;,
+    91→      &quot;handler&quot;: {
+    92→        &quot;type&quot;: &quot;exec&quot;,
+    93→        &quot;command&quot;: [&quot;cat&quot;, &quot;/etc/postgresql/14/main/postgresql.conf&quot;]
+    94→      }
+    95→    }
+    96→  ]
+    97→}
+    98→```
+    99→
+   100→### Handler types
+   101→
+   102→1. **`exec`** — Run a shell command on the machine. Arguments from the MCP tool
+   103→   call are substituted into `{{placeholder}}` positions in the command array.
+   104→   - `command`: list of strings (argv)
+   105→   - `timeout`: optional, seconds (default 60)
+   106→   - `user`: optional, run as this user (default: root)
+   107→   - `working_dir`: optional
+   108→   - `env`: optional dict of extra environment variables
+   109→
+   110→2. **`http`** — Call a local HTTP endpoint (for workloads that already have an API).
+   111→   - `url`: e.g. `http://localhost:8080/api/query`
+   112→   - `method`: GET, POST, etc.
+   113→   - `body_template`: optional JSON template with `{{placeholder}}` substitution
+   114→   - `timeout`: optional, seconds
+   115→
+   116→### Template substitution
+   117→
+   118→`{{param_name}}` in commands, URLs, or body templates gets replaced with the
+   119→corresponding argument value from the MCP tool call. Values are validated against
+   120→`input_schema` before substitution. For exec handlers, values are passed as
+   121→discrete argv elements (no shell interpolation) to prevent injection.
+   122→
+   123→## Charm Structure
+   124→
+   125→```
+   126→mcp-charm/
+   127→├── charmcraft.yaml          # Charm metadata (subordinate, machine)
+   128→├── requirements.txt         # Python dependencies
+   129→├── src/
+   130→│   ├── charm.py             # Main charm code (ops framework)
+   131→│   └── mcp_server.py        # MCP server implementation
+   132→├── templates/
+   133→│   └── mcp-server.service   # systemd unit file template
+   134→└── tests/
+   135→    ├── unit/
+   136→    │   ├── test_charm.py
+   137→    │   └── test_mcp_server.py
+   138→    └── integration/
+   139→        └── test_integration.py
+   140→```
+   141→
+   142→## Charm Metadata (charmcraft.yaml)
+   143→
+   144→```yaml
+   145→name: mcp-server
+   146→type: charm
+   147→title: MCP Server
+   148→summary: Expose charm workloads via Model Context Protocol
+   149→description: |
+   150→  A subordinate charm that deploys an MCP server, allowing principal charms
+   151→  to declaratively expose tools, prompts, and resources to MCP clients.
+   152→
+   153→base: ubuntu@24.04
+   154→platforms:
+   155→  amd64:
+   156→
+   157→subordinate: true
+   158→
+   159→requires:
+   160→  juju-info:
+   161→    interface: juju-info
+   162→    scope: container
+   163→  ingress:
+   164→    interface: ingress
+   165→    limit: 1
+   166→
+   167→provides:
+   168→  mcp:
+   169→    interface: mcp
+   170→
+   171→config:
+   172→  options:
+   173→    port:
+   174→      type: int
+   175→      default: 8081
+   176→      description: Port for the MCP server to listen on
+   177→    log-level:
+   178→      type: string
+   179→      default: info
+   180→      description: Log level (debug, info, warning, error)
+   181→```
+   182→
+   183→Note: The `mcp` interface is provided by this charm, and the principal charm
+   184→requires it. This way the principal &quot;requests&quot; MCP exposure and provides its
+   185→declarations in the integration data.
+   186→
+   187→Actually — rethinking the direction: the subordinate should **require** the `mcp`
+   188→interface, and the **principal provides** it, since the principal is the one
+   189→supplying the tool definitions. But in Juju subordinate conventions, the
+   190→subordinate typically provides a service. Let&#x27;s use:
+   191→
+   192→- Subordinate **requires** `juju-info` (to attach to principal)
+   193→- Subordinate **requires** `mcp` (to receive tool definitions from principal)
+   194→- Wait — a subordinate can&#x27;t require from its own principal via two interfaces
+   195→  easily.
+   196→
+   197→Simpler approach: use `juju-info` for the subordinate attachment, and use a
+   198→**peer relation or config** approach... Actually, the cleanest pattern:
+   199→
+   200→- The **principal provides** `mcp` interface (it has the tool definitions)
+   201→- The **subordinate requires** `mcp` interface
+   202→- The subordinate also requires `juju-info` for attachment (standard subordinate)
+   203→
+   204→When the principal integrates with the MCP server charm, the subordinate gets
+   205→deployed on the same machine and reads tool definitions from the `mcp` relation
+   206→data bag.
+   207→
+   208→Revised:
+   209→
+   210→```yaml
+   211→subordinate: true
+   212→
+   213→requires:
+   214→  juju-info:
+   215→    interface: juju-info
+   216→    scope: container
+   217→  mcp:
+   218→    interface: mcp
+   219→    scope: container
+   220→
+   221→provides:
+   222→  ingress:
+   223→    interface: ingress
+   224→```
+   225→
+   226→Wait, actually for ingress with Traefik the MCP charm would **require** ingress.
+   227→And the `mcp` relation needs the scope: container since it&#x27;s between subordinate
+   228→and principal. Let me simplify:
+   229→
+   230→```yaml
+   231→subordinate: true
+   232→
+   233→requires:
+   234→  mcp:
+   235→    interface: mcp
+   236→    scope: container
+   237→  ingress:
+   238→    interface: ingress
+   239→```
+   240→
+   241→Using `mcp` with `scope: container` serves double duty: it attaches the
+   242→subordinate to the principal AND carries the tool definitions. No need for a
+   243→separate `juju-info`. The principal would do:
+   244→
+   245→```yaml
+   246→provides:
+   247→  mcp:
+   248→    interface: mcp
+   249→```
+   250→
+   251→And the user runs: `juju integrate my-app:mcp mcp-server:mcp`
+   252→
+   253→## Implementation Plan
+   254→
+   255→### Phase 1: Charm skeleton + MCP server
+   256→1. Set up charmcraft.yaml, requirements, and project structure
+   257→2. Implement `mcp_server.py` — a standalone MCP server using the `mcp` Python
+   258→   SDK with streamable HTTP transport
+   259→   - Accepts a JSON config file describing tools/prompts/resources
+   260→   - On tool call, executes the declared handler (exec or http)
+   261→   - Template substitution with input validation
+   262→3. Implement `charm.py`:
+   263→   - On `mcp-relation-changed`: read integration data, write config JSON,
+   264→     restart MCP server
+   265→   - On `install`: install dependencies, set up systemd service
+   266→   - On `config-changed`: update port/log-level, restart if needed
+   267→   - Health checks via systemd
+   268→
+   269→### Phase 2: Security
+   270→4. Input validation — sanitize template substitution (no shell injection for
+   271→   exec handlers; use subprocess with list args, never shell=True)
+   272→5. Optional allowlist of commands in charm config
+   273→6. Rate limiting on the MCP server
+   274→7. Auth token support (configurable shared secret or integration with identity)
+   275→
+   276→### Phase 3: Ingress
+   277→8. Traefik integration for external access
+   278→9. TLS termination via Traefik
+   279→
+   280→### Phase 4: Testing + polish
+   281→10. Unit tests for charm and MCP server
+   282→11. Integration test with a dummy principal charm
+   283→12. Documentation
+   284→
+   285→## Key Design Decisions
+   286→
+   287→1. **systemd service**: The MCP server runs as a long-lived process managed by
+   288→   systemd, not re-launched per request. This gives fast response times and
+   289→   proper lifecycle management.
+   290→
+   291→2. **JSON config file**: The charm writes a config file that the MCP server
+   292→   watches/reloads. This decouples the charm (ops/Python) from the server
+   293→   runtime.
+   294→
+   295→3. **No shell=True**: Exec handlers use `subprocess.run` with a list of args.
+   296→   Template values are substituted into the argv list as discrete elements,
+   297→   never interpolated into a shell string.
+   298→
+   299→4. **Machine-only (for now)**: Direct exec access to the workload. A future k8s
+   300→   version could use Pebble exec or require HTTP-only handlers.
+   301→
+   302→## Next Steps
+   303→
+   304→Start with Phase 1: get the charm skeleton and MCP server working end-to-end
+   305→with a simple exec-type tool.
+   306→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-19-28-273Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-19-28-273Z" class="timestamp-link"><time datetime="2026-03-07T09:19:28.273Z" data-timestamp="2026-03-07T09:19:28.273Z">2026-03-07T09:19:28.273Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Here's where things stand:</p>
+<p><strong>Completed (Phases 0–7):</strong>
+- Project infrastructure, core charm + MCP server, code quality, charm library, security (including OAuth 2.1), ingress + TLS, observability (COS integration), and testing — all done.</p>
+<p><strong>Remaining:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Status</th>
+<th>Items</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>6</strong></td>
+<td>Almost done</td>
+<td>One remaining item: SLOs via sloth-k8s charm</td>
+</tr>
+<tr>
+<td><strong>8 — Demo</strong></td>
+<td>Not started</td>
+<td>Example principal charm, end-to-end demo with Claude Code, screencast/walkthrough</td>
+</tr>
+<tr>
+<td><strong>9 — Documentation</strong></td>
+<td>Not started</td>
+<td>Tutorials, how-to guides, reference docs, explanation docs, SECURITY.md</td>
+</tr>
+<tr>
+<td><strong>10 — Polish + Packaging</strong></td>
+<td>Not started</td>
+<td>Publish to Charmhub, publish charmlib to PyPI, docs site</td>
+</tr>
+<tr>
+<td><strong>Future</strong></td>
+<td>Not started</td>
+<td>Chaos testing (Litmus), Kubernetes version</td>
+</tr>
+</tbody>
+</table>
+<p>The core functionality is fully built and tested. What remains is largely about packaging, documentation, and polish. Would you like to tackle any of these next?</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-20-21-927Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-20-21-927Z" class="timestamp-link"><time datetime="2026-03-07T09:20:21.927Z" data-timestamp="2026-03-07T09:20:21.927Z">2026-03-07T09:20:21.927Z</time></a></div><div class="message-content">
+<div class="user-content"><p>9</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-25-475Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-25-475Z" class="timestamp-link"><time datetime="2026-03-07T09:20:25.475Z" data-timestamp="2026-03-07T09:20:25.475Z">2026-03-07T09:20:25.475Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>The user wants to work on Phase 9: Documentation (Diataxis). Let me look at what already exists in docs/ and understand what needs to be created.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-26-040Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-26-040Z" class="timestamp-link"><time datetime="2026-03-07T09:20:26.040Z" data-timestamp="2026-03-07T09:20:26.040Z">2026-03-07T09:20:26.040Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Let me see what documentation already exists.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-26-613Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-26-613Z" class="timestamp-link"><time datetime="2026-03-07T09:20:26.613Z" data-timestamp="2026-03-07T09:20:26.613Z">2026-03-07T09:20:26.613Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01Ew3WMgXLYsEKCrvvTk1ms9"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;docs/**/*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-27-071Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-27-071Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.071Z" data-timestamp="2026-03-07T09:20:27.071Z">2026-03-07T09:20:27.071Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01De5THvo8CUYSPSGns24YqK"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/README.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-27-116Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-27-116Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.116Z" data-timestamp="2026-03-07T09:20:27.116Z">2026-03-07T09:20:27.116Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01D6oMZ58US58si1VqatmKMV"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/SECURITY*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-27-320Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-27-320Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.320Z" data-timestamp="2026-03-07T09:20:27.320Z">2026-03-07T09:20:27.320Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/docs/integration-schema.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-27-448Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-27-448Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.448Z" data-timestamp="2026-03-07T09:20:27.448Z">2026-03-07T09:20:27.448Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_015ujeWvjWxYkBz7KM5FngxF"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/CONTRIBUTING*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-27-543Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-27-543Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.543Z" data-timestamp="2026-03-07T09:20:27.543Z">2026-03-07T09:20:27.543Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01R2BPrG8c17YG9VrLKwmeDD"><div class="tool-header"><span class="tool-icon">⚙</span> Glob</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;pattern&#34;: &#34;**/CHANGELOG*&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-27-783Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-27-783Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.783Z" data-timestamp="2026-03-07T09:20:27.783Z">2026-03-07T09:20:27.783Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/workload/.pytest_cache/README.md
+/home/ubuntu/mcp-charm/charm/.pytest_cache/README.md
+/home/ubuntu/mcp-charm/charm/.tox/unit/.pytest_cache/README.md
+/home/ubuntu/mcp-charm/charmlib/.pytest_cache/README.md
+/home/ubuntu/mcp-charm/README.md
+/home/ubuntu/mcp-charm/charmlib/README.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-27-825Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-27-825Z" class="timestamp-link"><time datetime="2026-03-07T09:20:27.825Z" data-timestamp="2026-03-07T09:20:27.825Z">2026-03-07T09:20:27.825Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/SECURITY.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-28-197Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-28-197Z" class="timestamp-link"><time datetime="2026-03-07T09:20:28.197Z" data-timestamp="2026-03-07T09:20:28.197Z">2026-03-07T09:20:28.197Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/CONTRIBUTING.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-28-286Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-28-286Z" class="timestamp-link"><time datetime="2026-03-07T09:20:28.286Z" data-timestamp="2026-03-07T09:20:28.286Z">2026-03-07T09:20:28.286Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>/home/ubuntu/mcp-charm/CHANGELOG.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-31-751Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-31-751Z" class="timestamp-link"><time datetime="2026-03-07T09:20:31.751Z" data-timestamp="2026-03-07T09:20:31.751Z">2026-03-07T09:20:31.751Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01LzcPLHbYk8G9BVJCPoB4M8"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/README.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-31-773Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-31-773Z" class="timestamp-link"><time datetime="2026-03-07T09:20:31.773Z" data-timestamp="2026-03-07T09:20:31.773Z">2026-03-07T09:20:31.773Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# MCP Server Charm for Juju
+     2→
+     3→A subordinate machine charm that deploys a [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server, allowing principal charms to declaratively expose tools, prompts, and resources to MCP clients (LLM agents, Claude Code, etc.) — without implementing MCP themselves.
+     4→
+     5→## How it works
+     6→
+     7→```
+     8→                  ┌─────────────────────────────────────────────┐
+     9→                  │              Machine (Juju unit)            │
+    10→                  │                                             │
+    11→  Client ──► Traefik ──► MCP Server (subordinate charm)         │
+    12→                  │            │                                │
+    13→                  │            │ exec / http                    │
+    14→                  │            ▼                                │
+    15→                  │       Principal workload                    │
+    16→                  │       (e.g. PostgreSQL, app, etc.)          │
+    17→                  └─────────────────────────────────────────────┘
+    18→```
+    19→
+    20→1. A principal charm (e.g. PostgreSQL) **provides** the `mcp` interface, declaring its tools, prompts, and resources in the relation data bag.
+    21→2. The MCP server charm attaches as a **subordinate** (via `scope: container`) and reads those declarations.
+    22→3. It runs a Python MCP server (using the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)) as a **systemd service** on the same machine.
+    23→4. When an MCP client calls a tool, the server executes the declared handler — either a shell command (`exec`) or a local HTTP call (`http`).
+    24→5. Ingress is provided via **Traefik** integration.
+    25→
+    26→## Integration interface
+    27→
+    28→The principal charm provides tool/prompt/resource definitions as JSON in the `mcp` relation&#x27;s app data bag. Example:
+    29→
+    30→```json
+    31→{
+    32→  &quot;tools&quot;: [
+    33→    {
+    34→      &quot;name&quot;: &quot;list-databases&quot;,
+    35→      &quot;description&quot;: &quot;List all PostgreSQL databases&quot;,
+    36→      &quot;input_schema&quot;: {
+    37→        &quot;type&quot;: &quot;object&quot;,
+    38→        &quot;properties&quot;: {},
+    39→        &quot;required&quot;: []
+    40→      },
+    41→      &quot;handler&quot;: {
+    42→        &quot;type&quot;: &quot;exec&quot;,
+    43→        &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;]
+    44→      }
+    45→    }
+    46→  ],
+    47→  &quot;prompts&quot;: [],
+    48→  &quot;resources&quot;: []
+    49→}
+    50→```
+    51→
+    52→### Handler types
+    53→
+    54→- **`exec`** — Run a command on the machine. Arguments are substituted into `{{placeholder}}` positions in the command array. Uses `subprocess.run` with list args (no shell injection).
+    55→- **`http`** — Call a local HTTP endpoint. Supports method, URL, and body templates.
+    56→
+    57→See [docs/integration-schema.md](docs/integration-schema.md) for the full schema reference.
+    58→
+    59→### Charm library
+    60→
+    61→The `charmlibs-interfaces-mcp` package provides typed dataclasses and helper classes for working with the `mcp` interface:
+    62→
+    63→```python
+    64→from charmlibs.interfaces.mcp import McpProvider, Tool, ExecHandler
+    65→
+    66→self.mcp = McpProvider(self, &quot;mcp&quot;)
+    67→self.mcp.set_tools([
+    68→    Tool(name=&quot;list-dbs&quot;, description=&quot;List databases&quot;,
+    69→         handler=ExecHandler(command=[&quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;])),
+    70→])
+    71→```
+    72→
+    73→Install with `pip install charmlibs-interfaces-mcp`. See the [charmlib README](charmlib/README.md) for full details.
+    74→
+    75→## Deployment
+    76→
+    77→```bash
+    78→# Deploy a principal charm
+    79→juju deploy postgresql
+    80→
+    81→# Deploy the MCP server subordinate
+    82→juju deploy mcp-server
+    83→
+    84→# Integrate them
+    85→juju integrate postgresql:mcp mcp-server:mcp
+    86→
+    87→# Optionally add ingress
+    88→juju deploy traefik
+    89→juju integrate mcp-server:ingress traefik:ingress
+    90→```
+    91→
+    92→## Configuration
+    93→
+    94→| Option    | Type   | Default | Description                          |
+    95→|-----------|--------|---------|--------------------------------------|
+    96→| port      | int    | 8081    | Port for the MCP server to listen on |
+    97→| log-level | string | info    | Log level (debug, info, warning, error) |
+    98→
+    99→## Status
+   100→
+   101→This project is in early development. See [ROADMAP.md](ROADMAP.md) for planned work.
+   102→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-32-201Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-32-201Z" class="timestamp-link"><time datetime="2026-03-07T09:20:32.201Z" data-timestamp="2026-03-07T09:20:32.201Z">2026-03-07T09:20:32.201Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01VBbwT9KtxFUshGLPYNiFzH"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/docs/integration-schema.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-32-223Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-32-223Z" class="timestamp-link"><time datetime="2026-03-07T09:20:32.223Z" data-timestamp="2026-03-07T09:20:32.223Z">2026-03-07T09:20:32.223Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# MCP Integration Schema Reference
+     2→
+     3→This document defines the data schema for the `mcp` relation interface.
+     4→
+     5→## Using the charm library
+     6→
+     7→The easiest way to work with the `mcp` interface is via the `charmlibs-interfaces-mcp` package:
+     8→
+     9→```bash
+    10→pip install charmlibs-interfaces-mcp
+    11→```
+    12→
+    13→### Provider (principal charm)
+    14→
+    15→```python
+    16→from charmlibs.interfaces.mcp import McpProvider, McpDefinitions, Tool, ExecHandler
+    17→
+    18→class MyCharm(ops.CharmBase):
+    19→    def __init__(self, framework):
+    20→        super().__init__(framework)
+    21→        self.mcp = McpProvider(self, &quot;mcp&quot;)
+    22→        framework.observe(self.on.mcp_relation_joined, self._publish_mcp)
+    23→
+    24→    def _publish_mcp(self, event):
+    25→        self.mcp.set_definitions(McpDefinitions(tools=[
+    26→            Tool(
+    27→                name=&quot;list-databases&quot;,
+    28→                description=&quot;List all PostgreSQL databases&quot;,
+    29→                handler=ExecHandler(command=[&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;]),
+    30→            ),
+    31→        ]))
+    32→```
+    33→
+    34→### Requirer (mcp-server charm)
+    35→
+    36→```python
+    37→from charmlibs.interfaces.mcp import McpRequirer
+    38→
+    39→class McpServerCharm(ops.CharmBase):
+    40→    def __init__(self, framework):
+    41→        super().__init__(framework)
+    42→        self.mcp = McpRequirer(self, &quot;mcp&quot;)
+    43→
+    44→    def _on_relation_changed(self, event):
+    45→        definitions = self.mcp.collect_definitions()
+    46→        # {&quot;tools&quot;: [...], &quot;prompts&quot;: [...], &quot;resources&quot;: [...]}
+    47→```
+    48→
+    49→## Raw relation data schema
+    50→
+    51→Under the hood, the principal charm sets a JSON string on the relation app data bag under the key `&quot;mcp_definitions&quot;`. The JSON has this structure:
+    52→
+    53→```json
+    54→{
+    55→  &quot;tools&quot;: [...],
+    56→  &quot;prompts&quot;: [...],
+    57→  &quot;resources&quot;: [...]
+    58→}
+    59→```
+    60→
+    61→All three fields are optional. If omitted, they default to empty lists.
+    62→
+    63→## Tools
+    64→
+    65→Each tool declares a function that MCP clients can invoke.
+    66→
+    67→```json
+    68→{
+    69→  &quot;name&quot;: &quot;tool-name&quot;,
+    70→  &quot;description&quot;: &quot;Human-readable description of what this tool does&quot;,
+    71→  &quot;input_schema&quot;: {
+    72→    &quot;type&quot;: &quot;object&quot;,
+    73→    &quot;properties&quot;: {
+    74→      &quot;param1&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;A parameter&quot;},
+    75→      &quot;param2&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Another parameter&quot;}
+    76→    },
+    77→    &quot;required&quot;: [&quot;param1&quot;]
+    78→  },
+    79→  &quot;handler&quot;: { ... }
+    80→}
+    81→```
+    82→
+    83→| Field          | Type   | Required | Description |
+    84→|----------------|--------|----------|-------------|
+    85→| `name`         | string | yes      | Unique tool name (lowercase, hyphens OK) |
+    86→| `description`  | string | yes      | What the tool does |
+    87→| `input_schema` | object | yes      | JSON Schema for the tool&#x27;s input parameters |
+    88→| `handler`      | object | yes      | How to execute this tool (see Handler types) |
+    89→
+    90→## Prompts
+    91→
+    92→Each prompt declares a reusable prompt template.
+    93→
+    94→```json
+    95→{
+    96→  &quot;name&quot;: &quot;prompt-name&quot;,
+    97→  &quot;description&quot;: &quot;Human-readable description&quot;,
+    98→  &quot;arguments&quot;: [
+    99→    {
+   100→      &quot;name&quot;: &quot;arg1&quot;,
+   101→      &quot;description&quot;: &quot;Argument description&quot;,
+   102→      &quot;required&quot;: true
+   103→    }
+   104→  ],
+   105→  &quot;template&quot;: &quot;Analyze the {{arg1}} and provide recommendations.&quot;
+   106→}
+   107→```
+   108→
+   109→| Field         | Type   | Required | Description |
+   110→|---------------|--------|----------|-------------|
+   111→| `name`        | string | yes      | Unique prompt name |
+   112→| `description` | string | yes      | What the prompt is for |
+   113→| `arguments`   | list   | no       | List of prompt arguments |
+   114→| `template`    | string | yes      | Prompt text with `{{arg}}` placeholders |
+   115→
+   116→## Resources
+   117→
+   118→Each resource declares a readable data source.
+   119→
+   120→```json
+   121→{
+   122→  &quot;uri&quot;: &quot;config://myapp&quot;,
+   123→  &quot;name&quot;: &quot;My App Configuration&quot;,
+   124→  &quot;description&quot;: &quot;Current application configuration&quot;,
+   125→  &quot;mime_type&quot;: &quot;text/plain&quot;,
+   126→  &quot;handler&quot;: { ... }
+   127→}
+   128→```
+   129→
+   130→| Field         | Type   | Required | Description |
+   131→|---------------|--------|----------|-------------|
+   132→| `uri`         | string | yes      | Resource URI (unique identifier) |
+   133→| `name`        | string | yes      | Human-readable name |
+   134→| `description` | string | yes      | What this resource provides |
+   135→| `mime_type`   | string | no       | MIME type of content (default: `text/plain`) |
+   136→| `handler`     | object | yes      | How to fetch the resource content |
+   137→
+   138→## Handler types
+   139→
+   140→### `exec` — Run a shell command
+   141→
+   142→```json
+   143→{
+   144→  &quot;type&quot;: &quot;exec&quot;,
+   145→  &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-d&quot;, &quot;{{database}}&quot;, &quot;-c&quot;, &quot;{{query}}&quot;],
+   146→  &quot;timeout&quot;: 30,
+   147→  &quot;user&quot;: &quot;root&quot;,
+   148→  &quot;working_dir&quot;: &quot;/tmp&quot;,
+   149→  &quot;env&quot;: {&quot;PGPASSWORD&quot;: &quot;secret&quot;}
+   150→}
+   151→```
+   152→
+   153→| Field         | Type   | Required | Default | Description |
+   154→|---------------|--------|----------|---------|-------------|
+   155→| `type`        | string | yes      |         | Must be `&quot;exec&quot;` |
+   156→| `command`     | list   | yes      |         | Command as argv list. Supports `{{param}}` substitution. |
+   157→| `timeout`     | int    | no       | 60      | Max execution time in seconds |
+   158→| `user`        | string | no       | root    | Run command as this OS user |
+   159→| `working_dir` | string | no       |         | Working directory for the command |
+   160→| `env`         | object | no       |         | Extra environment variables |
+   161→
+   162→**Template substitution:** `{{param_name}}` in the command array elements is replaced with the corresponding value from the MCP tool call arguments. Each substituted value becomes a discrete argv element — there is no shell interpolation. Values are validated against `input_schema` before substitution.
+   163→
+   164→### `http` — Call a local HTTP endpoint
+   165→
+   166→```json
+   167→{
+   168→  &quot;type&quot;: &quot;http&quot;,
+   169→  &quot;url&quot;: &quot;http://localhost:8080/api/query&quot;,
+   170→  &quot;method&quot;: &quot;POST&quot;,
+   171→  &quot;headers&quot;: {&quot;Content-Type&quot;: &quot;application/json&quot;},
+   172→  &quot;body_template&quot;: &quot;{\&quot;query\&quot;: \&quot;{{query}}\&quot;, \&quot;database\&quot;: \&quot;{{database}}\&quot;}&quot;,
+   173→  &quot;timeout&quot;: 30
+   174→}
+   175→```
+   176→
+   177→| Field           | Type   | Required | Default | Description |
+   178→|-----------------|--------|----------|---------|-------------|
+   179→| `type`          | string | yes      |         | Must be `&quot;http&quot;` |
+   180→| `url`           | string | yes      |         | URL to call (typically localhost) |
+   181→| `method`        | string | no       | GET     | HTTP method |
+   182→| `headers`       | object | no       |         | Extra HTTP headers |
+   183→| `body_template` | string | no       |         | Request body with `{{param}}` substitution |
+   184→| `timeout`       | int    | no       | 30      | Request timeout in seconds |
+   185→
+   186→## Complete example
+   187→
+   188→Here is a full example of what a PostgreSQL charm might set on the relation:
+   189→
+   190→```json
+   191→{
+   192→  &quot;tools&quot;: [
+   193→    {
+   194→      &quot;name&quot;: &quot;list-databases&quot;,
+   195→      &quot;description&quot;: &quot;List all PostgreSQL databases&quot;,
+   196→      &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;required&quot;: []},
+   197→      &quot;handler&quot;: {
+   198→        &quot;type&quot;: &quot;exec&quot;,
+   199→        &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;],
+   200→        &quot;timeout&quot;: 10
+   201→      }
+   202→    },
+   203→    {
+   204→      &quot;name&quot;: &quot;run-query&quot;,
+   205→      &quot;description&quot;: &quot;Run a read-only SQL query against a database&quot;,
+   206→      &quot;input_schema&quot;: {
+   207→        &quot;type&quot;: &quot;object&quot;,
+   208→        &quot;properties&quot;: {
+   209→          &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;SQL SELECT query to run&quot;},
+   210→          &quot;database&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Target database name&quot;}
+   211→        },
+   212→        &quot;required&quot;: [&quot;query&quot;, &quot;database&quot;]
+   213→      },
+   214→      &quot;handler&quot;: {
+   215→        &quot;type&quot;: &quot;exec&quot;,
+   216→        &quot;command&quot;: [&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-d&quot;, &quot;{{database}}&quot;, &quot;-c&quot;, &quot;{{query}}&quot;, &quot;--csv&quot;],
+   217→        &quot;timeout&quot;: 30
+   218→      }
+   219→    }
+   220→  ],
+   221→  &quot;prompts&quot;: [
+   222→    {
+   223→      &quot;name&quot;: &quot;analyse-database&quot;,
+   224→      &quot;description&quot;: &quot;Analyse database health and performance&quot;,
+   225→      &quot;arguments&quot;: [
+   226→        {&quot;name&quot;: &quot;database&quot;, &quot;description&quot;: &quot;Database to analyse&quot;, &quot;required&quot;: true}
+   227→      ],
+   228→      &quot;template&quot;: &quot;Please analyse the health and performance of the &#x27;{{database}}&#x27; PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.&quot;
+   229→    }
+   230→  ],
+   231→  &quot;resources&quot;: [
+   232→    {
+   233→      &quot;uri&quot;: &quot;config://postgresql/main&quot;,
+   234→      &quot;name&quot;: &quot;PostgreSQL Configuration&quot;,
+   235→      &quot;description&quot;: &quot;Current postgresql.conf contents&quot;,
+   236→      &quot;mime_type&quot;: &quot;text/plain&quot;,
+   237→      &quot;handler&quot;: {
+   238→        &quot;type&quot;: &quot;exec&quot;,
+   239→        &quot;command&quot;: [&quot;cat&quot;, &quot;/etc/postgresql/14/main/postgresql.conf&quot;]
+   240→      }
+   241→    }
+   242→  ]
+   243→}
+   244→```
+   245→
+   246→### Using the charm library
+   247→
+   248→The same example using `charmlibs-interfaces-mcp`:
+   249→
+   250→```python
+   251→from charmlibs.interfaces.mcp import (
+   252→    ExecHandler,
+   253→    McpDefinitions,
+   254→    McpProvider,
+   255→    Prompt,
+   256→    PromptArgument,
+   257→    Resource,
+   258→    Tool,
+   259→)
+   260→
+   261→mcp = McpProvider(self, &quot;mcp&quot;)
+   262→mcp.set_definitions(McpDefinitions(
+   263→    tools=[
+   264→        Tool(
+   265→            name=&quot;list-databases&quot;,
+   266→            description=&quot;List all PostgreSQL databases&quot;,
+   267→            handler=ExecHandler(
+   268→                command=[&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-l&quot;, &quot;--csv&quot;],
+   269→                timeout=10,
+   270→            ),
+   271→        ),
+   272→        Tool(
+   273→            name=&quot;run-query&quot;,
+   274→            description=&quot;Run a read-only SQL query against a database&quot;,
+   275→            input_schema={
+   276→                &quot;type&quot;: &quot;object&quot;,
+   277→                &quot;properties&quot;: {
+   278→                    &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;SQL SELECT query to run&quot;},
+   279→                    &quot;database&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Target database name&quot;},
+   280→                },
+   281→                &quot;required&quot;: [&quot;query&quot;, &quot;database&quot;],
+   282→            },
+   283→            handler=ExecHandler(
+   284→                command=[&quot;sudo&quot;, &quot;-u&quot;, &quot;postgres&quot;, &quot;psql&quot;, &quot;-d&quot;, &quot;{{database}}&quot;, &quot;-c&quot;, &quot;{{query}}&quot;, &quot;--csv&quot;],
+   285→                timeout=30,
+   286→            ),
+   287→        ),
+   288→    ],
+   289→    prompts=[
+   290→        Prompt(
+   291→            name=&quot;analyse-database&quot;,
+   292→            description=&quot;Analyse database health and performance&quot;,
+   293→            template=&quot;Please analyse the health and performance of the &#x27;{{database}}&#x27; PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.&quot;,
+   294→            arguments=[
+   295→                PromptArgument(name=&quot;database&quot;, description=&quot;Database to analyse&quot;),
+   296→            ],
+   297→        ),
+   298→    ],
+   299→    resources=[
+   300→        Resource(
+   301→            uri=&quot;config://postgresql/main&quot;,
+   302→            name=&quot;PostgreSQL Configuration&quot;,
+   303→            description=&quot;Current postgresql.conf contents&quot;,
+   304→            handler=ExecHandler(command=[&quot;cat&quot;, &quot;/etc/postgresql/14/main/postgresql.conf&quot;]),
+   305→        ),
+   306→    ],
+   307→))
+   308→```
+   309→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-32-645Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-32-645Z" class="timestamp-link"><time datetime="2026-03-07T09:20:32.645Z" data-timestamp="2026-03-07T09:20:32.645Z">2026-03-07T09:20:32.645Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_019Nj9ATMwnYqc3xGuuQkVnJ"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/SECURITY.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-32-657Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-32-657Z" class="timestamp-link"><time datetime="2026-03-07T09:20:32.657Z" data-timestamp="2026-03-07T09:20:32.657Z">2026-03-07T09:20:32.657Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Security Policy
+     2→
+     3→## Reporting a Vulnerability
+     4→
+     5→We take the security of the MCP Server charm seriously. If you believe you have found a security vulnerability, please report it to us responsibly.
+     6→
+     7→### How to Report
+     8→
+     9→**Please do NOT report security vulnerabilities through public GitHub issues.**
+    10→
+    11→Instead, please report them using GitHub&#x27;s Security Advisory feature:
+    12→
+    13→1. Navigate to the repository on GitHub
+    14→2. Click on the &quot;Security&quot; tab
+    15→3. Click &quot;Report a vulnerability&quot;
+    16→4. Fill out the form with details about the vulnerability
+    17→
+    18→### What to Include
+    19→
+    20→Please include the following information in your report:
+    21→
+    22→- Type of vulnerability (e.g., authentication bypass, privilege escalation, etc.)
+    23→- Full paths of source file(s) related to the manifestation of the issue
+    24→- The location of the affected source code (tag/branch/commit or direct URL)
+    25→- Any special configuration required to reproduce the issue
+    26→- Step-by-step instructions to reproduce the issue
+    27→- Proof-of-concept or exploit code (if possible)
+    28→- Impact of the issue, including how an attacker might exploit it
+    29→
+    30→### What to Expect
+    31→
+    32→- You will receive an acknowledgment of your report within 48 hours
+    33→- We will send a more detailed response within 7 days indicating the next steps
+    34→- We will keep you informed about the progress toward a fix and announcement
+    35→- We may ask for additional information or guidance
+    36→
+    37→### Disclosure Policy
+    38→
+    39→- Security issues are typically disclosed once a fix is available
+    40→- We follow coordinated disclosure practices
+    41→- Credit will be given to researchers who report vulnerabilities responsibly
+    42→
+    43→## Supported Versions
+    44→
+    45→Security updates are provided for the following versions:
+    46→
+    47→| Version | Supported          |
+    48→| ------- | ------------------ |
+    49→| latest (main) | :white_check_mark: |
+    50→| &lt; 1.0   | :x:                |
+    51→
+    52→## Security Best Practices
+    53→
+    54→When deploying and using this charm:
+    55→
+    56→1. **Always use the latest version** of the charm from the stable channel
+    57→2. **Use ingress with TLS** to encrypt traffic to the MCP Server
+    58→3. **Regularly backup your data**
+    59→4. **Restrict network access** to the MCP Server using network policies
+    60→6. **Review audit logs** regularly for suspicious activity
+    61→7. **Keep Juju up to date** with security patches
+    62→
+    63→## Known Security Considerations
+    64→
+    65→
+    66→## Additional Resources
+    67→
+    68→- [Juju Security Documentation](https://juju.is/docs/juju/security)
+    69→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-33-102Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-33-102Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.102Z" data-timestamp="2026-03-07T09:20:33.102Z">2026-03-07T09:20:33.102Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01LtPLcFQgbubvywbtn9KQBk"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/CONTRIBUTING.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-33-113Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-33-113Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.113Z" data-timestamp="2026-03-07T09:20:33.113Z">2026-03-07T09:20:33.113Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01R3neYGkn2VyrkaHkDx8cK6"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/CHANGELOG.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-33-117Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-33-117Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.117Z" data-timestamp="2026-03-07T09:20:33.117Z">2026-03-07T09:20:33.117Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Contributing
+     2→
+     3→Thanks for your interest in contributing to the MCP Server Charm!
+     4→
+     5→## Development setup
+     6→
+     7→```bash
+     8→# Clone the repo
+     9→git clone https://github.com/tonyandrewmeyer/mcp-server-operator.git
+    10→cd mcp-server-operator
+    11→
+    12→# Install pre-commit hooks
+    13→pre-commit install
+    14→
+    15→# Install charm dependencies
+    16→cd charm &amp;&amp; uv sync --all-groups
+    17→
+    18→# Install workload dependencies
+    19→cd workload &amp;&amp; uv sync --all-groups
+    20→```
+    21→
+    22→## Running checks
+    23→
+    24→```bash
+    25→# Format code
+    26→make format
+    27→
+    28→# Run linter
+    29→make lint
+    30→
+    31→# Run type checker
+    32→make typecheck
+    33→
+    34→# Run all checks (format, lint, typecheck)
+    35→make check
+    36→
+    37→# Run tests
+    38→make test
+    39→```
+    40→
+    41→## Code style
+    42→
+    43→- **Formatter/linter:** [ruff](https://docs.astral.sh/ruff/)
+    44→- **Type checker:** [ty](https://github.com/astral-sh/ty)
+    45→- **Tests:** [pytest](https://docs.pytest.org/)
+    46→- Pre-commit hooks enforce formatting and linting on every commit.
+    47→
+    48→## Commit messages
+    49→
+    50→- Use imperative mood (&quot;Add feature&quot; not &quot;Added feature&quot;)
+    51→- Keep the first line under 72 characters
+    52→- Reference issues where relevant
+    53→
+    54→## Pull requests
+    55→
+    56→1. Create a feature branch from `main`
+    57→2. Make your changes with tests
+    58→3. Ensure all checks pass (`make check &amp;&amp; make test`)
+    59→4. Open a PR against `main`
+    60→
+    61→## Project structure
+    62→
+    63→```
+    64→mcp-charm/
+    65→├── charm/                    # Juju charm (ops framework)
+    66→│   ├── charmcraft.yaml       # Charm metadata
+    67→│   ├── pyproject.toml        # Charm dependencies and tool config
+    68→│   ├── tox.ini               # Charm test environments
+    69→│   ├── src/
+    70→│   │   ├── charm.py          # Charm event handlers
+    71→│   │   └── mcp_server.py     # Workload management (install/start/stop)
+    72→│   └── tests/
+    73→├── workload/                 # MCP server process (runs on the machine)
+    74→│   ├── pyproject.toml        # Workload dependencies and tool config
+    75→│   └── src/
+    76→│       └── server.py         # The actual MCP server
+    77→├── docs/                     # Documentation
+    78→├── Makefile                  # Top-level dev commands
+    79→└── .pre-commit-config.yaml   # Pre-commit hooks
+    80→```
+    81→
+    82→## License
+    83→
+    84→By contributing, you agree that your contributions will be licensed under the Apache 2.0 License.
+    85→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-33-126Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-33-126Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.126Z" data-timestamp="2026-03-07T09:20:33.126Z">2026-03-07T09:20:33.126Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Changelog
+     2→
+     3→All notable changes to this project will be documented in this file.
+     4→
+     5→The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+     6→
+     7→## [Unreleased]
+     8→
+     9→### Added
+    10→- Initial project documentation: README, ROADMAP, PLAN, CONTRIBUTING
+    11→- Integration schema reference (`docs/integration-schema.md`)
+    12→- Apache 2.0 license
+    13→- Charm skeleton via `charmcraft init --profile machine` in `charm/`
+    14→- Workload project skeleton in `workload/`
+    15→- `pyproject.toml` for both charm and workload (ruff, ty, pytest)
+    16→- `tox.ini` for charm test environments
+    17→- Pre-commit config (ruff, codespell, trailing whitespace, etc.)
+    18→- Top-level `Makefile` for format/lint/typecheck/test
+    19→- `.gitignore`
+    20→- GitHub Actions CI for charm (format, lint, unit tests, integration tests)
+    21→- GitHub Actions CI for workload (format, lint, tests)
+    22→- GitHub Actions zizmor workflow security audit
+    23→- Subordinate machine charm (`charm/`): handles mcp relation, systemd lifecycle, config
+    24→- MCP server workload (`workload/`): FastMCP with streamable HTTP, exec/http handlers, template substitution
+    25→- Unit tests: 5 charm tests, 15 workload tests
+    26→- Demo principal charm (`demo/principal/`) for e2e testing
+    27→- End-to-end validation: deploy principal + subordinate, tools/prompts/resources work via HTTP
+    28→- CLAUDE.md project guide with code style conventions
+    29→- This changelog
+    30→
+    31→- `charmlibs-interfaces-mcp` Python package (`charmlib/`) with `McpProvider`, `McpRequirer`, and typed dataclass models (`Tool`, `Prompt`, `Resource`, `ExecHandler`, `HttpHandler`, `McpDefinitions`)
+    32→- 23 unit tests for charmlib (16 model tests, 7 provider/requirer tests)
+    33→- README for charmlib with usage examples
+    34→
+    35→### Changed
+    36→- Charm uses `self.load_config(CharmConfig)` and `relation.load(McpRelationData)` instead of raw relation data access
+    37→- Import style: `import pathlib` (modules) rather than `from pathlib import Path` (objects)
+    38→- UK English throughout all text
+    39→- Comments follow full-sentence style, used sparingly to explain why
+    40→
+    41→### Fixed
+    42→- Workload server bundled as `charm/src/workload_server.py` (included in packed charm)
+    43→- Install hook installs `python3-venv` before creating virtualenv
+    44→- FastMCP API: `host`/`port` set in constructor, `Prompt.from_function()`, `FunctionResource`
+    45→- Tool handlers use explicit `inspect.Signature` for proper parameter introspection
+    46→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-33-589Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-33-589Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.589Z" data-timestamp="2026-03-07T09:20:33.589Z">2026-03-07T09:20:33.589Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01D9StdoM7UKsB9mYhttR9fY"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/charm/charmcraft.yaml&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-20-33-609Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-20-33-609Z" class="timestamp-link"><time datetime="2026-03-07T09:20:33.609Z" data-timestamp="2026-03-07T09:20:33.609Z">2026-03-07T09:20:33.609Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Copyright 2026 Tony Meyer
+     2→# See LICENSE file for licensing details.
+     3→#
+     4→# See https://documentation.ubuntu.com/charmcraft/stable/reference/files/charmcraft-yaml-file/
+     5→
+     6→type: charm
+     7→name: mcp-server
+     8→title: MCP Server
+     9→summary: Expose charm workloads via Model Context Protocol
+    10→description: |
+    11→  A subordinate machine charm that deploys an MCP (Model Context Protocol)
+    12→  server, allowing principal charms to declaratively expose tools, prompts,
+    13→  and resources to MCP clients such as LLM agents and Claude Code.
+    14→
+    15→  Principal charms provide tool/prompt/resource definitions via the mcp
+    16→  relation. The MCP server charm aggregates these and serves them over
+    17→  streamable HTTP. Handlers can execute shell commands or call local HTTP
+    18→  endpoints on the principal&#x27;s workload.
+    19→
+    20→subordinate: true
+    21→
+    22→base: ubuntu@24.04
+    23→platforms:
+    24→  amd64:
+    25→  arm64:
+    26→
+    27→parts:
+    28→  charm:
+    29→    plugin: uv
+    30→    source: .
+    31→    build-snaps:
+    32→      - astral-uv
+    33→
+    34→provides:
+    35→  cos-agent:
+    36→    interface: cos_agent
+    37→
+    38→requires:
+    39→  mcp:
+    40→    interface: mcp
+    41→    scope: container
+    42→  oauth:
+    43→    interface: oauth
+    44→    limit: 1
+    45→  reverse-proxy:
+    46→    interface: haproxy-route
+    47→    limit: 1
+    48→  certificates:
+    49→    interface: tls-certificates
+    50→    limit: 1
+    51→  charm-tracing:
+    52→    interface: tracing
+    53→    limit: 1
+    54→  receive-ca-cert:
+    55→    interface: certificate_transfer
+    56→    limit: 1
+    57→
+    58→config:
+    59→  options:
+    60→    port:
+    61→      description: Port for the MCP server to listen on.
+    62→      default: 8081
+    63→      type: int
+    64→    log-level:
+    65→      description: |
+    66→        Log level for the MCP server.
+    67→
+    68→        Acceptable values are: &quot;info&quot;, &quot;debug&quot;, &quot;warning&quot;, &quot;error&quot;
+    69→      default: &quot;info&quot;
+    70→      type: string
+    71→    auth-token:
+    72→      description: |
+    73→        Bearer token for MCP server authentication. When set, clients must
+    74→        include an &quot;Authorization: Bearer &lt;token&gt;&quot; header. Leave empty to
+    75→        disable authentication.
+    76→      default: &quot;&quot;
+    77→      type: string
+    78→    rate-limit:
+    79→      description: |
+    80→        Maximum number of requests per minute to the MCP server endpoint.
+    81→        Set to 0 to disable rate limiting.
+    82→      default: 0
+    83→      type: int
+    84→    command-allowlist:
+    85→      description: |
+    86→        Space-separated list of executable names that exec handlers are
+    87→        allowed to run. When empty, all commands are permitted.
+    88→      default: &quot;&quot;
+    89→      type: string
+    90→    path-prefix:
+    91→      description: |
+    92→        URL path prefix for the MCP server endpoint. Used when routing
+    93→        through a reverse proxy. For example, &quot;/postgresql&quot; would make
+    94→        the MCP endpoint available at &quot;/postgresql/mcp&quot;.
+    95→        Leave empty for no prefix (root path).
+    96→      default: &quot;&quot;
+    97→      type: string
+    98→    external-hostname:
+    99→      description: |
+   100→        Hostname to use when requesting TLS certificates. This should
+   101→        be the FQDN that clients use to reach the MCP server. Required
+   102→        when using the certificates relation.
+   103→      default: &quot;&quot;
+   104→      type: string
+   105→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-48-763Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-48-763Z" class="timestamp-link"><time datetime="2026-03-07T09:20:48.763Z" data-timestamp="2026-03-07T09:20:48.763Z">2026-03-07T09:20:48.763Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Now I have a full picture of what exists and what Phase 9 needs:</p>
+<p>Phase 9: Documentation (Diataxis)
+- [ ] Tutorials — step-by-step guide to adding MCP to your charm
+- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
+- [ ] Reference — integration schema, config options, API docs
+- [ ] Explanation — architecture, design decisions, security model
+- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance</p>
+<p>What exists:
+- README.md — overview, basic deployment, config table (outdated - missing many config options)</p>
+<ul>
+<li>docs/integration-schema.md — good reference for the relation data schema</li>
+<li>charmlib/README.md — charmlib usage</li>
+<li>SECURITY.md — reporting policy but empty "Known Security Considerations" section</li>
+<li>CONTRIBUTING.md — dev setup</li>
+<li>PLAN.md — original design doc</li>
+<li>ROADMAP.md — progress tracker</li>
+<li>CHANGELOG.md — changes</li>
+</ul>
+<p>I'm noticing a few gaps: the README config table is missing several options like auth-token, rate-limit, command-allowlist, path-prefix, and external-hostname, and the code examples in both README and integration-schema.md are using outdated import syntax that needs updating.</p>
+<p>I'm going to restructure the docs using Diataxis principles—creating a tutorial for getting started, a how-to section for specific tasks, moving the integration schema into a reference folder alongside a new config reference, and adding an explanation doc for architecture. I'll also need to fill in the empty security section and fix the README examples, then coordinate writing these in parallel.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-50-872Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-50-872Z" class="timestamp-link"><time datetime="2026-03-07T09:20:50.872Z" data-timestamp="2026-03-07T09:20:50.872Z">2026-03-07T09:20:50.872Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Good picture. Here's what I see:</p>
+<p><strong>Existing docs that need updates:</strong>
+- <code>README.md</code> — config table is outdated (missing 4 options), code examples use old import style
+- <code>docs/integration-schema.md</code> — code examples use old import style
+- <code>SECURITY.md</code> — "Known Security Considerations" section is empty</p>
+<p><strong>New docs needed (Diataxis):</strong>
+- Tutorial — step-by-step guide to adding MCP to your charm
+- How-to guides — specific tasks (add a tool, configure ingress, configure OAuth, etc.)
+- Reference — config options (full), charm library API
+- Explanation — architecture, design decisions, security model</p>
+<p>Let me create all of these in parallel.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-20-51-262Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-20-51-262Z" class="timestamp-link"><time datetime="2026-03-07T09:20:51.262Z" data-timestamp="2026-03-07T09:20:51.262Z">2026-03-07T09:20:51.262Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_018gs5BpHeYK7u6dnWahLivF"><div class="tool-header"><span class="tool-icon">⚙</span> ToolSearch</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;query&#34;: &#34;select:Write&#34;,
+  &#34;max_results&#34;: 1
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-20-51-264Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-20-51-264Z" class="timestamp-link"><time datetime="2026-03-07T09:20:51.264Z" data-timestamp="2026-03-07T09:20:51.264Z">2026-03-07T09:20:51.264Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &quot;type&quot;: &quot;tool_reference&quot;,
+  &quot;tool_name&quot;: &quot;Write&quot;
+}</pre></div><button class="expand-btn">Show more</button></div></div>
+<div class="assistant-text"><p>Tool loaded.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-04-545Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-04-545Z" class="timestamp-link"><time datetime="2026-03-07T09:21:04.545Z" data-timestamp="2026-03-07T09:21:04.545Z">2026-03-07T09:21:04.545Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01AJnPo5J8kVfx983swy5Eru"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Write tutorial doc</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Create the file /home/ubuntu/mcp-charm/docs/tutorial.md — a step-by-step tutorial for adding MCP support to an existing Juju charm, following the Diataxis tutorial style (learning-oriented, step-by-step, concrete).\n\nUse these project conventions:\n- UK English throughout (e.g. \&#34;initialise\&#34;, \&#34;behaviour\&#34;, \&#34;colour\&#34;)\n- Import style: `from charmlibs.interfaces import mcp` then use `mcp.Tool(...)`, `mcp.McpProvider(...)`, etc.\n- Comments: full sentences, sparingly\n\nThe tutorial should walk through:\n1. Prerequisites (Juju, existing charm, etc.)\n2. Adding the `mcp` relation to the charm&#39;s metadata (charmcraft.yaml)\n3. Installing the `charmlibs-interfaces-mcp` package (adding to PYDEPS or pyproject.toml dependencies)\n4. Adding McpProvider to the charm code — importing, instantiating, observing relation-joined\n5. Defining a simple exec tool (e.g. a \&#34;system-info\&#34; tool that runs `uname -a`)\n6. Adding a second tool with input parameters and template substitution (e.g. disk-usage with a `path` parameter)\n7. Adding a prompt\n8. Adding a resource\n9. Deploying and testing: deploy the principal, deploy mcp-server, integrate, verify with curl/httpie\n10. Brief mention of next steps (ingress, TLS, OAuth — link to how-to guides)\n\nKeep it practical and concrete. The audience is a charm author who already knows Juju and ops but has never used MCP.\n\nWrite this file now using the Write tool.&#34;,
+  &#34;run_in_background&#34;: true
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-21-04-548Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-21-04-548Z" class="timestamp-link"><time datetime="2026-03-07T09:21:04.548Z" data-timestamp="2026-03-07T09:21:04.548Z">2026-03-07T09:21:04.548Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Async agent launched successfully.
+agentId: af9eb8c14c8f3643d (internal ID - do not mention to user. Use to resume later if needed.)
+The agent is working in the background. You will be notified automatically when it completes.
+Do not duplicate this agent&#x27;s work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+output_file: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/af9eb8c14c8f3643d.output
+If asked, you can check progress before completion by using Read or Bash tail on the output file.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-13-291Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-13-291Z" class="timestamp-link"><time datetime="2026-03-07T09:21:13.291Z" data-timestamp="2026-03-07T09:21:13.291Z">2026-03-07T09:21:13.291Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01LMNviHF7R3HB5YjfSQWAwB"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Write how-to guides</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Create how-to guide files in /home/ubuntu/mcp-charm/docs/how-to/. These are task-oriented guides (Diataxis how-to style: goal-oriented, practical, for someone who already knows the basics).\n\nUse UK English throughout. Import style: `from charmlibs.interfaces import mcp` then `mcp.Tool(...)` etc.\n\nCreate these files:\n\n**1. /home/ubuntu/mcp-charm/docs/how-to/add-tools.md** — \&#34;How to add MCP tools to your charm\&#34;\n- Adding exec handlers (command with template substitution)\n- Adding http handlers (calling a local API)\n- Setting input schemas for tools\n- Using set_tools() vs set_definitions()\n\n**2. /home/ubuntu/mcp-charm/docs/how-to/configure-ingress.md** — \&#34;How to configure ingress\&#34;\n- HAProxy integration (haproxy-route interface)\n- Setting path-prefix config for multi-app routing\n- Health check endpoint\n\n**3. /home/ubuntu/mcp-charm/docs/how-to/configure-tls.md** — \&#34;How to configure TLS\&#34;\n- Direct TLS via certificates relation (tls-certificates interface)\n- TLS via reverse proxy (HAProxy handles TLS)\n- Setting external-hostname config\n\n**4. /home/ubuntu/mcp-charm/docs/how-to/configure-auth.md** — \&#34;How to configure authentication\&#34;\n- Bearer token auth (auth-token config)\n- OAuth 2.1 via identity provider (oauth relation)\n- Rate limiting (rate-limit config)\n- Command allowlist (command-allowlist config)\n\n**5. /home/ubuntu/mcp-charm/docs/how-to/configure-observability.md** — \&#34;How to configure observability\&#34;\n- COS integration (cos-agent relation with grafana-agent)\n- Prometheus metrics endpoint (/metrics)\n- Grafana dashboard\n- Tracing via Tempo (charm-tracing relation)\n- Log forwarding (structured JSON logging)\n\nWrite all five files now using the Write tool.&#34;,
+  &#34;run_in_background&#34;: true
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-21-13-292Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-21-13-292Z" class="timestamp-link"><time datetime="2026-03-07T09:21:13.292Z" data-timestamp="2026-03-07T09:21:13.292Z">2026-03-07T09:21:13.292Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Async agent launched successfully.
+agentId: ad1a27ee9b8f40953 (internal ID - do not mention to user. Use to resume later if needed.)
+The agent is working in the background. You will be notified automatically when it completes.
+Do not duplicate this agent&#x27;s work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+output_file: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/ad1a27ee9b8f40953.output
+If asked, you can check progress before completion by using Read or Bash tail on the output file.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-25-830Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-25-830Z" class="timestamp-link"><time datetime="2026-03-07T09:21:25.830Z" data-timestamp="2026-03-07T09:21:25.830Z">2026-03-07T09:21:25.830Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01V7uuCd4erUatcWEG7Y9wut"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Write explanation doc</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Create the file /home/ubuntu/mcp-charm/docs/explanation.md — an explanation/architecture doc following the Diataxis explanation style (understanding-oriented, discusses concepts and design decisions).\n\nUse UK English throughout.\n\nCover these topics:\n\n**Architecture**\n- Subordinate charm pattern: why a subordinate, how it attaches via `scope: container`\n- The MCP server runs as a systemd service on the same machine as the principal workload\n- How relation data flows: principal sets definitions → charm writes config JSON → server reads config\n- Handler execution model: exec handlers run commands directly (subprocess, no shell), http handlers call localhost\n\n**Design decisions**\n- Why subordinate (not standalone): direct machine access for exec handlers, no network hop\n- Why systemd (not per-request): fast response times, proper lifecycle\n- Why JSON config file: decouples charm (ops) from server runtime, easy reload\n- Why no shell=True: security, prevent injection\n- Why dataclasses not pydantic: simpler, fewer dependencies for charm library consumers\n- Why template substitution with {{param}}: safe argument passing, each value is a discrete argv element\n- Why FastMCP with streamable HTTP: modern MCP transport, stateless mode for simplicity\n\n**Security model**\n- Defence in depth: input validation → command allowlist → no shell interpolation → rate limiting → auth\n- Template substitution safety: values become discrete argv elements, never shell-interpolated\n- OAuth 2.1 resource server mode: JWT validation or token introspection\n- Bearer token as simpler alternative\n- TLS for transport encryption\n\n**Observability architecture**\n- Metrics: Prometheus counters/histograms/gauges exposed on /metrics\n- COS integration via cos-agent (grafana-agent subordinate)\n- Tracing: OpenTelemetry ASGI middleware → OTLP export → Tempo\n- Structured JSON logging for Loki\n\nWrite this file now using the Write tool.&#34;,
+  &#34;run_in_background&#34;: true
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-21-25-832Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-21-25-832Z" class="timestamp-link"><time datetime="2026-03-07T09:21:25.832Z" data-timestamp="2026-03-07T09:21:25.832Z">2026-03-07T09:21:25.832Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Async agent launched successfully.
+agentId: a4e1dbc4cfee58643 (internal ID - do not mention to user. Use to resume later if needed.)
+The agent is working in the background. You will be notified automatically when it completes.
+Do not duplicate this agent&#x27;s work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+output_file: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/a4e1dbc4cfee58643.output
+If asked, you can check progress before completion by using Read or Bash tail on the output file.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-39-468Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-39-468Z" class="timestamp-link"><time datetime="2026-03-07T09:21:39.468Z" data-timestamp="2026-03-07T09:21:39.468Z">2026-03-07T09:21:39.468Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01RHbLwqPdQqTwd6BbbvhRNj"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Update reference docs and SECURITY</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;You need to update/create several reference and existing docs. Use UK English throughout. Import style: `from charmlibs.interfaces import mcp` then `mcp.Tool(...)` etc.\n\n**1. Create /home/ubuntu/mcp-charm/docs/reference/config.md** — Full configuration reference\nDocument ALL config options from charmcraft.yaml:\n- port (int, default 8081)\n- log-level (string, default \&#34;info\&#34;, values: debug/info/warning/error)\n- auth-token (string, default \&#34;\&#34;, bearer token auth)\n- rate-limit (int, default 0, requests per minute, 0=disabled)\n- command-allowlist (string, default \&#34;\&#34;, space-separated executable names)\n- path-prefix (string, default \&#34;\&#34;, URL path prefix)\n- external-hostname (string, default \&#34;\&#34;, FQDN for TLS certificates)\n\n**2. Create /home/ubuntu/mcp-charm/docs/reference/api.md** — Charm library API reference\nDocument the public API of `charmlibs-interfaces-mcp`:\n- McpProvider class (constructor, set_definitions, set_tools, set_prompts, set_resources)\n- McpRequirer class (constructor, has_definitions, collect_definitions)\n- McpDefinitions dataclass (tools, prompts, resources, to_dict, to_json, from_dict, from_json, is_empty)\n- Tool dataclass (name, description, handler, input_schema, to_dict)\n- Prompt dataclass (name, description, template, arguments, to_dict)\n- PromptArgument dataclass (name, description, required, to_dict)\n- Resource dataclass (uri, name, description, handler, mime_type, to_dict)\n- ExecHandler dataclass (command, timeout, user, working_dir, env, to_dict)\n- HttpHandler dataclass (url, method, headers, body_template, timeout, to_dict)\n\n**3. Update /home/ubuntu/mcp-charm/docs/integration-schema.md** — Fix import style\nRead the file first. Update the two Python code examples to use the `from charmlibs.interfaces import mcp` import style with `mcp.` prefix. Don&#39;t change anything else.\n\n**4. Update /home/ubuntu/mcp-charm/SECURITY.md** — Flesh out security considerations\nRead the file first. Fill in the \&#34;Known Security Considerations\&#34; section with:\n- Exec handlers run commands on the machine — restrict with command-allowlist\n- Template substitution uses argv boundaries (no shell injection) but values are not escaped for the target command&#39;s syntax (e.g. SQL)\n- The MCP server listens on all interfaces by default — use firewall rules or ingress\n- Bearer tokens are sent in plaintext without TLS — always use TLS in production\n- OAuth tokens must be validated against the IdP — clock skew can cause false rejections\n- Rate limiting is per-server, not per-client — a single client can consume the entire quota\n- The subordinate charm has full machine access — it runs handlers as root by default\n\nMake all edits/writes now.&#34;,
+  &#34;run_in_background&#34;: true
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-21-39-470Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-21-39-470Z" class="timestamp-link"><time datetime="2026-03-07T09:21:39.470Z" data-timestamp="2026-03-07T09:21:39.470Z">2026-03-07T09:21:39.470Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Async agent launched successfully.
+agentId: affd5e359f3e697a7 (internal ID - do not mention to user. Use to resume later if needed.)
+The agent is working in the background. You will be notified automatically when it completes.
+Do not duplicate this agent&#x27;s work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+output_file: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/affd5e359f3e697a7.output
+If asked, you can check progress before completion by using Read or Bash tail on the output file.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-50-469Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-50-469Z" class="timestamp-link"><time datetime="2026-03-07T09:21:50.469Z" data-timestamp="2026-03-07T09:21:50.469Z">2026-03-07T09:21:50.469Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01ByDc8sefGaaLCsfETr35YW"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Update README with fixes</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Update /home/ubuntu/mcp-charm/README.md. Read it first, then edit it.\n\nChanges needed:\n\n1. Update the code example in the \&#34;Charm library\&#34; section to use the new import style:\n```python\nfrom charmlibs.interfaces import mcp\n\nself.mcp = mcp.McpProvider(self, \&#34;mcp\&#34;)\nself.mcp.set_tools([\n    mcp.Tool(name=\&#34;list-dbs\&#34;, description=\&#34;List databases\&#34;,\n         handler=mcp.ExecHandler(command=[\&#34;psql\&#34;, \&#34;-l\&#34;, \&#34;--csv\&#34;])),\n])\n```\n\n2. Update the Configuration table to include ALL options from charmcraft.yaml:\n| Option | Type | Default | Description |\n|---|---|---|---|\n| port | int | 8081 | Port for the MCP server to listen on |\n| log-level | string | info | Log level (debug, info, warning, error) |\n| auth-token | string | \&#34;\&#34; | Bearer token for authentication (empty = disabled) |\n| rate-limit | int | 0 | Maximum requests per minute (0 = disabled) |\n| command-allowlist | string | \&#34;\&#34; | Space-separated allowed executable names (empty = all allowed) |\n| path-prefix | string | \&#34;\&#34; | URL path prefix for MCP endpoint (e.g. /postgresql) |\n| external-hostname | string | \&#34;\&#34; | FQDN for TLS certificate requests |\n\n3. Update the \&#34;Deployment\&#34; section to mention more integrations:\nAfter the basic deploy/integrate block, add examples for:\n- HAProxy ingress: `juju integrate mcp-server:reverse-proxy haproxy:reverseproxy`\n- TLS: `juju integrate mcp-server:certificates easyrsa:client`\n- OAuth: `juju integrate mcp-server:oauth identity-platform:oauth`\n- COS observability: `juju integrate mcp-server:cos-agent grafana-agent:cos-agent`\n\n(Note: use `haproxy` not `traefik` - the charm uses the haproxy-route interface. Update the architecture diagram line from \&#34;Traefik\&#34; to \&#34;HAProxy\&#34; too.)\n\n4. Add a \&#34;Documentation\&#34; section before the \&#34;Status\&#34; section, linking to:\n- [Tutorial](docs/tutorial.md)\n- [How-to guides](docs/how-to/)\n- [Reference](docs/reference/)\n- [Architecture &amp; design](docs/explanation.md)\n- [Integration schema](docs/integration-schema.md)\n\n5. Update the \&#34;Status\&#34; line to say something more current than \&#34;early development\&#34;.\n\nUse UK English throughout. Make the edits now.&#34;,
+  &#34;run_in_background&#34;: true
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-07T09-21-50-472Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-07T09-21-50-472Z" class="timestamp-link"><time datetime="2026-03-07T09:21:50.472Z" data-timestamp="2026-03-07T09:21:50.472Z">2026-03-07T09:21:50.472Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Async agent launched successfully.
+agentId: adb0f11c788db1e62 (internal ID - do not mention to user. Use to resume later if needed.)
+The agent is working in the background. You will be notified automatically when it completes.
+Do not duplicate this agent&#x27;s work — avoid working with the same files or topics it is using. Work on non-overlapping tasks, or briefly tell the user what you launched and end your response.
+output_file: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/adb0f11c788db1e62.output
+If asked, you can check progress before completion by using Read or Bash tail on the output file.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-21-55-980Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-21-55-980Z" class="timestamp-link"><time datetime="2026-03-07T09:21:55.980Z" data-timestamp="2026-03-07T09:21:55.980Z">2026-03-07T09:21:55.980Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Launched 5 agents in parallel:</p>
+<ol>
+<li><strong>Tutorial</strong> — step-by-step guide to adding MCP to a charm</li>
+<li><strong>How-to guides</strong> — 5 task-oriented guides (tools, ingress, TLS, auth, observability)</li>
+<li><strong>Explanation</strong> — architecture, design decisions, security model</li>
+<li><strong>Reference + SECURITY</strong> — config reference, API reference, integration-schema import fix, SECURITY.md flesh-out</li>
+<li><strong>README update</strong> — fix config table, import style, deployment examples, add docs links</li>
+</ol>
+<p>Waiting for them to complete...</p></div></div></div>
+<div class="message user" id="msg-2026-03-07T09-22-34-251Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-07T09-22-34-251Z" class="timestamp-link"><time datetime="2026-03-07T09:22:34.251Z" data-timestamp="2026-03-07T09:22:34.251Z">2026-03-07T09:22:34.251Z</time></a></div><div class="message-content">
+<div class="user-content"><p><task-notification>
+<task-id>adb0f11c788db1e62</task-id>
+<tool-use-id>toolu_01ByDc8sefGaaLCsfETr35YW</tool-use-id>
+<status>completed</status></p>
+<summary>Agent "Update README with fixes" completed</summary>
+<p><result>All five changes have been applied to <code>/home/ubuntu/mcp-charm/README.md</code>:</p>
+<ol>
+<li><strong>Charm library code example</strong> -- updated to use <code>from charmlibs.interfaces import mcp</code> module-level import style, with <code>mcp.McpProvider</code>, <code>mcp.Tool</code>, and <code>mcp.ExecHandler</code>.</li>
+<li><strong>Configuration table</strong> -- expanded from 2 rows to 7, now covering all options from <code>charmcraft.yaml</code>: <code>port</code>, <code>log-level</code>, <code>auth-token</code>, <code>rate-limit</code>, <code>command-allowlist</code>, <code>path-prefix</code>, and <code>external-hostname</code>.</li>
+<li><strong>Deployment section</strong> -- replaced the old Traefik ingress example with four integration examples: HAProxy ingress (<code>reverse-proxy</code>), TLS (<code>certificates</code>), OAuth, and COS observability (<code>cos-agent</code>).</li>
+<li><strong>Architecture diagram and text</strong> -- "Traefik" changed to "HAProxy" in both the ASCII diagram (line 11) and the descriptive text (line 24).</li>
+<li><strong>Documentation section</strong> -- added before Status, linking to tutorial, how-to guides, reference, architecture/design, and integration schema.</li>
+<li><strong>Status line</strong> -- updated from "early development" to "under active development".</result>
+<usage><total_tokens>12025</total_tokens><tool_uses>10</tool_uses><duration_ms>43747</duration_ms></usage>
+</task-notification>
+Full transcript available at: /tmp/claude-1000/-home-ubuntu-mcp-charm/tasks/adb0f11c788db1e62.output</li>
+</ol></div></div></div>
+<div class="message assistant" id="msg-2026-03-07T09-22-37-071Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-07T09-22-37-071Z" class="timestamp-link"><time datetime="2026-03-07T09:22:37.071Z" data-timestamp="2026-03-07T09:22:37.071Z">2026-03-07T09:22:37.071Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>README done. 4 remaining...</p></div></div></div>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-002.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<span class="current">3</span>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-004.html">Next &rarr;</a>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

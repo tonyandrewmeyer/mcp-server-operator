@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 14</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 14/15</h1>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-013.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-010.html">10</a>
+<a href="page-011.html">11</a>
+<a href="page-012.html">12</a>
+<a href="page-013.html">13</a>
+<span class="current">14</span>
+<a href="page-015.html">15</a>
+<a href="page-015.html">Next &rarr;</a>
+</div>
+
+
+<div class="message user" id="msg-2026-03-06T11-41-55-392Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-41-55-392Z" class="timestamp-link"><time datetime="2026-03-06T11:41:55.392Z" data-timestamp="2026-03-06T11:41:55.392Z">2026-03-06T11:41:55.392Z</time></a></div><div class="message-content">
+<div class="user-content"><p>2 but mot right now, just add it to the todo items in the roadmap</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-41-58-310Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-41-58-310Z" class="timestamp-link"><time datetime="2026-03-06T11:41:58.310Z" data-timestamp="2026-03-06T11:41:58.310Z">2026-03-06T11:41:58.310Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01XSuDCCMqZpquu59S8f4zA3"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/ROADMAP.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-41-58-333Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-41-58-333Z" class="timestamp-link"><time datetime="2026-03-06T11:41:58.333Z" data-timestamp="2026-03-06T11:41:58.333Z">2026-03-06T11:41:58.333Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Roadmap
+     2→
+     3→## Phase 0: Project infrastructure (current)
+     4→
+     5→- [x] Project documentation (README, ROADMAP, PLAN, CHANGELOG, CONTRIBUTING)
+     6→- [x] `pyproject.toml` — project metadata, dependencies, tool config (charm + workload)
+     7→- [x] Linting: ruff (format + lint), ty (type checking)
+     8→- [x] Pre-commit hooks (ruff, codespell, trailing whitespace, etc.)
+     9→- [x] Makefile for common tasks (format, lint, typecheck, test)
+    10→- [x] tox for charm test environments
+    11→- [x] Test infrastructure (pytest, coverage)
+    12→- [x] Charm skeleton via `charmcraft init --profile machine`
+    13→- [x] Workload project skeleton
+    14→- [x] GitHub Actions CI: charm (format, lint, unit tests, integration tests)
+    15→- [x] GitHub Actions CI: workload (format, lint, tests)
+    16→- [x] GitHub Actions: zizmor workflow security audit
+    17→
+    18→## Phase 1: Core — Charm skeleton + MCP server
+    19→
+    20→- [x] `charm/charmcraft.yaml` — subordinate machine charm metadata
+    21→- [x] `charm/src/charm.py` — ops charm handling `mcp` relation and systemd lifecycle
+    22→- [x] `charm/src/mcp_server.py` — workload management (install, start, stop, configure)
+    23→- [x] `workload/src/server.py` — MCP server with streamable HTTP, dynamic tool/prompt/resource registration from a JSON config file
+    24→- [x] systemd unit (template in mcp_server.py)
+    25→- [x] Unit tests: 5 charm tests, 15 workload tests
+    26→- [x] End-to-end validated: demo principal sets relation data, MCP server starts, tools/prompts/resources callable via HTTP
+    27→
+    28→## Phase 2: Code quality
+    29→
+    30→- [x] Use `self.load_config` and `relation.save`/`relation.load` instead of raw relation data values
+    31→- [x] Fix import style: `import pathlib` not `from pathlib import Path` (modules, not objects)
+    32→- [x] UK English throughout
+    33→- [x] Comments: full sentences, sparingly, explain why not what
+    34→
+    35→## Phase 3: Charm library (`charmlibs-interfaces-mcp`)
+    36→
+    37→- [x] Create `charmlibs-interfaces-mcp` Python package (published to PyPI)
+    38→- [x] Provider class — for charms that want to expose tools/prompts/resources via MCP (i.e. the principal charm uses this to set relation data)
+    39→- [x] Requirer class — used internally by the mcp-server charm to read relation data
+    40→- [x] Typed data models for tools, prompts, resources, and handlers (no pydantic — use dataclasses)
+    41→- [x] Documentation and examples for charm authors
+    42→
+    43→This library lets any charm add MCP support with minimal code:
+    44→```python
+    45→from charmlibs.mcp import McpProvider
+    46→
+    47→mcp = McpProvider(self, &quot;mcp&quot;)
+    48→mcp.set_tools([...])
+    49→```
+    50→
+    51→## Phase 4: Security
+    52→
+    53→- [x] Input validation — validate tool call arguments against declared `input_schema` before handler execution
+    54→- [x] No `shell=True` — enforce subprocess list args only (done by design)
+    55→- [x] Optional command allowlist in charm config (`command-allowlist`)
+    56→- [x] Rate limiting on the MCP server endpoint (`rate-limit` config)
+    57→- [x] Auth token support (Bearer token via `auth-token` config)
+    58→- [ ] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
+    59→
+    60→## Phase 5: Ingress + TLS
+    61→
+    62→- [ ] Traefik integration for external access
+    63→- [ ] TLS termination via Traefik
+    64→- [ ] Direct TLS support (certificate relation or config)
+    65→- [ ] Configurable path prefix per principal
+    66→
+    67→## Phase 6: Observability (COS integration)
+    68→
+    69→- [ ] Tracing for the charm (tempo integration)
+    70→- [ ] Tracing for the MCP server workload
+    71→- [ ] Metrics endpoint (prometheus integration)
+    72→- [ ] Log forwarding (loki integration)
+    73→- [ ] Grafana dashboard
+    74→- [ ] SLOs via sloth-k8s charm
+    75→
+    76→## Phase 7: Testing
+    77→
+    78→- [ ] Unit tests for `charm.py`
+    79→- [ ] Unit tests for `mcp_server.py` (handler execution, template substitution, schema validation)
+    80→- [ ] Integration test with a dummy principal charm
+    81→- [ ] Spread for charm integration tests
+    82→- [ ] CI with GitHub Actions + tox
+    83→
+    84→## Phase 8: Demo
+    85→
+    86→- [ ] Example principal charm showing how easy it is to add MCP to an existing charm
+    87→- [ ] End-to-end demo: deploy principal + mcp-server, connect Claude Code, invoke tools
+    88→- [ ] Screencast / README walkthrough
+    89→
+    90→## Phase 9: Documentation (Diataxis)
+    91→
+    92→- [ ] Tutorials — step-by-step guide to adding MCP to your charm
+    93→- [ ] How-to guides — specific tasks (add a tool, configure ingress, etc.)
+    94→- [ ] Reference — integration schema, config options, API docs
+    95→- [ ] Explanation — architecture, design decisions, security model
+    96→- [ ] Flesh out SECURITY.md with known security considerations, threat model, and hardening guidance
+    97→
+    98→## Phase 10: Polish + packaging
+    99→
+   100→- [ ] Publish to Charmhub
+   101→- [ ] Publish `charmlibs-interfaces-mcp` to PyPI
+   102→- [ ] Documentation site (Read the Docs or similar)
+   103→
+   104→## Future: Chaos testing
+   105→
+   106→- [ ] Integration with Litmus operators for chaos testing
+   107→
+   108→## Future: Kubernetes version
+   109→
+   110→- [ ] Separate charm designed for k8s (HTTP-only handlers, sidecar container pattern)
+   111→- [ ] Pebble exec support for container access
+   112→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-03-056Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-03-056Z" class="timestamp-link"><time datetime="2026-03-06T11:42:03.056Z" data-timestamp="2026-03-06T11:42:03.056Z">2026-03-06T11:42:03.056Z</time></a></div><div class="message-content"><div class="file-tool edit-tool" data-tool-id="toolu_0195i39szismZ6Dqj9LEm6kn">
+<div class="file-tool-header edit-header"><span class="file-tool-icon">✏️</span> Edit <span class="file-tool-path">ROADMAP.md</span></div>
+<div class="file-tool-fullpath">/home/ubuntu/mcp-charm/ROADMAP.md</div>
+<div class="truncatable"><div class="truncatable-content">
+<div class="edit-section edit-old"><div class="edit-label">−</div><pre class="edit-content">- [ ] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)</pre></div>
+<div class="edit-section edit-new"><div class="edit-label">+</div><pre class="edit-content">- [x] OAuth 2.1 support via identity provider integration (required for MCP clients like Claude Desktop that expect the standard OAuth flow)
+- [ ] Charm unit tests for OAuth relation events and `_get_oauth_config`
+- [ ] Integration test for OAuth with a mock or real IdP (e.g. Hydra)</pre></div>
+</div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-42-03-088Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-42-03-088Z" class="timestamp-link"><time datetime="2026-03-06T11:42:03.088Z" data-timestamp="2026-03-06T11:42:03.088Z">2026-03-06T11:42:03.088Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>The file /home/ubuntu/mcp-charm/ROADMAP.md has been updated successfully.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-08-270Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-08-270Z" class="timestamp-link"><time datetime="2026-03-06T11:42:08.270Z" data-timestamp="2026-03-06T11:42:08.270Z">2026-03-06T11:42:08.270Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Done — added two OAuth testing items to Phase 4 in the roadmap (unit tests and integration test).</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-42-21-921Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-42-21-921Z" class="timestamp-link"><time datetime="2026-03-06T11:42:21.921Z" data-timestamp="2026-03-06T11:42:21.921Z">2026-03-06T11:42:21.921Z</time></a></div><div class="message-content">
+<div class="user-content"><p>what's next? apart from cimmitting the rodamp change</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-25-906Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-25-906Z" class="timestamp-link"><time datetime="2026-03-06T11:42:25.906Z" data-timestamp="2026-03-06T11:42:25.906Z">2026-03-06T11:42:25.906Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Let me look at what's left on the roadmap and what makes sense as the next phase.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-29-727Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-29-727Z" class="timestamp-link"><time datetime="2026-03-06T11:42:29.727Z" data-timestamp="2026-03-06T11:42:29.727Z">2026-03-06T11:42:29.727Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Looking at the roadmap, the completed phases are 0–4 (with OAuth testing still pending in Phase 4). The next phases are:</p>
+<ul>
+<li><strong>Phase 5: Ingress + TLS</strong> — Traefik integration, TLS termination, path prefixes</li>
+<li><strong>Phase 6: Observability</strong> — Tracing, metrics, logging, Grafana dashboard</li>
+<li><strong>Phase 7: Testing</strong> — More unit tests, integration tests, spread</li>
+<li><strong>Phase 8: Demo</strong> — Example principal, end-to-end walkthrough</li>
+</ul>
+<p>Phase 7 (testing) has some low-hanging fruit that would strengthen what's already built — especially the OAuth unit tests we just identified, and the charm unit tests for <code>mcp_server.py</code>. Phase 5 (ingress) and Phase 6 (observability) are bigger infrastructure pieces that depend on deploying related charms.</p>
+<p>What would you like to tackle?</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-42-40-042Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-42-40-042Z" class="timestamp-link"><time datetime="2026-03-06T11:42:40.042Z" data-timestamp="2026-03-06T11:42:40.042Z">2026-03-06T11:42:40.042Z</time></a></div><div class="message-content">
+<div class="user-content"><p>commit the roadmap update</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-43-666Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-43-666Z" class="timestamp-link"><time datetime="2026-03-06T11:42:43.666Z" data-timestamp="2026-03-06T11:42:43.666Z">2026-03-06T11:42:43.666Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RhzzdNfRm5bVnYXTP3rg6e">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit roadmap update</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git add ROADMAP.md &amp;&amp; git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Mark OAuth 2.1 complete in roadmap, add OAuth testing items
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-42-44-425Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-42-44-425Z" class="timestamp-link"><time datetime="2026-03-06T11:42:44.425Z" data-timestamp="2026-03-06T11:42:44.425Z">2026-03-06T11:42:44.425Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ruff.................................................(no files to check)Skipped
+ruff-format..........................................(no files to check)Skipped
+ty (charm)...........................................(no files to check)Skipped
+ty (workload)........................................(no files to check)Skipped
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm)...................................(no files to check)Skipped
+unit tests (workload)................................(no files to check)Skipped
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre><div class="commit-card"><a href="https://github.com/tonyandrewmeyer/mcp-server-operator/commit/864510f"><span class="commit-card-hash">864510f</span> Mark OAuth 2.1 complete in roadmap, add OAuth testing items</a></div><pre>1 file changed, 3 insertions(+), 1 deletion(-)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-42-47-132Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-42-47-132Z" class="timestamp-link"><time datetime="2026-03-06T11:42:47.132Z" data-timestamp="2026-03-06T11:42:47.132Z">2026-03-06T11:42:47.132Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Done.</p></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-43-16-291Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-43-16-291Z" class="timestamp-link"><time datetime="2026-03-06T11:43:16.291Z" data-timestamp="2026-03-06T11:43:16.291Z">2026-03-06T11:43:16.291Z</time></a></div><div class="message-content">
+<div class="user-content"><p>ok let's move up testing and do that.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-22-735Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-22-735Z" class="timestamp-link"><time datetime="2026-03-06T11:43:22.735Z" data-timestamp="2026-03-06T11:43:22.735Z">2026-03-06T11:43:22.735Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>The user wants to work on Phase 7 (Testing). Let me look at what's there and what's already done, then figure out what to tackle.</p>
+<p>From the roadmap:
+- [ ] Unit tests for <code>charm.py</code>
+- [ ] Unit tests for <code>mcp_server.py</code> (handler execution, template substitution, schema validation)
+- [ ] Integration test with a dummy principal charm
+- [ ] Spread for charm integration tests
+- [ ] CI with GitHub Actions + tox</p>
+<p>Plus from Phase 4:
+- [ ] Charm unit tests for OAuth relation events and <code>_get_oauth_config</code>
+- [ ] Integration test for OAuth with a mock or real IdP (e.g. Hydra)</p>
+<ul>
+<li>[ ] Checking what's already covered: we have 5 charm unit tests and 33 workload tests in place, so I need to see what gaps remain.</li>
+</ul></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-22-812Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-22-812Z" class="timestamp-link"><time datetime="2026-03-06T11:43:22.812Z" data-timestamp="2026-03-06T11:43:22.812Z">2026-03-06T11:43:22.812Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Let me survey what's already covered and what's missing.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-22-927Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-22-927Z" class="timestamp-link"><time datetime="2026-03-06T11:43:22.927Z" data-timestamp="2026-03-06T11:43:22.927Z">2026-03-06T11:43:22.927Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01F1qPDJgd3fCUDoVNfnkHR8"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/charm/tests/unit/test_charm.py&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-43-22-960Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-43-22-960Z" class="timestamp-link"><time datetime="2026-03-06T11:43:22.960Z" data-timestamp="2026-03-06T11:43:22.960Z">2026-03-06T11:43:22.960Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Copyright 2026 Tony Meyer
+     2→# See LICENSE file for licensing details.
+     3→#
+     4→# To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
+     5→
+     6→import json
+     7→
+     8→import pytest
+     9→from ops import testing
+    10→
+    11→from charm import McpServerCharm
+    12→
+    13→MCP_DEFINITIONS = {
+    14→    &quot;tools&quot;: [
+    15→        {
+    16→            &quot;name&quot;: &quot;hello&quot;,
+    17→            &quot;description&quot;: &quot;Say hello&quot;,
+    18→            &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;required&quot;: []},
+    19→            &quot;handler&quot;: {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;hello&quot;]},
+    20→        }
+    21→    ],
+    22→    &quot;prompts&quot;: [],
+    23→    &quot;resources&quot;: [],
+    24→}
+    25→
+    26→
+    27→def _noop(*args, **kwargs):
+    28→    pass
+    29→
+    30→
+    31→def _mock_get_version():
+    32→    return &quot;1.0.0&quot;
+    33→
+    34→
+    35→def _mock_is_running():
+    36→    return True
+    37→
+    38→
+    39→def _mock_is_not_running():
+    40→    return False
+    41→
+    42→
+    43→@pytest.fixture()
+    44→def _patch_workload(monkeypatch):
+    45→    &quot;&quot;&quot;Patch out all mcp_server workload calls.&quot;&quot;&quot;
+    46→    monkeypatch.setattr(&quot;charm.mcp_server.install&quot;, _noop)
+    47→    monkeypatch.setattr(&quot;charm.mcp_server.write_config&quot;, _noop)
+    48→    monkeypatch.setattr(&quot;charm.mcp_server.write_systemd_unit&quot;, _noop)
+    49→    monkeypatch.setattr(&quot;charm.mcp_server.start&quot;, _noop)
+    50→    monkeypatch.setattr(&quot;charm.mcp_server.restart&quot;, _noop)
+    51→    monkeypatch.setattr(&quot;charm.mcp_server.stop&quot;, _noop)
+    52→    monkeypatch.setattr(&quot;charm.mcp_server.get_version&quot;, _mock_get_version)
+    53→    monkeypatch.setattr(&quot;charm.mcp_server.is_running&quot;, _mock_is_not_running)
+    54→
+    55→
+    56→@pytest.mark.usefixtures(&quot;_patch_workload&quot;)
+    57→def test_install():
+    58→    ctx = testing.Context(McpServerCharm)
+    59→    state_out = ctx.run(ctx.on.install(), testing.State())
+    60→    assert state_out.unit_status == testing.MaintenanceStatus(&quot;installing MCP server&quot;)
+    61→
+    62→
+    63→@pytest.mark.usefixtures(&quot;_patch_workload&quot;)
+    64→def test_start_without_relation():
+    65→    ctx = testing.Context(McpServerCharm)
+    66→    state_out = ctx.run(ctx.on.start(), testing.State())
+    67→    assert state_out.unit_status == testing.WaitingStatus(&quot;waiting for mcp relation data&quot;)
+    68→
+    69→
+    70→@pytest.mark.usefixtures(&quot;_patch_workload&quot;)
+    71→def test_start_with_relation(monkeypatch):
+    72→    monkeypatch.setattr(&quot;charm.mcp_server.get_version&quot;, _mock_get_version)
+    73→    ctx = testing.Context(McpServerCharm)
+    74→    relation = testing.SubordinateRelation(
+    75→        endpoint=&quot;mcp&quot;,
+    76→        remote_app_data={&quot;mcp_definitions&quot;: json.dumps(MCP_DEFINITIONS)},
+    77→    )
+    78→    state_out = ctx.run(ctx.on.start(), testing.State(relations=[relation]))
+    79→    assert state_out.unit_status == testing.ActiveStatus()
+    80→    assert state_out.workload_version == &quot;1.0.0&quot;
+    81→
+    82→
+    83→@pytest.mark.usefixtures(&quot;_patch_workload&quot;)
+    84→def test_mcp_relation_changed(monkeypatch):
+    85→    monkeypatch.setattr(&quot;charm.mcp_server.get_version&quot;, _mock_get_version)
+    86→    ctx = testing.Context(McpServerCharm)
+    87→    relation = testing.SubordinateRelation(
+    88→        endpoint=&quot;mcp&quot;,
+    89→        remote_app_data={&quot;mcp_definitions&quot;: json.dumps(MCP_DEFINITIONS)},
+    90→    )
+    91→    state_out = ctx.run(ctx.on.relation_changed(relation), testing.State(relations=[relation]))
+    92→    assert state_out.unit_status == testing.ActiveStatus()
+    93→
+    94→
+    95→@pytest.mark.usefixtures(&quot;_patch_workload&quot;)
+    96→def test_mcp_relation_broken():
+    97→    ctx = testing.Context(McpServerCharm)
+    98→    relation = testing.SubordinateRelation(
+    99→        endpoint=&quot;mcp&quot;,
+   100→        remote_app_data={&quot;mcp_definitions&quot;: json.dumps(MCP_DEFINITIONS)},
+   101→    )
+   102→    state_out = ctx.run(ctx.on.relation_broken(relation), testing.State(relations=[relation]))
+   103→    assert state_out.unit_status == testing.BlockedStatus(&quot;no mcp relation&quot;)
+   104→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-23-334Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-23-334Z" class="timestamp-link"><time datetime="2026-03-06T11:43:23.334Z" data-timestamp="2026-03-06T11:43:23.334Z">2026-03-06T11:43:23.334Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01P6njncvoMwFRYpeNvacige"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/workload/tests/test_server.py&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-43-23-360Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-43-23-360Z" class="timestamp-link"><time datetime="2026-03-06T11:43:23.360Z" data-timestamp="2026-03-06T11:43:23.360Z">2026-03-06T11:43:23.360Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Copyright 2026 Tony Meyer
+     2→# See LICENSE file for licensing details.
+     3→
+     4→import json
+     5→import pathlib
+     6→import tempfile
+     7→
+     8→import pytest
+     9→
+    10→from server import (
+    11→    create_server,
+    12→    execute_exec_handler,
+    13→    load_config,
+    14→    substitute_command,
+    15→    substitute_template,
+    16→    validate_arguments,
+    17→)
+    18→
+    19→
+    20→class TestTemplateSubstitution:
+    21→    def test_simple_substitution(self):
+    22→        result = substitute_template(&quot;hello {{name}}&quot;, {&quot;name&quot;: &quot;world&quot;})
+    23→        assert result == &quot;hello world&quot;
+    24→
+    25→    def test_multiple_substitutions(self):
+    26→        result = substitute_template(&quot;{{a}} and {{b}}&quot;, {&quot;a&quot;: &quot;x&quot;, &quot;b&quot;: &quot;y&quot;})
+    27→        assert result == &quot;x and y&quot;
+    28→
+    29→    def test_missing_argument_raises(self):
+    30→        with pytest.raises(ValueError, match=&quot;Missing required argument: name&quot;):
+    31→            substitute_template(&quot;hello {{name}}&quot;, {})
+    32→
+    33→    def test_no_placeholders(self):
+    34→        result = substitute_template(&quot;no placeholders here&quot;, {})
+    35→        assert result == &quot;no placeholders here&quot;
+    36→
+    37→    def test_integer_value(self):
+    38→        result = substitute_template(&quot;port {{port}}&quot;, {&quot;port&quot;: 8080})
+    39→        assert result == &quot;port 8080&quot;
+    40→
+    41→
+    42→class TestSubstituteCommand:
+    43→    def test_command_substitution(self):
+    44→        cmd = [&quot;echo&quot;, &quot;{{message}}&quot;]
+    45→        result = substitute_command(cmd, {&quot;message&quot;: &quot;hello&quot;})
+    46→        assert result == [&quot;echo&quot;, &quot;hello&quot;]
+    47→
+    48→    def test_preserves_non_template_args(self):
+    49→        cmd = [&quot;psql&quot;, &quot;-d&quot;, &quot;{{db}}&quot;, &quot;-c&quot;, &quot;SELECT 1&quot;]
+    50→        result = substitute_command(cmd, {&quot;db&quot;: &quot;mydb&quot;})
+    51→        assert result == [&quot;psql&quot;, &quot;-d&quot;, &quot;mydb&quot;, &quot;-c&quot;, &quot;SELECT 1&quot;]
+    52→
+    53→
+    54→class TestExecHandler:
+    55→    def test_simple_command(self):
+    56→        handler = {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;hello&quot;]}
+    57→        result = execute_exec_handler(handler, {})
+    58→        assert result.strip() == &quot;hello&quot;
+    59→
+    60→    def test_command_with_substitution(self):
+    61→        handler = {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;{{msg}}&quot;]}
+    62→        result = execute_exec_handler(handler, {&quot;msg&quot;: &quot;world&quot;})
+    63→        assert result.strip() == &quot;world&quot;
+    64→
+    65→    def test_failed_command(self):
+    66→        handler = {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;false&quot;]}
+    67→        result = execute_exec_handler(handler, {})
+    68→        assert &quot;Command failed&quot; in result
+    69→
+    70→
+    71→class TestValidateArguments:
+    72→    def test_valid_arguments(self):
+    73→        schema = {
+    74→            &quot;type&quot;: &quot;object&quot;,
+    75→            &quot;properties&quot;: {&quot;name&quot;: {&quot;type&quot;: &quot;string&quot;}, &quot;count&quot;: {&quot;type&quot;: &quot;integer&quot;}},
+    76→            &quot;required&quot;: [&quot;name&quot;],
+    77→        }
+    78→        errors = validate_arguments({&quot;name&quot;: &quot;test&quot;, &quot;count&quot;: 5}, schema)
+    79→        assert errors == []
+    80→
+    81→    def test_missing_required(self):
+    82→        schema = {
+    83→            &quot;type&quot;: &quot;object&quot;,
+    84→            &quot;properties&quot;: {&quot;name&quot;: {&quot;type&quot;: &quot;string&quot;}},
+    85→            &quot;required&quot;: [&quot;name&quot;],
+    86→        }
+    87→        errors = validate_arguments({}, schema)
+    88→        assert any(&quot;Missing required&quot; in e for e in errors)
+    89→
+    90→    def test_unexpected_arguments(self):
+    91→        schema = {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;name&quot;: {&quot;type&quot;: &quot;string&quot;}}}
+    92→        errors = validate_arguments({&quot;name&quot;: &quot;ok&quot;, &quot;extra&quot;: &quot;bad&quot;}, schema)
+    93→        assert any(&quot;Unexpected&quot; in e for e in errors)
+    94→
+    95→    def test_wrong_type(self):
+    96→        schema = {
+    97→            &quot;type&quot;: &quot;object&quot;,
+    98→            &quot;properties&quot;: {&quot;count&quot;: {&quot;type&quot;: &quot;integer&quot;}},
+    99→        }
+   100→        errors = validate_arguments({&quot;count&quot;: &quot;not_a_number&quot;}, schema)
+   101→        assert any(&quot;expected type&quot; in e for e in errors)
+   102→
+   103→    def test_optional_argument_missing_is_ok(self):
+   104→        schema = {
+   105→            &quot;type&quot;: &quot;object&quot;,
+   106→            &quot;properties&quot;: {&quot;name&quot;: {&quot;type&quot;: &quot;string&quot;}, &quot;opt&quot;: {&quot;type&quot;: &quot;string&quot;}},
+   107→            &quot;required&quot;: [&quot;name&quot;],
+   108→        }
+   109→        errors = validate_arguments({&quot;name&quot;: &quot;test&quot;}, schema)
+   110→        assert errors == []
+   111→
+   112→    def test_empty_schema(self):
+   113→        errors = validate_arguments({}, {})
+   114→        assert errors == []
+   115→
+   116→    def test_number_type_accepts_int_and_float(self):
+   117→        schema = {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;val&quot;: {&quot;type&quot;: &quot;number&quot;}}}
+   118→        assert validate_arguments({&quot;val&quot;: 1}, schema) == []
+   119→        assert validate_arguments({&quot;val&quot;: 1.5}, schema) == []
+   120→        assert any(&quot;expected type&quot; in e for e in validate_arguments({&quot;val&quot;: &quot;x&quot;}, schema))
+   121→
+   122→
+   123→class TestCommandAllowlist:
+   124→    def test_allowed_command(self):
+   125→        handler = {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;hello&quot;]}
+   126→        result = execute_exec_handler(handler, {})
+   127→        assert result.strip() == &quot;hello&quot;
+   128→
+   129→    def test_blocked_command(self):
+   130→        &quot;&quot;&quot;Allowlist blocking is done in the tool handler, not execute_exec_handler.&quot;&quot;&quot;
+   131→        # execute_exec_handler itself doesn&#x27;t check the allowlist — that&#x27;s done
+   132→        # at the tool_handler level. This test just documents that.
+   133→        handler = {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;hello&quot;]}
+   134→        result = execute_exec_handler(handler, {})
+   135→        assert result.strip() == &quot;hello&quot;
+   136→
+   137→
+   138→class TestLoadConfig:
+   139→    def test_load_valid_config(self):
+   140→        config = {
+   141→            &quot;tools&quot;: [{&quot;name&quot;: &quot;test&quot;, &quot;description&quot;: &quot;test tool&quot;}],
+   142→            &quot;prompts&quot;: [],
+   143→            &quot;resources&quot;: [],
+   144→        }
+   145→        with tempfile.NamedTemporaryFile(mode=&quot;w&quot;, suffix=&quot;.json&quot;, delete=False) as f:
+   146→            json.dump(config, f)
+   147→            f.flush()
+   148→            result = load_config(pathlib.Path(f.name))
+   149→        assert len(result[&quot;tools&quot;]) == 1
+   150→        assert result[&quot;tools&quot;][0][&quot;name&quot;] == &quot;test&quot;
+   151→
+   152→    def test_load_missing_file(self):
+   153→        result = load_config(pathlib.Path(&quot;/nonexistent/config.json&quot;))
+   154→        assert result == {&quot;tools&quot;: [], &quot;prompts&quot;: [], &quot;resources&quot;: []}
+   155→
+   156→    def test_defaults_missing_keys(self):
+   157→        with tempfile.NamedTemporaryFile(mode=&quot;w&quot;, suffix=&quot;.json&quot;, delete=False) as f:
+   158→            json.dump({&quot;tools&quot;: []}, f)
+   159→            f.flush()
+   160→            result = load_config(pathlib.Path(f.name))
+   161→        assert result[&quot;prompts&quot;] == []
+   162→        assert result[&quot;resources&quot;] == []
+   163→
+   164→
+   165→class TestCreateServer:
+   166→    def test_creates_server_with_empty_config(self):
+   167→        with tempfile.NamedTemporaryFile(mode=&quot;w&quot;, suffix=&quot;.json&quot;, delete=False) as f:
+   168→            json.dump({&quot;tools&quot;: [], &quot;prompts&quot;: [], &quot;resources&quot;: []}, f)
+   169→            f.flush()
+   170→            server = create_server(pathlib.Path(f.name))
+   171→        assert server is not None
+   172→
+   173→    def test_creates_server_with_tools(self):
+   174→        config = {
+   175→            &quot;tools&quot;: [
+   176→                {
+   177→                    &quot;name&quot;: &quot;test-tool&quot;,
+   178→                    &quot;description&quot;: &quot;A test tool&quot;,
+   179→                    &quot;input_schema&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;required&quot;: []},
+   180→                    &quot;handler&quot;: {&quot;type&quot;: &quot;exec&quot;, &quot;command&quot;: [&quot;echo&quot;, &quot;test&quot;]},
+   181→                }
+   182→            ],
+   183→            &quot;prompts&quot;: [],
+   184→            &quot;resources&quot;: [],
+   185→        }
+   186→        with tempfile.NamedTemporaryFile(mode=&quot;w&quot;, suffix=&quot;.json&quot;, delete=False) as f:
+   187→            json.dump(config, f)
+   188→            f.flush()
+   189→            server = create_server(pathlib.Path(f.name))
+   190→        assert server is not None
+   191→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-26-099Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-26-099Z" class="timestamp-link"><time datetime="2026-03-06T11:43:26.099Z" data-timestamp="2026-03-06T11:43:26.099Z">2026-03-06T11:43:26.099Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Now let me check the charm metadata to understand the relation interfaces for test setup.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-26-871Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-26-871Z" class="timestamp-link"><time datetime="2026-03-06T11:43:26.871Z" data-timestamp="2026-03-06T11:43:26.871Z">2026-03-06T11:43:26.871Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01UD1jfGqKXAFpBG4XJpQ2hv"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/home/ubuntu/mcp-charm/charm/charmcraft.yaml&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-43-26-895Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-43-26-895Z" class="timestamp-link"><time datetime="2026-03-06T11:43:26.895Z" data-timestamp="2026-03-06T11:43:26.895Z">2026-03-06T11:43:26.895Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1→# Copyright 2026 Tony Meyer
+     2→# See LICENSE file for licensing details.
+     3→#
+     4→# See https://documentation.ubuntu.com/charmcraft/stable/reference/files/charmcraft-yaml-file/
+     5→
+     6→type: charm
+     7→name: mcp-server
+     8→title: MCP Server
+     9→summary: Expose charm workloads via Model Context Protocol
+    10→description: |
+    11→  A subordinate machine charm that deploys an MCP (Model Context Protocol)
+    12→  server, allowing principal charms to declaratively expose tools, prompts,
+    13→  and resources to MCP clients such as LLM agents and Claude Code.
+    14→
+    15→  Principal charms provide tool/prompt/resource definitions via the mcp
+    16→  relation. The MCP server charm aggregates these and serves them over
+    17→  streamable HTTP. Handlers can execute shell commands or call local HTTP
+    18→  endpoints on the principal&#x27;s workload.
+    19→
+    20→subordinate: true
+    21→
+    22→base: ubuntu@24.04
+    23→platforms:
+    24→  amd64:
+    25→  arm64:
+    26→
+    27→parts:
+    28→  charm:
+    29→    plugin: uv
+    30→    source: .
+    31→    build-snaps:
+    32→      - astral-uv
+    33→
+    34→requires:
+    35→  mcp:
+    36→    interface: mcp
+    37→    scope: container
+    38→  oauth:
+    39→    interface: oauth
+    40→    limit: 1
+    41→
+    42→config:
+    43→  options:
+    44→    port:
+    45→      description: Port for the MCP server to listen on.
+    46→      default: 8081
+    47→      type: int
+    48→    log-level:
+    49→      description: |
+    50→        Log level for the MCP server.
+    51→
+    52→        Acceptable values are: &quot;info&quot;, &quot;debug&quot;, &quot;warning&quot;, &quot;error&quot;
+    53→      default: &quot;info&quot;
+    54→      type: string
+    55→    auth-token:
+    56→      description: |
+    57→        Bearer token for MCP server authentication. When set, clients must
+    58→        include an &quot;Authorization: Bearer &lt;token&gt;&quot; header. Leave empty to
+    59→        disable authentication.
+    60→      default: &quot;&quot;
+    61→      type: string
+    62→    rate-limit:
+    63→      description: |
+    64→        Maximum number of requests per minute to the MCP server endpoint.
+    65→        Set to 0 to disable rate limiting.
+    66→      default: 0
+    67→      type: int
+    68→    command-allowlist:
+    69→      description: |
+    70→        Space-separated list of executable names that exec handlers are
+    71→        allowed to run. When empty, all commands are permitted.
+    72→      default: &quot;&quot;
+    73→      type: string
+    74→</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-29-988Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-29-988Z" class="timestamp-link"><time datetime="2026-03-06T11:43:29.988Z" data-timestamp="2026-03-06T11:43:29.988Z">2026-03-06T11:43:29.988Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01Y2sYvXJ4P5Sp7GTPDB7ggC"><div class="tool-header"><span class="tool-icon">⚙</span> ToolSearch</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;query&#34;: &#34;select:Agent&#34;,
+  &#34;max_results&#34;: 1
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message user" id="msg-2026-03-06T11-43-29-989Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-03-06T11-43-29-989Z" class="timestamp-link"><time datetime="2026-03-06T11:43:29.989Z" data-timestamp="2026-03-06T11:43:29.989Z">2026-03-06T11:43:29.989Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &quot;type&quot;: &quot;tool_reference&quot;,
+  &quot;tool_name&quot;: &quot;Agent&quot;
+}</pre></div><button class="expand-btn">Show more</button></div></div>
+<div class="assistant-text"><p>Tool loaded.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-41-917Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-41-917Z" class="timestamp-link"><time datetime="2026-03-06T11:43:41.917Z" data-timestamp="2026-03-06T11:43:41.917Z">2026-03-06T11:43:41.917Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Let me plan out the testing work. I'll tackle this in parallel where possible:</p>
+<ol>
+<li><strong>Charm unit tests</strong> - need tests for:</li>
+<li><code>config_changed</code> event (with running/not running server)</li>
+<li>OAuth relation events (<code>oauth_relation_changed</code>, <code>oauth_relation_broken</code>)</li>
+<li><code>_get_oauth_config</code> (with/without relation, with/without secrets)</li>
+<li><code>_write_systemd_unit</code> being called with correct args</li>
+<li>
+<p><code>stop</code> event</p>
+</li>
+<li>
+<p><strong>Charm <code>mcp_server.py</code> unit tests</strong> - need tests for:</p>
+</li>
+<li><code>_oauth_extra_args</code> helper</li>
+<li><code>write_systemd_unit</code> output (template rendering with various configs)</li>
+<li>
+<p>Could also test <code>install</code>, <code>write_config</code>, etc. but those are mostly subprocess calls</p>
+</li>
+<li>
+<p><strong>Workload tests</strong> - already pretty good (33 tests), but could add:</p>
+</li>
+<li>HTTP handler tests (mocked httpx)</li>
+<li>Middleware tests (BearerAuth, RateLimit)</li>
+<li><code>create_server</code> with OAuth config</li>
+<li>Register prompt/resource tests</li>
+</ol>
+<p>I'll write the charm unit tests and workload tests in parallel using agents.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-43-43-824Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-43-43-824Z" class="timestamp-link"><time datetime="2026-03-06T11:43:43.824Z" data-timestamp="2026-03-06T11:43:43.824Z">2026-03-06T11:43:43.824Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Here's what's missing test coverage for:</p>
+<p><strong>Charm unit tests</strong> (5 existing): No tests for <code>config_changed</code>, <code>stop</code>, OAuth relation events, or <code>_get_oauth_config</code>.</p>
+<p><strong>Charm <code>mcp_server.py</code></strong>: No unit tests at all — <code>write_systemd_unit</code>, <code>_oauth_extra_args</code>, <code>write_config</code>.</p>
+<p><strong>Workload tests</strong> (33 existing): No tests for HTTP handler, middleware (BearerAuth, RateLimit), <code>create_server</code> with OAuth, prompt/resource registration.</p>
+<p>I'll write the charm and workload tests in parallel.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-44-02-554Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-44-02-554Z" class="timestamp-link"><time datetime="2026-03-06T11:44:02.554Z" data-timestamp="2026-03-06T11:44:02.554Z">2026-03-06T11:44:02.554Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01XHuGLKUuGnMmaV33psrVXq"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Write charm unit tests</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Write new charm unit tests in `/home/ubuntu/mcp-charm/charm/tests/unit/`. The existing tests are in `test_charm.py`. You need to add tests for the missing coverage.\n\nIMPORTANT RULES:\n- Import modules, not objects (e.g. `import pathlib` not `from pathlib import Path`). Exception: typing imports.\n- UK English in all text.\n- Comments: full sentences, sparingly, explain why not what.\n\nRead these files first:\n- `/home/ubuntu/mcp-charm/charm/tests/unit/test_charm.py` (existing tests — follow the same patterns)\n- `/home/ubuntu/mcp-charm/charm/src/charm.py` (the charm code)\n- `/home/ubuntu/mcp-charm/charm/src/mcp_server.py` (workload management)\n- `/home/ubuntu/mcp-charm/charm/charmcraft.yaml` (relation and config metadata)\n\nAdd the following tests to the EXISTING `test_charm.py` file (do NOT create a new file):\n\n1. `test_stop` — verify `mcp_server.stop()` is called\n2. `test_config_changed_restarts_if_running` — monkeypatch `is_running` to return True, verify restart happens (check that the charm doesn&#39;t error)\n3. `test_config_changed_no_restart_if_not_running` — verify no restart when not running\n4. `test_oauth_relation_changed_restarts_if_running` — set up an oauth relation with app data containing `issuer_url`, verify no error. Monkeypatch `is_running` to True.\n5. `test_oauth_relation_broken` — verify the charm handles oauth relation removal\n6. `test_mcp_relation_changed_starts_if_not_running` — verify that when the server isn&#39;t running, relation_changed starts it (not restarts)\n\nAlso create a NEW file `test_mcp_server.py` in the same directory with tests for `mcp_server.py`:\n\n1. `test_oauth_extra_args_full` — test `_oauth_extra_args` with a full OAuth config dict\n2. `test_oauth_extra_args_minimal` — test with just `issuer_url` and `resource_server_url`\n3. `test_oauth_extra_args_opaque_tokens` — test with `jwt_access_token: False`\n4. `test_write_systemd_unit_basic` — test `write_systemd_unit` generates correct unit content (monkeypatch `SYSTEMD_UNIT_PATH` to a temp path and `subprocess.run` to a noop)\n5. `test_write_systemd_unit_with_oauth` — same but with oauth_config\n6. `test_write_config` — test `write_config` writes correct JSON (monkeypatch `CONFIG_DIR` and `CONFIG_PATH` to temp paths)\n\nFor the charm tests, follow the existing pattern: use `@pytest.mark.usefixtures(\&#34;_patch_workload\&#34;)`, `testing.Context(McpServerCharm)`, `testing.State`, `testing.SubordinateRelation`. For oauth relation, use `testing.Relation(endpoint=\&#34;oauth\&#34;, ...)` (NOT SubordinateRelation — oauth is a regular relation).\n\nFor the mcp_server tests, monkeypatch filesystem paths and subprocess calls so tests don&#39;t touch the real system.\n\nMake sure all tests pass by following the existing patterns exactly.&#34;,
+  &#34;subagent_type&#34;: &#34;general-purpose&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-44-14-243Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-44-14-243Z" class="timestamp-link"><time datetime="2026-03-06T11:44:14.243Z" data-timestamp="2026-03-06T11:44:14.243Z">2026-03-06T11:44:14.243Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01T6oKegba99czBQoWVvNQvo"><div class="tool-header"><span class="tool-icon">⚙</span> Agent</div><div class="tool-description">Write workload tests</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;prompt&#34;: &#34;Write additional workload tests in `/home/ubuntu/mcp-charm/workload/tests/test_server.py`. Add to the EXISTING file, do NOT create new files.\n\nIMPORTANT RULES:\n- Import modules, not objects (e.g. `import pathlib` not `from pathlib import Path`). Exception: typing imports.\n- UK English in all text.\n- Comments: full sentences, sparingly, explain why not what.\n\nRead these files first:\n- `/home/ubuntu/mcp-charm/workload/tests/test_server.py` (existing tests — follow same patterns)\n- `/home/ubuntu/mcp-charm/workload/src/server.py` (the server code)\n\nAdd the following test classes/tests to the existing file:\n\n1. `TestBearerAuthMiddleware`:\n   - `test_rejects_missing_auth` — create a Starlette test client with BearerAuthMiddleware, verify 401\n   - `test_rejects_wrong_token` — verify 401 with wrong Bearer token\n   - `test_accepts_valid_token` — verify request passes through with correct token\n   \n2. `TestRateLimitMiddleware`:\n   - `test_allows_under_limit` — verify requests pass when under the limit\n   - `test_rejects_over_limit` — set max_requests=2, send 3 requests, verify 3rd gets 429\n\n3. `TestRegisterPrompt`:\n   - `test_register_prompt` — register a prompt with a template, verify it&#39;s added to the server\n\n4. `TestRegisterResource`:\n   - `test_register_resource` — register a resource with an exec handler, verify it&#39;s added\n\n5. `TestCreateServerWithOAuth`:\n   - `test_creates_server_with_oauth_jwt` — call `create_server` with oauth params including `jwks_uri`, verify server is created (this will need the mcp auth imports to work)\n\nFor the middleware tests, use `starlette.testclient.TestClient` with a simple Starlette app that has the middleware added. Import `starlette.applications.Starlette` and `starlette.responses.PlainTextResponse` and `starlette.routing.Route`.\n\nFor register_prompt/register_resource, create a FastMCP server instance and call the register functions, then check `server._prompts` or similar.\n\nFor the OAuth create_server test, just verify the server object is returned (the actual OAuth validation needs a real IdP).\n\nMake sure all tests pass. Run `cd /home/ubuntu/mcp-charm/workload &amp;&amp; uv run pytest tests/ -v` to verify.&#34;,
+  &#34;subagent_type&#34;: &#34;general-purpose&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-21-543Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-21-543Z" class="timestamp-link"><time datetime="2026-03-06T11:45:21.543Z" data-timestamp="2026-03-06T11:45:21.543Z">2026-03-06T11:45:21.543Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>All 17 tests pass (6 new charm tests + 6 new mcp_server tests + 5 existing).
+
+Here is a summary of what was done:
+
+**Added 6 tests to `/home/ubuntu/mcp-charm/charm/tests/unit/test_charm.py`:**
+
+1. `test_stop` -- verifies `mcp_server.stop()` is called on the stop event
+2. `test_config_changed_restarts_if_running` -- monkeypatches `is_running` to True, verifies config_changed completes without error (which means restart was called)
+3. `test_config_changed_no_restart_if_not_running` -- tracks restart calls, confirms none happen when the server is not running
+4. `test_oauth_relation_changed_restarts_if_running` -- sets up an oauth `Relation` (not SubordinateRelation) with `issuer_url` app data, monkeypatches `is_running` to True, verifies no error
+5. `test_oauth_relation_broken` -- verifies the charm handles oauth relation removal without error
+6. `test_mcp_relation_changed_starts_if_not_running` -- tracks start and restart calls, confirms `start` is called (not `restart`) when the server is not running
+
+**Created `/home/ubuntu/mcp-charm/charm/tests/unit/test_mcp_server.py` with 6 tests:**
+
+1. `test_oauth_extra_args_full` -- full OAuth config with all keys, verifies all flags present and `--oauth-opaque-tokens` absent
+2. `test_oauth_extra_args_minimal` -- only `issuer_url` and `resource_server_url`, verifies optional flags are absent
+3. `test_oauth_extra_args_opaque_tokens` -- `jwt_access_token: False`, verifies `--oauth-opaque-tokens` flag is present
+4. `test_write_systemd_unit_basic` -- monkeypatches `SYSTEMD_UNIT_PATH` to tmp_path and `subprocess.run` to a noop, verifies unit file content
+5. `test_write_systemd_unit_with_oauth` -- same approach but with oauth_config, verifies OAuth flags in unit file
+6. `test_write_config` -- monkeypatches `CONFIG_DIR` and `CONFIG_PATH` to tmp paths, verifies correct JSON is written</pre><pre>agentId: a3c4f0056f1cbaddf (for resuming to continue this agent&#x27;s work if needed)
+&lt;usage&gt;total_tokens: 23474
+tool_uses: 14
+duration_ms: 78987&lt;/usage&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-22-567Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-22-567Z" class="timestamp-link"><time datetime="2026-03-06T11:45:22.567Z" data-timestamp="2026-03-06T11:45:22.567Z">2026-03-06T11:45:22.567Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>All 41 tests pass, including the 8 new ones. Here is a summary of what was added to `/home/ubuntu/mcp-charm/workload/tests/test_server.py`:
+
+**New imports:** `starlette.applications`, `starlette.responses`, `starlette.routing`, `starlette.testclient`, and from `server`: `BearerAuthMiddleware`, `RateLimitMiddleware`, `register_prompt`, `register_resource`.
+
+**New test classes (8 tests total):**
+
+1. **`TestBearerAuthMiddleware`** (3 tests) — Uses a minimal Starlette app with `BearerAuthMiddleware` added. Tests that missing auth returns 401, wrong token returns 401, and a valid token returns 200.
+
+2. **`TestRateLimitMiddleware`** (2 tests) — Uses a Starlette app with `RateLimitMiddleware`. Verifies requests under the limit pass (200), and the request exceeding `max_requests=2` gets 429.
+
+3. **`TestRegisterPrompt`** (1 test) — Creates a `FastMCP` server, calls `register_prompt` with a template-based prompt definition, and verifies it appears in `server._prompt_manager.list_prompts()`.
+
+4. **`TestRegisterResource`** (1 test) — Creates a `FastMCP` server, calls `register_resource` with an exec handler, and verifies it appears in `server._resource_manager.list_resources()`.
+
+5. **`TestCreateServerWithOAuth`** (1 test) — Calls `create_server` with OAuth parameters (`oauth_issuer_url`, `oauth_resource_server_url`, `oauth_jwks_uri`) and verifies a server object is returned.</pre><pre>agentId: a65f55ec7399869e1 (for resuming to continue this agent&#x27;s work if needed)
+&lt;usage&gt;total_tokens: 23672
+tool_uses: 12
+duration_ms: 68322&lt;/usage&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-26-062Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-26-062Z" class="timestamp-link"><time datetime="2026-03-06T11:45:26.062Z" data-timestamp="2026-03-06T11:45:26.062Z">2026-03-06T11:45:26.062Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Both agents completed successfully. Let me verify everything passes together.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-26-933Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-26-933Z" class="timestamp-link"><time datetime="2026-03-06T11:45:26.933Z" data-timestamp="2026-03-06T11:45:26.933Z">2026-03-06T11:45:26.933Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01TCgB3Vf7FBgfwUGHUx74bg">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Run all workload tests</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /home/ubuntu/mcp-charm/workload &amp;&amp; uv run pytest tests/ -v 2&gt;&amp;1 | tail -25</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-27-787Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-27-787Z" class="timestamp-link"><time datetime="2026-03-06T11:45:27.787Z" data-timestamp="2026-03-06T11:45:27.787Z">2026-03-06T11:45:27.787Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01EdQ9RCUjvbutqG39FjWaP5">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Run all charm unit tests</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /home/ubuntu/mcp-charm/charm &amp;&amp; uv run --group unit pytest tests/unit/ -v 2&gt;&amp;1 | tail -25</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-30-423Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-30-423Z" class="timestamp-link"><time datetime="2026-03-06T11:45:30.423Z" data-timestamp="2026-03-06T11:45:30.423Z">2026-03-06T11:45:30.423Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>tests/test_server.py::TestCommandAllowlist::test_blocked_command PASSED  [ 46%]
+tests/test_server.py::TestLoadConfig::test_load_valid_config PASSED      [ 48%]
+tests/test_server.py::TestLoadConfig::test_load_missing_file PASSED      [ 51%]
+tests/test_server.py::TestLoadConfig::test_defaults_missing_keys PASSED  [ 53%]
+tests/test_server.py::TestCreateServer::test_creates_server_with_empty_config PASSED [ 56%]
+tests/test_server.py::TestCreateServer::test_creates_server_with_tools PASSED [ 58%]
+tests/test_server.py::TestBearerAuthMiddleware::test_rejects_missing_auth PASSED [ 60%]
+tests/test_server.py::TestBearerAuthMiddleware::test_rejects_wrong_token PASSED [ 63%]
+tests/test_server.py::TestBearerAuthMiddleware::test_accepts_valid_token PASSED [ 65%]
+tests/test_server.py::TestRateLimitMiddleware::test_allows_under_limit PASSED [ 68%]
+tests/test_server.py::TestRateLimitMiddleware::test_rejects_over_limit PASSED [ 70%]
+tests/test_server.py::TestRegisterPrompt::test_register_prompt PASSED    [ 73%]
+tests/test_server.py::TestRegisterResource::test_register_resource PASSED [ 75%]
+tests/test_server.py::TestCreateServerWithOAuth::test_creates_server_with_oauth_jwt PASSED [ 78%]
+tests/test_token_verifier.py::TestParseScopes::test_string_scopes PASSED [ 80%]
+tests/test_token_verifier.py::TestParseScopes::test_list_scopes PASSED   [ 82%]
+tests/test_token_verifier.py::TestParseScopes::test_missing_scopes PASSED [ 85%]
+tests/test_token_verifier.py::TestParseScopes::test_empty_string PASSED  [ 87%]
+tests/test_token_verifier.py::TestCreateTokenVerifier::test_creates_jwt_verifier PASSED [ 90%]
+tests/test_token_verifier.py::TestCreateTokenVerifier::test_creates_introspection_verifier PASSED [ 92%]
+tests/test_token_verifier.py::TestCreateTokenVerifier::test_raises_on_incomplete_config PASSED [ 95%]
+tests/test_token_verifier.py::TestJWTTokenVerifier::test_rejects_invalid_token[asyncio] PASSED [ 97%]
+tests/test_token_verifier.py::TestIntrospectionTokenVerifier::test_rejects_on_connection_error[asyncio] PASSED [100%]
+
+============================== 41 passed in 1.95s ==============================</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-32-007Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-32-007Z" class="timestamp-link"><time datetime="2026-03-06T11:45:32.007Z" data-timestamp="2026-03-06T11:45:32.007Z">2026-03-06T11:45:32.007Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>platform linux -- Python 3.12.3, pytest-8.4.1, pluggy-1.6.0 -- /home/ubuntu/mcp-charm/charm/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/ubuntu/mcp-charm/charm
+configfile: pyproject.toml
+collecting ... collected 17 items
+
+tests/unit/test_charm.py::test_install PASSED                            [  5%]
+tests/unit/test_charm.py::test_start_without_relation PASSED             [ 11%]
+tests/unit/test_charm.py::test_start_with_relation PASSED                [ 17%]
+tests/unit/test_charm.py::test_mcp_relation_changed PASSED               [ 23%]
+tests/unit/test_charm.py::test_mcp_relation_broken PASSED                [ 29%]
+tests/unit/test_charm.py::test_stop PASSED                               [ 35%]
+tests/unit/test_charm.py::test_config_changed_restarts_if_running PASSED [ 41%]
+tests/unit/test_charm.py::test_config_changed_no_restart_if_not_running PASSED [ 47%]
+tests/unit/test_charm.py::test_oauth_relation_changed_restarts_if_running PASSED [ 52%]
+tests/unit/test_charm.py::test_oauth_relation_broken PASSED              [ 58%]
+tests/unit/test_charm.py::test_mcp_relation_changed_starts_if_not_running PASSED [ 64%]
+tests/unit/test_mcp_server.py::TestOAuthExtraArgs::test_oauth_extra_args_full PASSED [ 70%]
+tests/unit/test_mcp_server.py::TestOAuthExtraArgs::test_oauth_extra_args_minimal PASSED [ 76%]
+tests/unit/test_mcp_server.py::TestOAuthExtraArgs::test_oauth_extra_args_opaque_tokens PASSED [ 82%]
+tests/unit/test_mcp_server.py::TestWriteSystemdUnit::test_write_systemd_unit_basic PASSED [ 88%]
+tests/unit/test_mcp_server.py::TestWriteSystemdUnit::test_write_systemd_unit_with_oauth PASSED [ 94%]
+tests/unit/test_mcp_server.py::TestWriteConfig::test_write_config PASSED [100%]
+
+============================== 17 passed in 0.66s ==============================</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-35-824Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-35-824Z" class="timestamp-link"><time datetime="2026-03-06T11:45:35.824Z" data-timestamp="2026-03-06T11:45:35.824Z">2026-03-06T11:45:35.824Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>All 58 tests pass (41 workload + 17 charm). Now let me commit.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-36-051Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-36-051Z" class="timestamp-link"><time datetime="2026-03-06T11:45:36.051Z" data-timestamp="2026-03-06T11:45:36.051Z">2026-03-06T11:45:36.051Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01S1rqQhAoiAMKXsQjsVUst5">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Show working tree status</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /home/ubuntu/mcp-charm &amp;&amp; git status</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-36-149Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-36-149Z" class="timestamp-link"><time datetime="2026-03-06T11:45:36.149Z" data-timestamp="2026-03-06T11:45:36.149Z">2026-03-06T11:45:36.149Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>On branch main
+Your branch is ahead of &#x27;origin/main&#x27; by 1 commit.
+  (use &quot;git push&quot; to publish your local commits)
+
+Changes not staged for commit:
+  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+  (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+	modified:   charm/tests/unit/test_charm.py
+	modified:   workload/tests/test_server.py
+
+Untracked files:
+  (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)
+	charm/tests/unit/test_mcp_server.py
+
+no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-44-520Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-44-520Z" class="timestamp-link"><time datetime="2026-03-06T11:45:44.520Z" data-timestamp="2026-03-06T11:45:44.520Z">2026-03-06T11:45:44.520Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01XZg2t7NZrKcJg5bc7otv7m">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit all new tests</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git add charm/tests/unit/test_charm.py charm/tests/unit/test_mcp_server.py workload/tests/test_server.py &amp;&amp; git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Add unit tests for OAuth, config, middleware, and mcp_server module
+
+Charm: 6 new tests covering stop, config_changed, OAuth relation
+events, and start-vs-restart logic. 6 new mcp_server.py tests for
+_oauth_extra_args, write_systemd_unit, and write_config.
+
+Workload: 8 new tests for BearerAuthMiddleware, RateLimitMiddleware,
+register_prompt, register_resource, and create_server with OAuth.
+
+Total: 58 tests (17 charm + 41 workload), all passing.
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-45-50-231Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-45-50-231Z" class="timestamp-link"><time datetime="2026-03-06T11:45:50.231Z" data-timestamp="2026-03-06T11:45:50.231Z">2026-03-06T11:45:50.231Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 1
+ruff.....................................................................Failed
+- hook id: ruff
+- files were modified by this hook
+
+Found 1 error (1 fixed, 0 remaining).
+
+ruff-format..............................................................Passed
+ty (charm)...........................................(no files to check)Skipped
+ty (workload)........................................(no files to check)Skipped
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm).......................................................Passed
+unit tests (workload)....................................................Passed
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed
+
+ruff.....................................................................Failed
+- hook id: ruff
+- files were modified by this hook
+
+Found 1 error (1 fixed, 0 remaining).
+
+ruff-format..............................................................Passed
+ty (charm)...........................................(no files to check)Skipped
+ty (workload)........................................(no files to check)Skipped
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm).......................................................Passed
+unit tests (workload)....................................................Passed
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-53-309Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-53-309Z" class="timestamp-link"><time datetime="2026-03-06T11:45:53.309Z" data-timestamp="2026-03-06T11:45:53.309Z">2026-03-06T11:45:53.309Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Ruff auto-fixed an import issue. Let me re-stage and commit.</p></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-45-55-121Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-45-55-121Z" class="timestamp-link"><time datetime="2026-03-06T11:45:55.121Z" data-timestamp="2026-03-06T11:45:55.121Z">2026-03-06T11:45:55.121Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_0148EvUbQn5i6FtFEUUNfqFs">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Re-stage and commit after ruff fix</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git add charm/tests/unit/test_charm.py charm/tests/unit/test_mcp_server.py workload/tests/test_server.py &amp;&amp; git commit -m &#34;$(cat &lt;&lt;&#39;EOF&#39;
+Add unit tests for OAuth, config, middleware, and mcp_server module
+
+Charm: 6 new tests covering stop, config_changed, OAuth relation
+events, and start-vs-restart logic. 6 new mcp_server.py tests for
+_oauth_extra_args, write_systemd_unit, and write_config.
+
+Workload: 8 new tests for BearerAuthMiddleware, RateLimitMiddleware,
+register_prompt, register_resource, and create_server with OAuth.
+
+Total: 58 tests (17 charm + 41 workload), all passing.
+
+Co-Authored-By: Claude Opus 4.6 &lt;noreply@anthropic.com&gt;
+EOF
+)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-03-06T11-46-00-989Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-03-06T11-46-00-989Z" class="timestamp-link"><time datetime="2026-03-06T11:46:00.989Z" data-timestamp="2026-03-06T11:46:00.989Z">2026-03-06T11:46:00.989Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ruff.....................................................................Passed
+ruff-format..............................................................Passed
+ty (charm)...........................................(no files to check)Skipped
+ty (workload)........................................(no files to check)Skipped
+ty (charmlib)........................................(no files to check)Skipped
+unit tests (charm).......................................................Passed
+unit tests (workload)....................................................Passed
+unit tests (charmlib)................................(no files to check)Skipped
+codespell................................................................Passed
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+check for merge conflicts................................................Passed
+check for added large files..............................................Passed</pre><div class="commit-card"><a href="https://github.com/tonyandrewmeyer/mcp-server-operator/commit/7e0e625"><span class="commit-card-hash">7e0e625</span> Add unit tests for OAuth, config, middleware, and mcp_server module</a></div><pre>3 files changed, 327 insertions(+)
+ create mode 100644 charm/tests/unit/test_mcp_server.py</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-03-06T11-46-23-287Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-03-06T11-46-23-287Z" class="timestamp-link"><time datetime="2026-03-06T11:46:23.287Z" data-timestamp="2026-03-06T11:46:23.287Z">2026-03-06T11:46:23.287Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Committed. Test summary:</p>
+<ul>
+<li><strong>Charm</strong>: 5 → 17 tests (+12) — now covers stop, config_changed, OAuth relation lifecycle, start-vs-restart logic, <code>_oauth_extra_args</code>, <code>write_systemd_unit</code>, <code>write_config</code></li>
+<li><strong>Workload</strong>: 33 → 41 tests (+8) — now covers BearerAuthMiddleware, RateLimitMiddleware, prompt/resource registration, OAuth server creation</li>
+<li><strong>Total</strong>: 58 tests, all passing</li>
+</ul></div></div></div>
+
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-013.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<a href="page-002.html">2</a>
+<a href="page-003.html">3</a>
+<a href="page-004.html">4</a>
+<a href="page-005.html">5</a>
+<a href="page-006.html">6</a>
+<a href="page-007.html">7</a>
+<a href="page-008.html">8</a>
+<a href="page-009.html">9</a>
+<a href="page-010.html">10</a>
+<a href="page-011.html">11</a>
+<a href="page-012.html">12</a>
+<a href="page-013.html">13</a>
+<span class="current">14</span>
+<a href="page-015.html">15</a>
+<a href="page-015.html">Next &rarr;</a>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>
