@@ -14,7 +14,8 @@ on:
       - "workload/**"
       - ".github/workflows/workload.yaml"
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   format-check:

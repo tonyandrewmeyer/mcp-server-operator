@@ -18,7 +18,8 @@ on:
       - "demo/principal/**"
       - ".github/workflows/charm.yaml"
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   format-check:
