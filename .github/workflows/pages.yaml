@@ -1,0 +1,169 @@
+name: Deploy Transcripts to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.claude/transcripts/**'
+      - '.github/workflows/pages.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare transcript files
+        run: |
+          mkdir -p _site
+          cp -r .claude/transcripts/* _site/
+
+          # Create a root index.html
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>MCP Server Charm - Claude Transcripts</title>
+              <style>
+                  :root {
+                      --bg-color: #f5f5f5;
+                      --card-bg: #ffffff;
+                      --primary: #1976d2;
+                      --text-color: #212121;
+                      --text-muted: #757575;
+                  }
+                  * {
+                      box-sizing: border-box;
+                  }
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      background: var(--bg-color);
+                      color: var(--text-color);
+                      margin: 0;
+                      padding: 24px;
+                      line-height: 1.6;
+                  }
+                  .container {
+                      max-width: 800px;
+                      margin: 0 auto;
+                      background: var(--card-bg);
+                      padding: 32px;
+                      border-radius: 8px;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  }
+                  h1 {
+                      color: var(--primary);
+                      margin-top: 0;
+                      margin-bottom: 16px;
+                      font-size: 2rem;
+                  }
+                  h2 {
+                      color: var(--text-color);
+                      margin-top: 32px;
+                      margin-bottom: 16px;
+                      font-size: 1.5rem;
+                      border-bottom: 2px solid var(--primary);
+                      padding-bottom: 8px;
+                  }
+                  p {
+                      margin: 12px 0;
+                      color: var(--text-muted);
+                  }
+                  .transcript-list {
+                      list-style: none;
+                      padding: 0;
+                      margin: 24px 0;
+                  }
+                  .transcript-item {
+                      background: var(--bg-color);
+                      padding: 16px;
+                      margin-bottom: 12px;
+                      border-radius: 8px;
+                      border-left: 4px solid var(--primary);
+                  }
+                  .transcript-item a {
+                      color: var(--primary);
+                      text-decoration: none;
+                      font-weight: 600;
+                      font-size: 1.1rem;
+                  }
+                  .transcript-item a:hover {
+                      text-decoration: underline;
+                  }
+                  .transcript-id {
+                      font-family: monospace;
+                      font-size: 0.9rem;
+                      color: var(--text-muted);
+                      margin-top: 8px;
+                  }
+                  .back-link {
+                      display: inline-block;
+                      margin-top: 24px;
+                      color: var(--primary);
+                      text-decoration: none;
+                  }
+                  .back-link:hover {
+                      text-decoration: underline;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Claude Transcripts</h1>
+                  <p>Development transcripts from Claude Code for the MCP Server Charm project.</p>
+
+                  <h2>Available Transcripts</h2>
+                  <ul class="transcript-list">
+          EOF
+
+          # Find all transcript directories and create links
+          for dir in _site/*/; do
+              if [ -d "$dir" ] && [ -f "$dir/index.html" ]; then
+                  dirname=$(basename "$dir")
+                  echo "<li class=\"transcript-item\">" >> _site/index.html
+                  echo "<a href=\"$dirname/index.html\">View Transcript</a>" >> _site/index.html
+                  echo "<div class=\"transcript-id\">ID: $dirname</div>" >> _site/index.html
+                  echo "</li>" >> _site/index.html
+              fi
+          done
+
+          cat >> _site/index.html << 'EOF'
+                  </ul>
+
+                  <a href="https://github.com/tonyandrewmeyer/mcp-charm" class="back-link">
+                      &larr; Back to Repository
+                  </a>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
