@@ -1,5 +1,6 @@
 # Copyright 2026 Tony Meyer
 # See LICENSE file for licensing details.
+# uv version resolved from root uv.toml
 
 name: Workload CI
 
