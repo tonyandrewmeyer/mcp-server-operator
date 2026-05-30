@@ -7,7 +7,6 @@
 import logging
 
 import ops
-
 from charmlibs.interfaces import mcp
 
 logger = logging.getLogger(__name__)
@@ -86,11 +85,11 @@ class DemoPrincipalCharm(ops.CharmBase):
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
         self.mcp = mcp.McpProvider(self, "mcp")
-        framework.observe(self.on.start, self._on_start)
+        framework.observe(self.on.collect_unit_status, self._on_collect_status)
         framework.observe(self.on.mcp_relation_joined, self._on_mcp_relation_joined)
 
-    def _on_start(self, event: ops.StartEvent) -> None:
-        self.unit.status = ops.ActiveStatus()
+    def _on_collect_status(self, event: ops.CollectStatusEvent) -> None:
+        event.add_status(ops.ActiveStatus())
 
     def _on_mcp_relation_joined(self, event: ops.RelationJoinedEvent) -> None:
         """Publish MCP definitions when the relation is established."""
