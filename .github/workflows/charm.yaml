@@ -81,7 +81,7 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       - name: Set up Juju
-        uses: charmed-kubernetes/actions-operator@ea90ed489690bf3b1c1fcca6ac5f9edab70aecb0 # main
+        uses: charmed-kubernetes/actions-operator@d8217ad61c15f746727a9d41563c13e9b9fe56e3 # main
         with:
           provider: lxd
       - name: Sync workload files
