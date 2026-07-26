@@ -41,10 +41,30 @@ pythonpath = ["src"]
 extra-paths = ["src"]
 
 # Linting tools configuration
+
 [tool.ruff]
 line-length = 99
-lint.select = ["E", "W", "F", "C", "N", "D", "I001"]
-lint.ignore = [
+extend-exclude = [
+    "lib",
+    "__pycache__",
+    "*.egg_info",
+    "lib/charms",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "C4",
+    "N",
+    "D",
+    "I",
+    "UP",
+    "B",
+    "RUF",
+]
+ignore = [
     "D105",
     "D107",
     "D203",
@@ -59,8 +79,7 @@ lint.ignore = [
     "D409",
     "D413",
 ]
-extend-exclude = ["__pycache__", "*.egg_info"]
-lint.per-file-ignores = {"tests/*" = ["D100","D101","D102","D103","D104"]}
 
-[tool.ruff.lint.mccabe]
-max-complexity = 10
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["D", "S101", "S105", "S106", "S108", "PLR2004", "ARG", "SLF001", "N802", "N803", "N806"]
+"tests/*" = ["D100", "D101", "D102", "D103", "D104"]

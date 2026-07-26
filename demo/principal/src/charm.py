@@ -7,7 +7,6 @@
 import logging
 
 import ops
-
 from charmlibs.interfaces import mcp
 
 logger = logging.getLogger(__name__)

@@ -29,6 +29,7 @@ server subordinate.
 ```python
 from charmlibs.interfaces import mcp
 
+
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
@@ -79,6 +80,7 @@ all related provider charms.
 
 ```python
 from charmlibs.interfaces import mcp
+
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):

@@ -14,7 +14,8 @@ import asyncio
 import contextlib
 import json
 import pathlib
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 import httpx
 import pytest

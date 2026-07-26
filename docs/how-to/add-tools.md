@@ -62,9 +62,14 @@ mcp.Tool(
     },
     handler=mcp.ExecHandler(
         command=[
-            "sudo", "-u", "postgres", "psql",
-            "-d", "{{database}}",
-            "-c", "{{query}}",
+            "sudo",
+            "-u",
+            "postgres",
+            "psql",
+            "-d",
+            "{{database}}",
+            "-c",
+            "{{query}}",
             "--csv",
         ],
         timeout=30,
@@ -183,13 +188,17 @@ class MyCharm(ops.CharmBase):
         framework.observe(self.on.mcp_relation_joined, self._on_mcp_joined)
 
     def _on_mcp_joined(self, event):
-        self.mcp.set_tools([
-            mcp.Tool(
-                name="list-databases",
-                description="List all PostgreSQL databases",
-                handler=mcp.ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
-            ),
-        ])
+        self.mcp.set_tools(
+            [
+                mcp.Tool(
+                    name="list-databases",
+                    description="List all PostgreSQL databases",
+                    handler=mcp.ExecHandler(
+                        command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]
+                    ),
+                ),
+            ]
+        )
 ```
 
 There are corresponding `set_prompts()` and `set_resources()` methods that
@@ -201,33 +210,37 @@ Use `set_definitions()` when you want to publish tools, prompts, and resources
 together in a single call. This replaces all definitions at once:
 
 ```python
-self.mcp.set_definitions(mcp.McpDefinitions(
-    tools=[
-        mcp.Tool(
-            name="list-databases",
-            description="List all PostgreSQL databases",
-            handler=mcp.ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
-        ),
-    ],
-    prompts=[
-        mcp.Prompt(
-            name="analyse-database",
-            description="Analyse database health",
-            template="Please analyse the '{{database}}' database.",
-            arguments=[
-                mcp.PromptArgument(name="database", description="Database to analyse"),
-            ],
-        ),
-    ],
-    resources=[
-        mcp.Resource(
-            uri="config://postgresql/main",
-            name="PostgreSQL Configuration",
-            description="Current postgresql.conf contents",
-            handler=mcp.ExecHandler(command=["cat", "/etc/postgresql/14/main/postgresql.conf"]),
-        ),
-    ],
-))
+self.mcp.set_definitions(
+    mcp.McpDefinitions(
+        tools=[
+            mcp.Tool(
+                name="list-databases",
+                description="List all PostgreSQL databases",
+                handler=mcp.ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
+            ),
+        ],
+        prompts=[
+            mcp.Prompt(
+                name="analyse-database",
+                description="Analyse database health",
+                template="Please analyse the '{{database}}' database.",
+                arguments=[
+                    mcp.PromptArgument(name="database", description="Database to analyse"),
+                ],
+            ),
+        ],
+        resources=[
+            mcp.Resource(
+                uri="config://postgresql/main",
+                name="PostgreSQL Configuration",
+                description="Current postgresql.conf contents",
+                handler=mcp.ExecHandler(
+                    command=["cat", "/etc/postgresql/14/main/postgresql.conf"]
+                ),
+            ),
+        ],
+    )
+)
 ```
 
 ### Which to use

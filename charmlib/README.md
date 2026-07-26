@@ -19,6 +19,7 @@ pip install charmlibs-interfaces-mcp
 import ops
 from charmlibs.interfaces import mcp
 
+
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
@@ -26,22 +27,24 @@ class MyCharm(ops.CharmBase):
         framework.observe(self.on["mcp"].relation_joined, self._on_mcp_joined)
 
     def _on_mcp_joined(self, event: ops.RelationJoinedEvent):
-        self.mcp.set_definitions(mcp.McpDefinitions(
-            tools=[
-                mcp.Tool(
-                    name="list-files",
-                    description="List files in a directory",
-                    input_schema={
-                        "type": "object",
-                        "properties": {
-                            "dir": {"type": "string", "description": "Directory path"},
+        self.mcp.set_definitions(
+            mcp.McpDefinitions(
+                tools=[
+                    mcp.Tool(
+                        name="list-files",
+                        description="List files in a directory",
+                        input_schema={
+                            "type": "object",
+                            "properties": {
+                                "dir": {"type": "string", "description": "Directory path"},
+                            },
+                            "required": ["dir"],
                         },
-                        "required": ["dir"],
-                    },
-                    handler=mcp.ExecHandler(command=["ls", "-la", "{{dir}}"]),
-                ),
-            ],
-        ))
+                        handler=mcp.ExecHandler(command=["ls", "-la", "{{dir}}"]),
+                    ),
+                ],
+            )
+        )
 ```
 
 ### Requirer (mcp-server charm)
@@ -49,6 +52,7 @@ class MyCharm(ops.CharmBase):
 ```python
 import ops
 from charmlibs.interfaces import mcp
+
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):

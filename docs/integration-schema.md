@@ -15,6 +15,7 @@ pip install charmlibs-interfaces-mcp
 ```python
 from charmlibs.interfaces import mcp
 
+
 class MyCharm(ops.CharmBase):
     def __init__(self, framework):
         super().__init__(framework)
@@ -22,19 +23,26 @@ class MyCharm(ops.CharmBase):
         framework.observe(self.on.mcp_relation_joined, self._publish_mcp)
 
     def _publish_mcp(self, event):
-        self.mcp.set_definitions(mcp.McpDefinitions(tools=[
-            mcp.Tool(
-                name="list-databases",
-                description="List all PostgreSQL databases",
-                handler=mcp.ExecHandler(command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]),
-            ),
-        ]))
+        self.mcp.set_definitions(
+            mcp.McpDefinitions(
+                tools=[
+                    mcp.Tool(
+                        name="list-databases",
+                        description="List all PostgreSQL databases",
+                        handler=mcp.ExecHandler(
+                            command=["sudo", "-u", "postgres", "psql", "-l", "--csv"]
+                        ),
+                    ),
+                ]
+            )
+        )
 ```
 
 ### Requirer (mcp-server charm)
 
 ```python
 from charmlibs.interfaces import mcp
+
 
 class McpServerCharm(ops.CharmBase):
     def __init__(self, framework):
@@ -251,50 +259,64 @@ The same example using `charmlibs-interfaces-mcp`:
 from charmlibs.interfaces import mcp
 
 provider = mcp.McpProvider(self, "mcp")
-provider.set_definitions(mcp.McpDefinitions(
-    tools=[
-        mcp.Tool(
-            name="list-databases",
-            description="List all PostgreSQL databases",
-            handler=mcp.ExecHandler(
-                command=["sudo", "-u", "postgres", "psql", "-l", "--csv"],
-                timeout=10,
+provider.set_definitions(
+    mcp.McpDefinitions(
+        tools=[
+            mcp.Tool(
+                name="list-databases",
+                description="List all PostgreSQL databases",
+                handler=mcp.ExecHandler(
+                    command=["sudo", "-u", "postgres", "psql", "-l", "--csv"],
+                    timeout=10,
+                ),
             ),
-        ),
-        mcp.Tool(
-            name="run-query",
-            description="Run a read-only SQL query against a database",
-            input_schema={
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "SQL SELECT query to run"},
-                    "database": {"type": "string", "description": "Target database name"},
+            mcp.Tool(
+                name="run-query",
+                description="Run a read-only SQL query against a database",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "SQL SELECT query to run"},
+                        "database": {"type": "string", "description": "Target database name"},
+                    },
+                    "required": ["query", "database"],
                 },
-                "required": ["query", "database"],
-            },
-            handler=mcp.ExecHandler(
-                command=["sudo", "-u", "postgres", "psql", "-d", "{{database}}", "-c", "{{query}}", "--csv"],
-                timeout=30,
+                handler=mcp.ExecHandler(
+                    command=[
+                        "sudo",
+                        "-u",
+                        "postgres",
+                        "psql",
+                        "-d",
+                        "{{database}}",
+                        "-c",
+                        "{{query}}",
+                        "--csv",
+                    ],
+                    timeout=30,
+                ),
             ),
-        ),
-    ],
-    prompts=[
-        mcp.Prompt(
-            name="analyse-database",
-            description="Analyse database health and performance",
-            template="Please analyse the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.",
-            arguments=[
-                mcp.PromptArgument(name="database", description="Database to analyse"),
-            ],
-        ),
-    ],
-    resources=[
-        mcp.Resource(
-            uri="config://postgresql/main",
-            name="PostgreSQL Configuration",
-            description="Current postgresql.conf contents",
-            handler=mcp.ExecHandler(command=["cat", "/etc/postgresql/14/main/postgresql.conf"]),
-        ),
-    ],
-))
+        ],
+        prompts=[
+            mcp.Prompt(
+                name="analyse-database",
+                description="Analyse database health and performance",
+                template="Please analyse the health and performance of the '{{database}}' PostgreSQL database. List all tables with their sizes, check for bloat, and identify any potential issues.",
+                arguments=[
+                    mcp.PromptArgument(name="database", description="Database to analyse"),
+                ],
+            ),
+        ],
+        resources=[
+            mcp.Resource(
+                uri="config://postgresql/main",
+                name="PostgreSQL Configuration",
+                description="Current postgresql.conf contents",
+                handler=mcp.ExecHandler(
+                    command=["cat", "/etc/postgresql/14/main/postgresql.conf"]
+                ),
+            ),
+        ],
+    )
+)
 ```

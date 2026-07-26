@@ -85,7 +85,6 @@ logger = logging.getLogger(__name__)
 
 
 class MyAppCharm(ops.CharmBase):
-
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
         self.mcp = mcp.McpProvider(self, "mcp")
@@ -135,33 +134,31 @@ Now add a `disk-usage` tool that accepts a `path` parameter from the MCP
 client. Use `{{path}}` template substitution in the command list:
 
 ```python
-        definitions = mcp.McpDefinitions(
-            tools=[
-                mcp.Tool(
-                    name="system-info",
-                    description="Get basic system information (hostname, OS, kernel)",
-                    handler=mcp.ExecHandler(command=["uname", "-a"], timeout=10),
-                ),
-                mcp.Tool(
-                    name="disk-usage",
-                    description="Show disk usage for a given path",
-                    input_schema={
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string",
-                                "description": "Filesystem path to check",
-                            },
-                        },
-                        "required": ["path"],
+definitions = mcp.McpDefinitions(
+    tools=[
+        mcp.Tool(
+            name="system-info",
+            description="Get basic system information (hostname, OS, kernel)",
+            handler=mcp.ExecHandler(command=["uname", "-a"], timeout=10),
+        ),
+        mcp.Tool(
+            name="disk-usage",
+            description="Show disk usage for a given path",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Filesystem path to check",
                     },
-                    handler=mcp.ExecHandler(
-                        command=["df", "-h", "{{path}}"], timeout=10
-                    ),
-                ),
-            ],
-        )
-        self.mcp.set_definitions(definitions)
+                },
+                "required": ["path"],
+            },
+            handler=mcp.ExecHandler(command=["df", "-h", "{{path}}"], timeout=10),
+        ),
+    ],
+)
+self.mcp.set_definitions(definitions)
 ```
 
 The `input_schema` follows the JSON Schema format that MCP uses to describe
