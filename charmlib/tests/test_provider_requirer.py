@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 import json
+from typing import ClassVar
 
 import ops
 from ops import testing
@@ -12,7 +13,7 @@ from charmlibs.interfaces import mcp
 class ProviderCharm(ops.CharmBase):
     """Minimal charm that uses McpProvider."""
 
-    META = {
+    META: ClassVar[dict] = {
         "name": "test-provider",
         "provides": {"mcp": {"interface": "mcp"}},
     }
@@ -25,7 +26,7 @@ class ProviderCharm(ops.CharmBase):
 class RequirerCharm(ops.CharmBase):
     """Minimal charm that uses McpRequirer."""
 
-    META = {
+    META: ClassVar[dict] = {
         "name": "test-requirer",
         "subordinate": True,
         "requires": {"mcp": {"interface": "mcp", "scope": "container"}},

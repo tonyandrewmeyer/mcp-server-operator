@@ -64,10 +64,15 @@ The `charmlibs-interfaces-mcp` package provides typed dataclasses and helper cla
 from charmlibs.interfaces import mcp
 
 self.mcp = mcp.McpProvider(self, "mcp")
-self.mcp.set_tools([
-    mcp.Tool(name="list-dbs", description="List databases",
-         handler=mcp.ExecHandler(command=["psql", "-l", "--csv"])),
-])
+self.mcp.set_tools(
+    [
+        mcp.Tool(
+            name="list-dbs",
+            description="List databases",
+            handler=mcp.ExecHandler(command=["psql", "-l", "--csv"]),
+        ),
+    ]
+)
 ```
 
 Install with `pip install charmlibs-interfaces-mcp`. See the [charmlib README](charmlib/README.md) for full details.

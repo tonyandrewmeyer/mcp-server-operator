@@ -11,15 +11,22 @@ the ``backup`` database role with peer authentication over the local socket.
 import logging
 
 import ops
-
 from charmlibs.interfaces import mcp
 
 logger = logging.getLogger(__name__)
 
 # The charmed-postgresql snap's psql binary and auth details.
 _PSQL = [
-    "sudo", "-u", "snap_daemon", "charmed-postgresql.psql",
-    "-h", "/tmp", "-U", "backup", "-d", "postgres",
+    "sudo",
+    "-u",
+    "snap_daemon",
+    "charmed-postgresql.psql",
+    "-h",
+    "/tmp",
+    "-U",
+    "backup",
+    "-d",
+    "postgres",
 ]
 
 # SQL fragments used in tool commands, kept here for readability.
@@ -46,10 +53,7 @@ _LIST_INDEXES_SQL = (
 )
 
 _NON_DEFAULT_SETTINGS_SQL = (
-    "SELECT name, setting, short_desc"
-    " FROM pg_settings"
-    " WHERE source != 'default'"
-    " ORDER BY name;"
+    "SELECT name, setting, short_desc FROM pg_settings WHERE source != 'default' ORDER BY name;"
 )
 
 _HBA_RULES_SQL = (
@@ -135,8 +139,12 @@ MCP_DEFINITIONS = mcp.McpDefinitions(
             },
             handler=mcp.ExecHandler(
                 command=[
-                    *_PSQL, "-d", "{{database}}",
-                    "-c", "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {{query}}", "--csv",
+                    *_PSQL,
+                    "-d",
+                    "{{database}}",
+                    "-c",
+                    "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {{query}}",
+                    "--csv",
                 ],
                 timeout=60,
             ),

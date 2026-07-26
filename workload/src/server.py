@@ -190,9 +190,9 @@ def execute_exec_handler(handler: dict[str, Any], arguments: dict[str, Any]) -> 
     env = handler.get("env")
 
     if user:
-        command = ["sudo", "-u", user, "--"] + command
+        command = ["sudo", "-u", user, "--", *command]
 
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         command,
         capture_output=True,
         text=True,
@@ -379,7 +379,7 @@ def register_resource(mcp: FastMCP, resource_def: dict[str, Any]) -> None:
 
 def create_server(
     config_path: pathlib.Path,
-    host: str = "0.0.0.0",  # noqa: S104
+    host: str = "0.0.0.0",
     port: int = 8081,
     command_allowlist: list[str] | None = None,
     oauth_issuer_url: str | None = None,
@@ -523,7 +523,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--host",
-        default="0.0.0.0",  # noqa: S104
+        default="0.0.0.0",
         help="Host to bind to",
     )
     parser.add_argument(
@@ -655,7 +655,7 @@ def main() -> None:
         or args.otlp_endpoint
     )
     if needs_uvicorn:
-        import uvicorn  # noqa: I001
+        import uvicorn
 
         app = build_app(
             mcp,
