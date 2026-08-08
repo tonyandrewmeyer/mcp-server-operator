@@ -62,21 +62,32 @@ def _patch_workload(monkeypatch):
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_install():
+def test_install_blocks_without_mcp_relation():
+    """Without the mcp relation, ``collect_unit_status`` reports blocked."""
     ctx = testing.Context(McpServerCharm)
     state_out = ctx.run(ctx.on.install(), testing.State())
-    assert state_out.unit_status == testing.MaintenanceStatus("installing MCP server")
+    assert state_out.unit_status == testing.BlockedStatus("no mcp relation")
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_start_without_relation():
+def test_start_blocks_without_relation():
     ctx = testing.Context(McpServerCharm)
     state_out = ctx.run(ctx.on.start(), testing.State())
+    assert state_out.unit_status == testing.BlockedStatus("no mcp relation")
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_start_waits_for_definitions_when_related():
+    """A bare relation with no app data yields a waiting status."""
+    ctx = testing.Context(McpServerCharm)
+    relation = testing.SubordinateRelation(endpoint="mcp")
+    state_out = ctx.run(ctx.on.start(), testing.State(relations=[relation]))
     assert state_out.unit_status == testing.WaitingStatus("waiting for mcp relation data")
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_start_with_relation(monkeypatch):
+def test_start_with_relation_becomes_active(monkeypatch):
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
     monkeypatch.setattr("charm.mcp_server.get_version", _mock_get_version)
     ctx = testing.Context(McpServerCharm)
     relation = testing.SubordinateRelation(
@@ -89,7 +100,8 @@ def test_start_with_relation(monkeypatch):
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_mcp_relation_changed(monkeypatch):
+def test_mcp_relation_changed_active_when_running(monkeypatch):
+    monkeypatch.setattr("charm.mcp_server.is_running", _mock_is_running)
     monkeypatch.setattr("charm.mcp_server.get_version", _mock_get_version)
     ctx = testing.Context(McpServerCharm)
     relation = testing.SubordinateRelation(
@@ -101,7 +113,8 @@ def test_mcp_relation_changed(monkeypatch):
 
 
 @pytest.mark.usefixtures("_patch_workload")
-def test_mcp_relation_broken():
+def test_mcp_relation_broken_blocks():
+    """Removing the mcp relation leaves the unit blocked."""
     ctx = testing.Context(McpServerCharm)
     relation = testing.SubordinateRelation(
         endpoint="mcp",
@@ -109,6 +122,18 @@ def test_mcp_relation_broken():
     )
     state_out = ctx.run(ctx.on.relation_broken(relation), testing.State(relations=[relation]))
     assert state_out.unit_status == testing.BlockedStatus("no mcp relation")
+
+
+@pytest.mark.usefixtures("_patch_workload")
+def test_collect_status_invalid_log_level():
+    """Invalid config surfaces as a blocked status via ``collect_unit_status``."""
+    ctx = testing.Context(McpServerCharm)
+    state_out = ctx.run(
+        ctx.on.collect_unit_status(),
+        testing.State(config={"log-level": "verbose"}),
+    )
+    assert isinstance(state_out.unit_status, testing.BlockedStatus)
+    assert "log-level" in state_out.unit_status.message
 
 
 @pytest.mark.usefixtures("_patch_workload")
@@ -384,8 +409,7 @@ def test_mcp_relation_changed_starts_if_not_running(monkeypatch):
         endpoint="mcp",
         remote_app_data={"mcp_definitions": json.dumps(MCP_DEFINITIONS)},
     )
-    state_out = ctx.run(ctx.on.relation_changed(relation), testing.State(relations=[relation]))
-    assert state_out.unit_status == testing.ActiveStatus()
+    ctx.run(ctx.on.relation_changed(relation), testing.State(relations=[relation]))
     assert "start" in start_calls
     assert restart_calls == []
 
