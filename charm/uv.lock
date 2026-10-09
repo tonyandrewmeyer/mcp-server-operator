@@ -222,7 +222,7 @@ unit = [
 requires-dist = [
     { name = "charmlibs-interfaces-mcp" },
     { name = "charmlibs-interfaces-sloth" },
-    { name = "cosl", specifier = ">=0.0.50" },
+    { name = "cosl", specifier = ">=0.0.54" },
     { name = "ops", extras = ["tracing"], specifier = ">=3,<4" },
     { name = "pydantic" },
 ]

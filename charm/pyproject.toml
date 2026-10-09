@@ -14,7 +14,7 @@ dependencies = [
     "ops[tracing]>=3,<4",
     "charmlibs-interfaces-mcp",
     "charmlibs-interfaces-sloth",
-    "cosl>=0.0.50",
+    "cosl>=0.0.54",
     # Required by vendored charmhub charm libraries (cos_agent, tls_certificates, haproxy_route).
     "pydantic",
 ]
