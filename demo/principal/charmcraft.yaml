@@ -11,6 +11,9 @@ base: ubuntu@24.04
 platforms:
   amd64:
 
+assumes:
+  - juju >= 3.6
+
 parts:
   charm:
     plugin: uv
@@ -21,3 +24,4 @@ parts:
 provides:
   mcp:
     interface: mcp
+    optional: false

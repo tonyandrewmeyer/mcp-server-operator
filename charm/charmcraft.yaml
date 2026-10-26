@@ -24,6 +24,9 @@ platforms:
   amd64:
   arm64:
 
+assumes:
+  - juju >= 3.6
+
 parts:
   charm:
     plugin: uv
@@ -34,28 +37,44 @@ parts:
 provides:
   cos-agent:
     interface: cos_agent
+    optional: true
   sloth:
     interface: sloth
+    optional: true
 
 requires:
   mcp:
     interface: mcp
     scope: container
+    optional: false
   oauth:
     interface: oauth
     limit: 1
+    optional: true
   reverse-proxy:
     interface: haproxy-route
     limit: 1
+    optional: true
   certificates:
     interface: tls-certificates
     limit: 1
+    optional: true
   charm-tracing:
     interface: tracing
     limit: 1
+    optional: true
   receive-ca-cert:
     interface: certificate_transfer
     limit: 1
+    optional: true
+
+charm-libs:
+  - lib: grafana_agent.cos_agent
+    version: "0"
+  - lib: haproxy.haproxy_route
+    version: "1"
+  - lib: tls_certificates_interface.tls_certificates
+    version: "4"
 
 config:
   options:

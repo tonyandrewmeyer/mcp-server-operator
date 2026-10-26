@@ -37,8 +37,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Import style: `import pathlib` (modules) rather than `from pathlib import Path` (objects)
 - UK English throughout all text
 - Comments follow full-sentence style, used sparingly to explain why
+- Status reporting centralised via `collect_unit_status` instead of scattered `self.unit.status = ...` calls in each event handler
+- `CharmConfig` is now a `frozen=True, kw_only=True` dataclass with `__post_init__` validation for `port`, `log-level`, `rate-limit`, and `path-prefix`
+- `charmcraft.yaml` declares vendored libraries via `charm-libs`, marks optional relations explicitly, and adds an `assumes: juju >= 3.6` block (charm and demo principal)
+- Demo principal charm uses `collect_unit_status` and `assumes`
 
 ### Fixed
+- `_get_otlp_endpoint` catches only the documented failure modes of `TracingEndpointRequirer` instead of a bare `except Exception:`
 - Workload server bundled as `charm/src/workload_server.py` (included in packed charm)
 - Install hook installs `python3-venv` before creating virtualenv
 - FastMCP API: `host`/`port` set in constructor, `Prompt.from_function()`, `FunctionResource`

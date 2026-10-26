@@ -25,7 +25,10 @@ WORKLOAD_SERVER_SRC = pathlib.Path(__file__).parent / "workload_server.py"
 SLO_SPECS_PATH = pathlib.Path(__file__).parent / "slo_specs.yaml"
 
 
-@dataclasses.dataclass
+VALID_LOG_LEVELS = frozenset({"debug", "info", "warning", "error"})
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class CharmConfig:
     """Typed charm configuration."""
 
@@ -36,6 +39,19 @@ class CharmConfig:
     command_allowlist: str = ""
     path_prefix: str = ""
     external_hostname: str = ""
+
+    def __post_init__(self) -> None:
+        """Validate the configuration."""
+        if self.log_level not in VALID_LOG_LEVELS:
+            raise ValueError(
+                f"log-level must be one of {sorted(VALID_LOG_LEVELS)}, got {self.log_level!r}"
+            )
+        if self.port < 1 or self.port > 65535:
+            raise ValueError(f"port must be in the range 1..65535, got {self.port}")
+        if self.rate_limit < 0:
+            raise ValueError(f"rate-limit must be non-negative, got {self.rate_limit}")
+        if self.path_prefix and not self.path_prefix.startswith("/"):
+            raise ValueError(f"path-prefix must start with '/' when set, got {self.path_prefix!r}")
 
 
 class McpServerCharm(ops.CharmBase):
@@ -63,6 +79,7 @@ class McpServerCharm(ops.CharmBase):
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.stop, self._on_stop)
         framework.observe(self.on.config_changed, self._on_config_changed)
+        framework.observe(self.on.collect_unit_status, self._on_collect_status)
         framework.observe(self.on.mcp_relation_changed, self._on_mcp_relation_changed)
         framework.observe(self.on.mcp_relation_broken, self._on_mcp_relation_broken)
         framework.observe(self.on.oauth_relation_changed, self._on_oauth_relation_changed)
@@ -83,11 +100,21 @@ class McpServerCharm(ops.CharmBase):
         framework.observe(self.on.sloth_relation_joined, self._on_sloth_relation_joined)
 
     def _get_config(self) -> CharmConfig:
-        """Load and return the typed charm configuration."""
-        return self.load_config(CharmConfig, errors="blocked")
+        """Load and return the typed charm configuration.
 
-    def _get_oauth_config(self) -> dict[str, Any] | None:
-        """Read OAuth provider info from the oauth relation, if available."""
+        Raises ``ValueError`` for invalid values. Callers in event handlers
+        should let this propagate and rely on ``collect_unit_status`` to
+        surface a blocked status; reconfiguration code paths should catch it
+        and skip writing the systemd unit.
+        """
+        return self.load_config(CharmConfig, errors="raise")
+
+    def _get_oauth_config(self, port: int) -> dict[str, Any] | None:
+        """Read OAuth provider info from the oauth relation, if available.
+
+        Takes ``port`` explicitly so the caller (which has already loaded the
+        config) does not pay for a second ``load_config`` here.
+        """
         relation = self.model.get_relation("oauth")
         if not relation or not relation.app:
             return None
@@ -98,7 +125,7 @@ class McpServerCharm(ops.CharmBase):
 
         oauth_config: dict[str, Any] = {
             "issuer_url": issuer_url,
-            "resource_server_url": f"http://localhost:{self._get_config().port}",
+            "resource_server_url": f"http://localhost:{port}",
         }
         if data.get("jwks_endpoint"):
             oauth_config["jwks_endpoint"] = data["jwks_endpoint"]
@@ -122,29 +149,62 @@ class McpServerCharm(ops.CharmBase):
         return mcp_server.TLS_CERT_PATH.exists() and mcp_server.TLS_KEY_PATH.exists()
 
     def _get_otlp_endpoint(self) -> str:
-        """Get the OTLP HTTP endpoint from the tracing relation, if available."""
+        """Return the OTLP HTTP endpoint from the tracing relation, or ''.
+
+        ``ops_tracing.Tracing`` does not expose the resolved endpoint, so
+        this reaches into its internal ``TracingEndpointRequirer``. The
+        narrow exception list covers the documented failure modes of that
+        requirer; anything else should surface as a real error.
+        """
+        requirer = self.tracing._tracing
         try:
-            if not self.tracing._tracing.is_ready():
+            if not requirer.is_ready():
                 return ""
-            endpoint = self.tracing._tracing.get_endpoint("otlp_http")
-            return endpoint or ""
-        except Exception:
+            endpoint = requirer.get_endpoint("otlp_http")
+        except (ops.TooManyRelatedAppsError, ops.ModelError):
+            logger.warning("Failed to read tracing endpoint", exc_info=True)
             return ""
+        return endpoint or ""
 
     def _write_systemd_unit(self) -> None:
-        """Write the systemd unit with current config and OAuth settings."""
-        config = self._get_config()
+        """Write the systemd unit with current config and OAuth settings.
+
+        No-op if the charm config is invalid; ``_on_collect_status`` reports
+        the validation failure as a blocked status.
+        """
+        try:
+            config = self._get_config()
+        except ValueError as e:
+            logger.warning("Skipping systemd unit write: invalid config: %s", e)
+            return
         mcp_server.write_systemd_unit(
             port=config.port,
             log_level=config.log_level,
             auth_token=config.auth_token,
             rate_limit=config.rate_limit,
             command_allowlist=config.command_allowlist,
-            oauth_config=self._get_oauth_config(),
+            oauth_config=self._get_oauth_config(config.port),
             path_prefix=config.path_prefix,
             tls=self._has_tls(),
             otlp_endpoint=self._get_otlp_endpoint(),
         )
+
+    def _on_collect_status(self, event: ops.CollectStatusEvent) -> None:
+        """Report the unit's status from a single, central place.
+
+        See https://documentation.ubuntu.com/ops/latest/howto/use-collect-status/
+        """
+        try:
+            self._get_config()
+        except ValueError as e:
+            event.add_status(ops.BlockedStatus(str(e)))
+        if not self.model.get_relation("mcp"):
+            event.add_status(ops.BlockedStatus("no mcp relation"))
+        elif not self.mcp.has_definitions():
+            event.add_status(ops.WaitingStatus("waiting for mcp relation data"))
+        elif not mcp_server.is_running():
+            event.add_status(ops.MaintenanceStatus("waiting for MCP server to start"))
+        event.add_status(ops.ActiveStatus())
 
     def _on_install(self, event: ops.InstallEvent) -> None:
         """Install the MCP server workload."""
@@ -153,16 +213,11 @@ class McpServerCharm(ops.CharmBase):
         self._write_systemd_unit()
 
     def _on_start(self, event: ops.StartEvent) -> None:
-        """Start the MCP server."""
-        self.unit.status = ops.MaintenanceStatus("starting MCP server")
+        """Start the MCP server if relation data is available."""
         if not self.mcp.has_definitions():
-            self.unit.status = ops.WaitingStatus("waiting for mcp relation data")
             return
         mcp_server.start()
-        version = mcp_server.get_version()
-        if version is not None:
-            self.unit.set_workload_version(version)
-        self.unit.status = ops.ActiveStatus()
+        self._set_workload_version()
 
     def _on_stop(self, event: ops.StopEvent) -> None:
         """Stop the MCP server."""
@@ -176,26 +231,19 @@ class McpServerCharm(ops.CharmBase):
 
     def _on_mcp_relation_changed(self, event: ops.RelationChangedEvent) -> None:
         """Handle updates to MCP definitions from the principal charm."""
-        self.unit.status = ops.MaintenanceStatus("configuring MCP server")
         definitions = self.mcp.collect_definitions()
         mcp_server.write_config(definitions)
         self._write_systemd_unit()
-
         if mcp_server.is_running():
             mcp_server.restart()
         else:
             mcp_server.start()
-
-        version = mcp_server.get_version()
-        if version is not None:
-            self.unit.set_workload_version(version)
-        self.unit.status = ops.ActiveStatus()
+        self._set_workload_version()
 
     def _on_mcp_relation_broken(self, event: ops.RelationBrokenEvent) -> None:
         """Handle the mcp relation being removed."""
         mcp_server.write_config({"tools": [], "prompts": [], "resources": []})
         mcp_server.stop()
-        self.unit.status = ops.BlockedStatus("no mcp relation")
 
     def _on_oauth_relation_changed(self, event: ops.RelationChangedEvent) -> None:
         """Handle OAuth provider info arriving or changing."""
@@ -211,7 +259,11 @@ class McpServerCharm(ops.CharmBase):
 
     def _on_reverse_proxy_relation_joined(self, event: ops.RelationJoinedEvent) -> None:
         """Provide backend details to the reverse proxy."""
-        config = self._get_config()
+        try:
+            config = self._get_config()
+        except ValueError as e:
+            logger.warning("Skipping reverse-proxy data update: invalid config: %s", e)
+            return
         binding = self.model.get_binding(event.relation)
         address = str(binding.network.bind_address) if binding else "127.0.0.1"
         event.relation.data[self.unit]["port"] = str(config.port)
@@ -220,6 +272,12 @@ class McpServerCharm(ops.CharmBase):
         event.relation.data[self.unit]["scheme"] = scheme
         if config.path_prefix:
             event.relation.data[self.unit]["path-prefix"] = config.path_prefix
+
+    def _set_workload_version(self) -> None:
+        """Set the workload version if it can be determined."""
+        version = mcp_server.get_version()
+        if version is not None:
+            self.unit.set_workload_version(version)
 
     def _on_certificates_relation_changed(self, event: ops.RelationChangedEvent) -> None:
         """Handle TLS certificate data arriving or changing."""
